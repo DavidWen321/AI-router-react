@@ -1,0 +1,1179 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useLanguage } from "@/lib/language-context"
+import { adminApi, type UserManagementData, ApiError } from "@/lib/api"
+import {
+  Eye,
+  Trash2,
+  Mail,
+  CreditCard,
+  Activity,
+  TrendingUp,
+  Edit,
+  Search,
+  X,
+  Users,
+  BarChart3,
+  ArrowLeft,
+} from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+
+interface UserData {
+  id: string
+  email: string
+  registrationDate: string
+  planType: string
+  planStatus: "活跃" | "已过期" | "已取消"
+  planExpiry: string
+  dailyBudget: number
+  todayUsage: number
+  totalUsage: number
+  totalCalls: number
+  lastActive: string
+}
+
+export default function UsersPage() {
+  const { t } = useLanguage()
+  const { toast } = useToast()
+
+  const [showChartView, setShowChartView] = useState(false)
+  const [selectedUserForChart, setSelectedUserForChart] = useState<UserData | null>(null)
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<"today" | "7days" | "15days" | "30days">("7days")
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<UserData | null>(null)
+
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [userToView, setUserToView] = useState<UserData | null>(null)
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [userToEdit, setUserToEdit] = useState<UserData | null>(null)
+  const [editFormData, setEditFormData] = useState({
+    planType: "",
+    planStatus: "" as "活跃" | "已过期" | "已取消",
+    planExpiry: "",
+  })
+
+  const [searchFilters, setSearchFilters] = useState({
+    email: "",
+    planType: "",
+    apiKey: "",
+  })
+
+  const [users, setUsers] = useState<UserData[]>([
+    {
+      id: "1",
+      email: "user1@example.com",
+      registrationDate: "2025/08/15",
+      planType: "标准套餐",
+      planStatus: "活跃",
+      planExpiry: "2025/11/15",
+      dailyBudget: 60.0,
+      todayUsage: 12.5,
+      totalUsage: 456.78,
+      totalCalls: 1234,
+      lastActive: "2025/10/06 20:26",
+    },
+    {
+      id: "2",
+      email: "user2@example.com",
+      registrationDate: "2025/09/01",
+      planType: "专业套餐",
+      planStatus: "活跃",
+      planExpiry: "2025/12/01",
+      dailyBudget: 100.0,
+      todayUsage: 25.3,
+      totalUsage: 789.45,
+      totalCalls: 2567,
+      lastActive: "2025/10/06 19:45",
+    },
+    {
+      id: "3",
+      email: "user3@example.com",
+      registrationDate: "2025/07/20",
+      planType: "标准套餐",
+      planStatus: "已过期",
+      planExpiry: "2025/10/20",
+      dailyBudget: 60.0,
+      todayUsage: 0,
+      totalUsage: 303.75,
+      totalCalls: 890,
+      lastActive: "2025/10/05 14:22",
+    },
+    {
+      id: "4",
+      email: "user4@example.com",
+      registrationDate: "2025/09/10",
+      planType: "企业套餐",
+      planStatus: "活跃",
+      planExpiry: "2026/01/10",
+      dailyBudget: 200.0,
+      todayUsage: 45.8,
+      totalUsage: 1234.56,
+      totalCalls: 4321,
+      lastActive: "2025/10/06 21:10",
+    },
+    {
+      id: "5",
+      email: "user5@example.com",
+      registrationDate: "2025/08/25",
+      planType: "标准套餐",
+      planStatus: "已取消",
+      planExpiry: "2025/09/25",
+      dailyBudget: 60.0,
+      todayUsage: 0,
+      totalUsage: 156.32,
+      totalCalls: 456,
+      lastActive: "2025/09/24 10:15",
+    },
+  ])
+
+  const filteredUsers = users.filter((user) => {
+    const emailMatch = user.email.toLowerCase().includes(searchFilters.email.toLowerCase())
+    const planTypeMatch =
+      searchFilters.planType === "" || searchFilters.planType === "all" || user.planType === searchFilters.planType
+    // Note: API key search would require API key data to be added to UserData interface
+    // For now, we'll search by user ID as a placeholder
+    const apiKeyMatch =
+      searchFilters.apiKey === "" || user.id.toLowerCase().includes(searchFilters.apiKey.toLowerCase())
+
+    return emailMatch && planTypeMatch && apiKeyMatch
+  })
+
+  const clearFilters = () => {
+    setSearchFilters({
+      email: "",
+      planType: "",
+      apiKey: "",
+    })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "活跃":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+      case "已过期":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+      case "已取消":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+    }
+  }
+
+  const translatePlanType = (planType: string) => {
+    switch (planType) {
+      case "标准套餐":
+        return t("标准套餐", "Standard Plan")
+      case "专业套餐":
+        return t("专业套餐", "Professional Plan")
+      case "企业套餐":
+        return t("企业套餐", "Enterprise Plan")
+      default:
+        return planType
+    }
+  }
+
+  const translateStatus = (status: string) => {
+    switch (status) {
+      case "活跃":
+        return t("活跃", "Active")
+      case "已过期":
+        return t("已过期", "Expired")
+      case "已取消":
+        return t("已取消", "Cancelled")
+      default:
+        return status
+    }
+  }
+
+  const handleViewUser = (user: UserData) => {
+    setUserToView(user)
+    setViewDialogOpen(true)
+  }
+
+  const handleDeleteUser = (user: UserData) => {
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleEditUser = (user: UserData) => {
+    setUserToEdit(user)
+    setEditFormData({
+      planType: user.planType,
+      planStatus: user.planStatus,
+      planExpiry: user.planExpiry,
+    })
+    setEditDialogOpen(true)
+  }
+
+  const handleSaveEdit = () => {
+    if (userToEdit) {
+      setUsers(
+        users.map((u) =>
+          u.id === userToEdit.id
+            ? {
+                ...u,
+                planType: editFormData.planType,
+                planStatus: editFormData.planStatus,
+                planExpiry: editFormData.planExpiry,
+              }
+            : u,
+        ),
+      )
+      toast({
+        title: t("保存成功", "Saved Successfully"),
+        description: t(`用户 ${userToEdit.email} 的信息已更新`, `User ${userToEdit.email} has been updated`),
+        duration: 3000,
+      })
+      setEditDialogOpen(false)
+      setUserToEdit(null)
+    }
+  }
+
+  const confirmDeleteUser = () => {
+    if (userToDelete) {
+      setUsers(users.filter((u) => u.id !== userToDelete.id))
+      toast({
+        title: t("删除成功", "Deleted Successfully"),
+        description: t(`用户 ${userToDelete.email} 已被删除`, `User ${userToDelete.email} has been deleted`),
+        duration: 3000,
+      })
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
+    }
+  }
+
+  const handleUsageRateClick = (user: UserData) => {
+    setSelectedUserForChart(user)
+    setShowChartView(true)
+  }
+
+  const handleBackToTable = () => {
+    setShowChartView(false)
+    setSelectedUserForChart(null)
+    setSelectedTimePeriod("7days")
+  }
+
+  const generateChartData = (timePeriod: typeof selectedTimePeriod) => {
+    if (timePeriod === "today") {
+      // Generate 24 hours of data
+      return Array.from({ length: 24 }, (_, i) => ({
+        time: `${i.toString().padStart(2, "0")}:00`,
+        usageRate: Math.random() * 15 + 10, // Random between 10-25%
+      }))
+    } else if (timePeriod === "7days") {
+      // Generate 7 days of data
+      const today = new Date()
+      return Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(today)
+        date.setDate(date.getDate() - (6 - i))
+        return {
+          time: `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`,
+          usageRate: Math.random() * 10 + 10, // Random between 10-20%
+        }
+      })
+    } else if (timePeriod === "15days") {
+      // Generate 15 days of data
+      const today = new Date()
+      return Array.from({ length: 15 }, (_, i) => {
+        const date = new Date(today)
+        date.setDate(date.getDate() - (14 - i))
+        return {
+          time: `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`,
+          usageRate: Math.random() * 12 + 8, // Random between 8-20%
+        }
+      })
+    } else {
+      const today = new Date()
+      return Array.from({ length: 30 }, (_, i) => {
+        const date = new Date(today)
+        date.setDate(date.getDate() - (29 - i))
+        return {
+          time: `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`,
+          usageRate: Math.random() * 15 + 5, // Random between 5-20%
+        }
+      })
+    }
+  }
+
+  const getChartStats = () => {
+    const chartData = generateChartData("7days") // Always use 7 days for overall stats
+    const rates = chartData.map((d) => d.usageRate)
+    const maxRate = Math.max(...rates)
+    const minRate = Math.min(...rates)
+    const currentRate = rates[rates.length - 1]
+
+    // Find peak time/day
+    const maxIndex = rates.indexOf(maxRate)
+    const peakTime = chartData[maxIndex].time
+
+    // Find user with highest usage
+    const highestUsageUser = users.reduce((prev, current) => (current.todayUsage > prev.todayUsage ? current : prev))
+
+    return {
+      peakTime,
+      peakRate: maxRate,
+      maxRate,
+      minRate,
+      currentRate,
+      highestUsageUser,
+    }
+  }
+
+  if (showChartView && selectedUserForChart) {
+    const chartData = generateChartData(selectedTimePeriod)
+    const stats = getChartStats()
+
+    return (
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-2 -mt-4">
+        {/* Header with back button */}
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-7 h-7 sm:w-8 sm:h-8 text-cyan-600 dark:text-cyan-400" />
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {t("使用率统计", "Usage Rate Statistics")} - {selectedUserForChart.email}
+              </h1>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={handleBackToTable}
+              className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t("返回用户列表", "Back to User List")}
+            </Button>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {selectedUserForChart.email} · {t("每日限额", "Daily Limit")}: $
+            {selectedUserForChart.dailyBudget.toFixed(2)}
+          </p>
+        </div>
+
+        {/* Time period selector */}
+        <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
+          <Button
+            variant={selectedTimePeriod === "today" ? "default" : "outline"}
+            onClick={() => setSelectedTimePeriod("today")}
+            className={
+              selectedTimePeriod === "today"
+                ? "bg-cyan-600 hover:bg-cyan-700 text-white"
+                : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }
+          >
+            {t("当天", "Today")}
+          </Button>
+          <Button
+            variant={selectedTimePeriod === "7days" ? "default" : "outline"}
+            onClick={() => setSelectedTimePeriod("7days")}
+            className={
+              selectedTimePeriod === "7days"
+                ? "bg-cyan-600 hover:bg-cyan-700 text-white"
+                : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }
+          >
+            {t("最近7天", "Last 7 Days")}
+          </Button>
+          <Button
+            variant={selectedTimePeriod === "15days" ? "default" : "outline"}
+            onClick={() => setSelectedTimePeriod("15days")}
+            className={
+              selectedTimePeriod === "15days"
+                ? "bg-cyan-600 hover:bg-cyan-700 text-white"
+                : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }
+          >
+            {t("最近15天", "Last 15 Days")}
+          </Button>
+          <Button
+            variant={selectedTimePeriod === "30days" ? "default" : "outline"}
+            onClick={() => setSelectedTimePeriod("30days")}
+            className={
+              selectedTimePeriod === "30days"
+                ? "bg-cyan-600 hover:bg-cyan-700 text-white"
+                : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }
+          >
+            {t("最近30天", "Last 30 Days")}
+          </Button>
+        </div>
+
+        {/* Stats cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {/* Highest usage user card */}
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-4 sm:p-6 border border-purple-200 dark:border-purple-700 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="text-sm font-medium text-purple-900 dark:text-purple-300">
+                {t("使用量最高用户", "Highest Usage User")}
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400 truncate">
+              {stats.highestUsageUser.email}
+            </div>
+            <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+              ${stats.highestUsageUser.todayUsage.toFixed(2)}
+            </div>
+          </div>
+
+          {/* Highest usage rate card */}
+          <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-xl p-4 sm:p-6 border border-red-200 dark:border-red-700 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg">
+                <Activity className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="text-sm font-medium text-red-900 dark:text-red-300">
+                {t("最高使用率", "Highest Usage Rate")}
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400">
+              {stats.maxRate.toFixed(1)}%
+            </div>
+          </div>
+
+          {/* Lowest usage rate card */}
+          <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-700 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="text-sm font-medium text-green-900 dark:text-green-300">
+                {t("最低使用率", "Lowest Usage Rate")}
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
+              {stats.minRate.toFixed(1)}%
+            </div>
+          </div>
+
+          {/* Current usage rate card */}
+          <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 rounded-xl p-4 sm:p-6 border border-cyan-200 dark:border-cyan-700 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-cyan-100 dark:bg-cyan-900/40 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              </div>
+              <div className="text-sm font-medium text-cyan-900 dark:text-cyan-300">
+                {t("当前使用率", "Current Usage Rate")}
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold text-cyan-600 dark:text-cyan-400">
+              {stats.currentRate.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="mb-4">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {t("每日调用量趋势", "Daily Call Volume Trend")}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {selectedTimePeriod === "today"
+                ? t("过去24小时的使用率变化", "Usage rate changes over the past 24 hours")
+                : selectedTimePeriod === "7days"
+                  ? t("最近7天的使用率变化", "Usage rate changes over the last 7 days")
+                  : selectedTimePeriod === "15days"
+                    ? t("最近15天的使用率变化", "Usage rate changes over the last 15 days")
+                    : t("最近30天的使用率变化", "Usage rate changes over the last 30 days")}
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl p-3 sm:p-4 md:p-6 border border-gray-200 dark:border-gray-700 shadow-inner overflow-hidden">
+            {/* Mobile chart */}
+            <div className="block sm:hidden">
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                  <XAxis
+                    dataKey="time"
+                    stroke="#6b7280"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={{ stroke: "#e5e7eb" }}
+                    interval={
+                      selectedTimePeriod === "today"
+                        ? 2 // Show every 3rd hour (0, 3, 6, 9, 12, 15, 18, 21)
+                        : selectedTimePeriod === "7days"
+                          ? 0 // Show all days
+                          : selectedTimePeriod === "15days"
+                            ? 2 // Show every 3rd day
+                            : 4 // Show every 5th day for 30 days (0, 5, 10, 15, 20, 25)
+                    }
+                  />
+                  <YAxis
+                    stroke="#6b7280"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={{ stroke: "#e5e7eb" }}
+                    label={{
+                      value: t("使用率(%)", "Usage Rate (%)"),
+                      angle: -90,
+                      position: "insideLeft",
+                      style: { fontSize: 10, fill: "#6b7280" },
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                    formatter={(value: number) => [`${value.toFixed(1)}%`, t("使用率", "Usage Rate")]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="usageRate"
+                    stroke="#06b6d4"
+                    strokeWidth={2}
+                    fill="url(#colorUsage)"
+                    dot={{ fill: "#06b6d4", strokeWidth: 2, r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Tablet chart */}
+            <div className="hidden sm:block md:hidden">
+              <ResponsiveContainer width="100%" height={400}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                  <XAxis
+                    dataKey="time"
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={{ stroke: "#e5e7eb" }}
+                    interval={
+                      selectedTimePeriod === "today"
+                        ? 2 // Show every 3rd hour
+                        : selectedTimePeriod === "7days"
+                          ? 0 // Show all days
+                          : selectedTimePeriod === "15days"
+                            ? 2 // Show every 3rd day
+                            : 4 // Show every 5th day for 30 days
+                    }
+                  />
+                  <YAxis
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={{ stroke: "#e5e7eb" }}
+                    label={{
+                      value: t("使用率(%)", "Usage Rate (%)"),
+                      angle: -90,
+                      position: "insideLeft",
+                      style: { fontSize: 12, fill: "#6b7280" },
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      fontSize: "13px",
+                    }}
+                    formatter={(value: number) => [`${value.toFixed(1)}%`, t("使用率", "Usage Rate")]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="usageRate"
+                    stroke="#06b6d4"
+                    strokeWidth={2}
+                    fill="url(#colorUsage)"
+                    dot={{ fill: "#06b6d4", strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Desktop chart */}
+            <div className="hidden md:block">
+              <ResponsiveContainer width="100%" height={500}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                  <XAxis
+                    dataKey="time"
+                    stroke="#6b7280"
+                    fontSize={13}
+                    tickLine={false}
+                    axisLine={{ stroke: "#e5e7eb" }}
+                    interval={
+                      selectedTimePeriod === "today"
+                        ? 2 // Show every 3rd hour (0, 3, 6, 9, 12, 15, 18, 21)
+                        : selectedTimePeriod === "7days"
+                          ? 0 // Show all days
+                          : selectedTimePeriod === "15days"
+                            ? 2 // Show every 3rd day (0, 3, 6, 9, 12)
+                            : 4 // Show every 5th day for 30 days (0, 5, 10, 15, 20, 25)
+                    }
+                  />
+                  <YAxis
+                    stroke="#6b7280"
+                    fontSize={13}
+                    tickLine={false}
+                    axisLine={{ stroke: "#e5e7eb" }}
+                    label={{
+                      value: t("使用率(%)", "Usage Rate (%)"),
+                      angle: -90,
+                      position: "insideLeft",
+                      style: { fontSize: 13, fill: "#6b7280" },
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                    }}
+                    formatter={(value: number) => [`${value.toFixed(1)}%`, t("使用率", "Usage Rate")]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="usageRate"
+                    stroke="#06b6d4"
+                    strokeWidth={3}
+                    fill="url(#colorUsage)"
+                    dot={{ fill: "#06b6d4", strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Original table view
+  return (
+    <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Users className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("用户管理", "User Management")}</h1>
+        </div>
+        <p className="text-gray-600 dark:text-gray-400">
+          {t("查看和管理所有用户的使用情况和会员信息", "View and manage all users' usage and membership information")}
+        </p>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6 shadow-sm transition-shadow hover:shadow-md">
+        <div className="flex items-center gap-2 mb-4">
+          <Search className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t("搜索筛选", "Search & Filter")}</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-4">
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("用户邮箱", "User Email")}
+            </Label>
+            <Input
+              placeholder={t("输入邮箱搜索...", "Search by email...")}
+              value={searchFilters.email}
+              onChange={(e) => setSearchFilters({ ...searchFilters, email: e.target.value })}
+              className="w-full transition-all hover:border-cyan-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+            />
+          </div>
+
+          <div className="md:w-[200px]">
+            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("套餐类型", "Plan Type")}
+            </Label>
+            <Select
+              value={searchFilters.planType}
+              onValueChange={(value) => setSearchFilters({ ...searchFilters, planType: value })}
+            >
+              <SelectTrigger className="transition-all hover:border-cyan-400">
+                <SelectValue placeholder={t("全部套餐", "All Plans")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("全部套餐", "All Plans")}</SelectItem>
+                <SelectItem value="标准套餐">{t("标准套餐", "Standard Plan")}</SelectItem>
+                <SelectItem value="专业套餐">{t("专业套餐", "Professional Plan")}</SelectItem>
+                <SelectItem value="企业套餐">{t("企业套餐", "Enterprise Plan")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="md:w-[240px]">
+            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("密钥/用户ID", "API Key / User ID")}
+            </Label>
+            <Input
+              placeholder={t("输入密钥或ID搜索...", "Search by key or ID...")}
+              value={searchFilters.apiKey}
+              onChange={(e) => setSearchFilters({ ...searchFilters, apiKey: e.target.value })}
+              className="w-full transition-all hover:border-cyan-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            {t(`找到 ${filteredUsers.length} 个用户`, `Found ${filteredUsers.length} user(s)`)}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearFilters}
+            className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 bg-transparent transition-colors"
+          >
+            <X className="w-4 h-4" />
+            {t("清除筛选", "Clear Filters")}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer">
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t("总用户数", "Total Users")}</div>
+          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{users.length}</div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:border-green-400 dark:hover:border-green-500 cursor-pointer">
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t("活跃用户", "Active Users")}</div>
+          <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+            {users.filter((u) => u.planStatus === "活跃").length}
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:border-cyan-400 dark:hover:border-cyan-500 cursor-pointer">
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t("今日总使用", "Today's Usage")}</div>
+          <div className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
+            ${users.reduce((sum, u) => sum + u.todayUsage, 0).toFixed(2)}
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer">
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t("累计总使用", "Total Usage")}</div>
+          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            ${users.reduce((sum, u) => sum + u.totalUsage, 0).toFixed(2)}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm transition-shadow hover:shadow-md">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("用户邮箱", "User Email")}
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("注册时间", "Registration Date")}
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("套餐类型", "Plan Type")}
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("状态", "Status")}
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("到期时间", "Expiration Date")}
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("每日限额", "Daily Limit")}
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("今日剩余", "Today's Remaining")}
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("使用率", "Usage Rate")}
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("累计使用", "Total Usage")}
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("总调用次数", "Total Calls")}
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("最后活跃", "Last Active")}
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("操作", "Actions")}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredUsers.map((user) => {
+                const remaining = user.dailyBudget - user.todayUsage
+                const usageRate = user.dailyBudget > 0 ? (user.todayUsage / user.dailyBudget) * 100 : 0
+
+                return (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 cursor-pointer"
+                  >
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{user.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.registrationDate}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                      {translatePlanType(user.planType)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusColor(user.planStatus)}`}
+                      >
+                        {translateStatus(user.planStatus)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.planExpiry}</td>
+                    <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">
+                      ${user.dailyBudget.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-right text-green-600 dark:text-green-400 font-medium">
+                      ${remaining.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div
+                        className="flex items-center gap-2 min-w-[120px] cursor-pointer group"
+                        onClick={() => handleUsageRateClick(user)}
+                        title={t("点击查看详细统计", "Click to view detailed statistics")}
+                      >
+                        <div className="relative flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden group-hover:h-2.5 transition-all">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              usageRate < 50
+                                ? "bg-gradient-to-r from-green-400 to-green-600"
+                                : usageRate < 80
+                                  ? "bg-gradient-to-r from-yellow-400 to-orange-500"
+                                  : "bg-gradient-to-r from-orange-500 to-red-600"
+                            }`}
+                            style={{ width: `${Math.min(usageRate, 100)}%` }}
+                          />
+                        </div>
+                        <span
+                          className={`text-xs font-semibold whitespace-nowrap group-hover:scale-110 transition-transform ${
+                            usageRate < 50
+                              ? "text-green-600 dark:text-green-400"
+                              : usageRate < 80
+                                ? "text-yellow-600 dark:text-yellow-400"
+                                : "text-red-600 dark:text-red-400"
+                          }`}
+                        >
+                          {usageRate.toFixed(1)}%
+                        </span>
+                        <BarChart3 className="w-4 h-4 text-cyan-500 dark:text-cyan-400 opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">
+                      ${user.totalUsage.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">
+                      {user.totalCalls.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.lastActive}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleViewUser(user)
+                          }}
+                          className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-all duration-200 hover:scale-110"
+                          title={t("查看详情", "View Details")}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditUser(user)
+                          }}
+                          className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-all duration-200 hover:scale-110"
+                          title={t("编辑用户", "Edit User")}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteUser(user)
+                          }}
+                          className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all duration-200 hover:scale-110"
+                          title={t("删除用户", "Delete User")}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t("用户详情", "User Details")}</DialogTitle>
+            <DialogDescription>
+              {t("查看用户的完整信息和使用统计", "View complete user information and usage statistics")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {userToView && (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  {t("基本信息", "Basic Information")}
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("用户邮箱", "Email")}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{userToView.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {t("注册时间", "Registration Date")}
+                    </span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {userToView.registrationDate}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Plan Details */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  {t("套餐详情", "Plan Details")}
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("套餐类型", "Plan Type")}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {translatePlanType(userToView.planType)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("状态", "Status")}</span>
+                    <span
+                      className={`text-sm font-medium px-2 py-0.5 rounded ${getStatusColor(userToView.planStatus)}`}
+                    >
+                      {translateStatus(userToView.planStatus)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("到期时间", "Expiration Date")}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {userToView.planExpiry}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("每日限额", "Daily Limit")}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      ${userToView.dailyBudget.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Usage Statistics */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  {t("使用统计", "Usage Statistics")}
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {t("今日剩余", "Today's Remaining")}
+                    </span>
+                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                      ${(userToView.dailyBudget - userToView.todayUsage || 0).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("累计使用", "Total Usage")}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      ${userToView.totalUsage.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("总调用次数", "Total Calls")}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {userToView.totalCalls.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Activity */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  {t("活动信息", "Activity")}
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("最后活跃", "Last Active")}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {userToView.lastActive}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("编辑用户", "Edit User")}</DialogTitle>
+            <DialogDescription>
+              {t("修改用户的套餐信息和配置", "Modify user plan information and settings")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {userToEdit && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+                  {t("用户邮箱", "User Email")}
+                </Label>
+                <Input value={userToEdit.email} disabled className="bg-gray-50 dark:bg-gray-900" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+                    {t("套餐类型", "Plan Type")}
+                  </Label>
+                  <Select
+                    value={editFormData.planType}
+                    onValueChange={(value) => setEditFormData({ ...editFormData, planType: value })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="标准套餐">{t("标准套餐", "Standard Plan")}</SelectItem>
+                      <SelectItem value="专业套餐">{t("专业套餐", "Professional Plan")}</SelectItem>
+                      <SelectItem value="企业套餐">{t("企业套餐", "Enterprise Plan")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+                    {t("状态", "Status")}
+                  </Label>
+                  <Select
+                    value={editFormData.planStatus}
+                    onValueChange={(value) =>
+                      setEditFormData({ ...editFormData, planStatus: value as "活跃" | "已过期" | "已取消" })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="活跃">{t("活跃", "Active")}</SelectItem>
+                      <SelectItem value="已过期">{t("已过期", "Expired")}</SelectItem>
+                      <SelectItem value="已取消">{t("已取消", "Cancelled")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+                  {t("到期时间", "Expiration Date")}
+                </Label>
+                <Input
+                  type="date"
+                  value={editFormData.planExpiry}
+                  onChange={(e) => setEditFormData({ ...editFormData, planExpiry: e.target.value })}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditDialogOpen(false)}
+                  className="flex-1 bg-transparent dark:bg-gray-900 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  {t("取消", "Cancel")}
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  className="flex-1 bg-blue-600 dark:bg-blue-900 hover:bg-blue-700 dark:hover:bg-blue-800"
+                >
+                  {t("保存", "Save")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("删除用户", "Delete User")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                `确认删除用户 ${userToDelete?.email}？此操作无法撤销。`,
+                `Are you sure you want to delete user ${userToDelete?.email}? This action cannot be undone.`,
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("取消", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteUser}>{t("确认删除", "Confirm Delete")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+}

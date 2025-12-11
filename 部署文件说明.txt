@@ -1,0 +1,278 @@
+═══════════════════════════════════════════════════════════════
+    AIClaude Frontend 部署文件清单
+═══════════════════════════════════════════════════════════════
+
+【核心部署文件】
+
+✅ Dockerfile
+   - Next.js 应用的 Docker 镜像构建文件
+   - 使用多阶段构建，优化镜像大小
+   - 生产环境优化配置
+
+✅ docker-compose.yml
+   - Docker 容器编排配置
+   - 包含前端容器和 Nginx 反向代理
+   - 自动连接到 claude 网络（与后端共享）
+
+✅ nginx.conf
+   - Nginx 反向代理配置
+   - 支持 HTTP/HTTPS
+   - Gzip 压缩
+   - 域名配置：aiclaude.online
+
+✅ deploy.sh
+   - 一键部署脚本（Linux/Mac）
+   - 自动检查环境
+   - 自动构建和启动容器
+   - 显示部署状态和后续步骤
+
+✅ .dockerignore
+   - Docker 构建时忽略的文件
+   - 减少镜像大小
+   - 提高构建速度
+
+✅ .env.example
+   - 环境变量模板
+   - 可选配置项
+
+═══════════════════════════════════════════════════════════════
+
+【文档文件】
+
+📄 DEPLOYMENT.md
+   - 完整的部署指南
+   - 包含所有详细步骤
+   - 故障排查
+   - 性能优化建议
+
+📄 README_DEPLOY.md
+   - 快速部署指南
+   - MobaXterm 使用说明
+   - 常用命令参考
+
+📄 QUICK_START.txt
+   - 快速参考卡片
+   - 关键命令速查
+   - 适合打印或保存
+
+📄 部署文件说明.txt
+   - 本文件
+   - 所有文件的说明
+
+═══════════════════════════════════════════════════════════════
+
+【打包工具】
+
+🔧 pack-for-deploy.sh (Linux/Mac)
+   - 自动打包所有需要的文件
+   - 生成 tar.gz 压缩包
+   - 方便上传到服务器
+
+🔧 pack-for-deploy.bat (Windows)
+   - Windows 版打包工具
+   - 生成 zip 压缩包
+   - 双击运行即可
+
+═══════════════════════════════════════════════════════════════
+
+【配置修改】
+
+✅ next.config.mjs
+   - 已添加 output: 'standalone' 配置
+   - 支持 Docker 部署
+   - 优化生产构建
+
+═══════════════════════════════════════════════════════════════
+
+【使用方法 - Windows 用户】
+
+方法1: 直接上传（推荐）
+
+1. 打开 MobaXterm，连接到服务器
+2. 将整个 aiclaude-react 文件夹拖到 /root/
+3. 在终端执行：
+   cd /root/aiclaude-react
+   chmod +x deploy.sh
+   ./deploy.sh
+
+方法2: 打包上传
+
+1. 双击运行 pack-for-deploy.bat
+2. 等待打包完成（生成 .zip 文件）
+3. 用 MobaXterm 上传 .zip 文件到服务器
+4. 在服务器上解压：
+   unzip aiclaude-frontend-*.zip
+   cd aiclaude-frontend-deploy
+   chmod +x deploy.sh
+   ./deploy.sh
+
+═══════════════════════════════════════════════════════════════
+
+【部署流程】
+
+第1步: 上传文件到服务器
+   ├─ 使用 MobaXterm SFTP 功能
+   └─ 拖拽文件夹到 /root/
+
+第2步: 执行部署脚本
+   ├─ cd /root/aiclaude-react
+   ├─ chmod +x deploy.sh
+   └─ ./deploy.sh
+
+第3步: 配置 DNS
+   ├─ 登录域名注册商
+   ├─ 添加 A 记录: @ → 服务器IP
+   └─ 添加 CNAME: www → aiclaude.online
+
+第4步: 访问网站
+   ├─ 等待 DNS 生效（5-10分钟）
+   └─ 访问 http://aiclaude.online
+
+第5步: 启用 HTTPS（可选）
+   ├─ 安装 Certbot
+   ├─ 获取 SSL 证书
+   ├─ 修改 nginx.conf
+   └─ 重启服务
+
+═══════════════════════════════════════════════════════════════
+
+【关键命令】
+
+查看容器状态:
+  docker-compose ps
+
+查看日志:
+  docker-compose logs -f
+
+重启服务:
+  docker-compose restart
+
+停止服务:
+  docker-compose stop
+
+更新部署:
+  docker-compose down
+  docker-compose build --no-cache
+  docker-compose up -d
+
+═══════════════════════════════════════════════════════════════
+
+【网络架构】
+
+Internet
+   ↓
+域名: aiclaude.online (DNS 解析到服务器 IP)
+   ↓
+服务器 (80/443 端口)
+   ↓
+Nginx 反向代理 (容器)
+   ↓
+Next.js 前端 (容器，端口 3000)
+   ↓
+后端 API (可选，端口 8080)
+
+所有容器在 claude 网络中互相通信
+
+═══════════════════════════════════════════════════════════════
+
+【DNS 配置示例】
+
+在域名注册商（如阿里云）配置：
+
+主机记录    记录类型    记录值              TTL
+-------------------------------------------------------
+@          A          xxx.xxx.xxx.xxx     600
+www        CNAME      aiclaude.online     600
+
+其中 xxx.xxx.xxx.xxx 是您的服务器公网 IP
+
+═══════════════════════════════════════════════════════════════
+
+【SSL 证书获取】
+
+使用 Let's Encrypt 免费证书:
+
+# 方法1: Certbot (推荐)
+sudo apt install certbot -y
+docker-compose stop nginx
+sudo certbot certonly --standalone -d aiclaude.online
+sudo cp /etc/letsencrypt/live/aiclaude.online/*.pem ./ssl/
+sudo chmod 644 ./ssl/*.pem
+# 编辑 nginx.conf 启用 HTTPS
+docker-compose up -d
+
+# 方法2: acme.sh
+curl https://get.acme.sh | sh
+~/.acme.sh/acme.sh --issue -d aiclaude.online --standalone
+~/.acme.sh/acme.sh --install-cert -d aiclaude.online \
+  --fullchain-file ./ssl/fullchain.pem \
+  --key-file ./ssl/privkey.pem
+
+证书自动续期已配置，无需手动操作
+
+═══════════════════════════════════════════════════════════════
+
+【常见问题】
+
+Q: 无法访问网站？
+A: 检查防火墙: sudo ufw allow 80 && sudo ufw allow 443
+   检查容器: docker-compose ps
+   查看日志: docker-compose logs -f
+
+Q: DNS 未生效？
+A: 等待 5-10 分钟
+   测试: ping aiclaude.online
+   清除缓存: ipconfig /flushdns (Windows)
+
+Q: 构建失败？
+A: 清理: docker system prune -a
+   重试: docker-compose build --no-cache
+
+Q: HTTPS 不工作？
+A: 检查证书: ls -lh ssl/
+   测试配置: docker exec -it aiclaude-nginx nginx -t
+   查看日志: docker logs aiclaude-nginx
+
+═══════════════════════════════════════════════════════════════
+
+【技术栈】
+
+前端框架:     Next.js 15.2.4
+UI 组件库:    shadcn/ui (Radix UI)
+样式方案:     Tailwind CSS 4.1.9
+类型检查:     TypeScript
+容器化:       Docker + Docker Compose
+Web服务器:    Nginx (反向代理)
+运行环境:     Node.js 20 Alpine
+
+═══════════════════════════════════════════════════════════════
+
+【安全特性】
+
+✅ 非 root 用户运行容器
+✅ 多阶段构建减少攻击面
+✅ 生产依赖优化
+✅ Nginx 安全配置
+✅ HTTPS 支持
+✅ 定期更新依赖
+
+═══════════════════════════════════════════════════════════════
+
+【性能优化】
+
+✅ Standalone 模式（减小镜像大小）
+✅ 静态资源优化
+✅ Gzip 压缩
+✅ Docker 镜像缓存
+✅ Nginx 代理缓存（可配置）
+
+═══════════════════════════════════════════════════════════════
+
+🎉 现在您可以开始部署了！
+
+1. 使用 MobaXterm 上传文件到服务器
+2. 运行 ./deploy.sh 开始部署
+3. 配置 DNS 解析
+4. 访问 http://aiclaude.online
+
+遇到问题请查看 DEPLOYMENT.md 获取详细帮助！
