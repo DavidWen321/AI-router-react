@@ -44,6 +44,7 @@ export function RenewMembershipDialog({ open, onOpenChange, user, onSuccess }: R
   const [loading, setLoading] = useState(false)
   const [memberships, setMemberships] = useState<MembershipData[]>([])
   const [currentMembership, setCurrentMembership] = useState<CurrentMembership | null>(null)
+  const [isExpiredMembership, setIsExpiredMembership] = useState(false)  // ✅ 标记是否是已过期会员
   const [selectedMembership, setSelectedMembership] = useState<number | null>(null)
   const [months, setMonths] = useState(1)
   const [startDate, setStartDate] = useState("")
@@ -63,25 +64,83 @@ export function RenewMembershipDialog({ open, onOpenChange, user, onSuccess }: R
       const plans = await membershipApi.getActiveMemberships()
       setMemberships(plans)
 
-      // 加载当前会员
-      const current = await membershipApi.getCurrentMembership(user!.id)
+      // 尝试加载当前会员
+      let current: CurrentMembership | null = null
+      let isExpired = false
+
+      try {
+        current = await membershipApi.getCurrentMembership(user!.id)
+      } catch (e) {
+        // 如果获取当前会员失败，可能是会员已过期
+        console.log("获取当前会员失败，尝试获取会员历史记录")
+      }
+
+      // ✅ 如果没有当前会员，尝试从历史记录中找到最近的会员
+      if (!current) {
+        try {
+          const history = await membershipApi.getMembershipHistory(user!.id)
+          if (history && history.length > 0) {
+            // 按过期时间降序排序，找到最近的会员
+            const sortedHistory = history.sort((a, b) =>
+              new Date(b.expireTime).getTime() - new Date(a.expireTime).getTime()
+            )
+
+            // 取最近30天内过期的会员
+            const thirtyDaysAgo = new Date()
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+            const recentExpired = sortedHistory.find(m =>
+              new Date(m.expireTime) > thirtyDaysAgo
+            )
+
+            if (recentExpired) {
+              current = recentExpired as CurrentMembership
+              isExpired = true
+              console.log("找到最近过期的会员:", recentExpired)
+            }
+          }
+        } catch (historyError) {
+          console.error("获取会员历史失败:", historyError)
+        }
+      }
+
       if (current) {
         setCurrentMembership(current)
+        setIsExpiredMembership(isExpired)
 
         // 默认选择当前相同的套餐
         setSelectedMembership(current.membershipId)
 
         // 默认起始时间 = 当前会员结束时间（精确到时分秒）
         const expireDateTime = new Date(current.expireTime)
-        setStartDate(current.expireTime.slice(0, 10))  // 日期部分
-        setStartTime(current.expireTime.slice(11, 19))  // 时分秒部分
+
+        // ✅ 如果会员已过期，允许用户选择从当前时间开始
+        if (isExpired && expireDateTime < new Date()) {
+          // 会员已过期，默认从原会员结束时间开始续费
+          setStartDate(current.expireTime.slice(0, 10))
+          setStartTime(current.expireTime.slice(11, 19) || "00:00:00")
+        } else {
+          setStartDate(current.expireTime.slice(0, 10))
+          setStartTime(current.expireTime.slice(11, 19) || "00:00:00")
+        }
 
         // 计算结束时间（从当前会员结束时间开始计算）
         calculateEndDate(expireDateTime, 1)
+
+        // 如果是过期会员，显示提示
+        if (isExpired) {
+          toast({
+            title: t("会员已过期", "Membership Expired"),
+            description: t(
+              "用户会员已于 " + current.expireTime.slice(0, 16).replace("T", " ") + " 过期，您可以为其续费",
+              "User membership expired at " + current.expireTime.slice(0, 16).replace("T", " ") + ", you can renew it"
+            ),
+          })
+        }
       } else {
         toast({
           title: t("无法续费", "Cannot Renew"),
-          description: t("用户暂无会员，请先开通会员", "User has no membership, please activate first"),
+          description: t("用户没有会员记录或会员已过期超过30天，请使用开通会员功能", "User has no membership record or membership expired over 30 days ago, please use activate membership"),
           variant: "destructive",
         })
         onOpenChange(false)
@@ -138,11 +197,13 @@ export function RenewMembershipDialog({ open, onOpenChange, user, onSuccess }: R
       const renewStartDateTime = new Date(`${startDate}T${startTime}`)
 
       if (renewStartDateTime < currentEndDateTime) {
+        const expireTimeStr = currentMembership.expireTime.slice(0, 19).replace("T", " ")
+        const startTimeStr = `${startDate} ${startTime}`
         toast({
           title: t("日期错误", "Invalid Date"),
           description: t(
-            "续费开始时间不能早于当前会员结束时间",
-            "Renewal start date cannot be earlier than current membership end date"
+            `续费开始时间（${startTimeStr}）不能早于${isExpiredMembership ? "已过期" : "当前"}会员结束时间（${expireTimeStr}）`,
+            `Renewal start time (${startTimeStr}) cannot be earlier than ${isExpiredMembership ? "expired" : "current"} membership end time (${expireTimeStr})`
           ),
           variant: "destructive",
         })
@@ -209,9 +270,22 @@ export function RenewMembershipDialog({ open, onOpenChange, user, onSuccess }: R
 
           {/* 当前会员信息 */}
           {currentMembership && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-              <div className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
-                {t("当前会员", "Current Membership")}
+            <div className={`p-4 rounded-xl border ${
+              isExpiredMembership
+                ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+                : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+            }`}>
+              <div className={`text-sm font-medium mb-2 flex items-center gap-2 ${
+                isExpiredMembership
+                  ? "text-amber-900 dark:text-amber-300"
+                  : "text-blue-900 dark:text-blue-300"
+              }`}>
+                {isExpiredMembership ? t("已过期会员", "Expired Membership") : t("当前会员", "Current Membership")}
+                {isExpiredMembership && (
+                  <span className="text-xs bg-amber-200 dark:bg-amber-700 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">
+                    {t("已过期", "EXPIRED")}
+                  </span>
+                )}
               </div>
               <div className="text-gray-900 dark:text-gray-100">
                 <div className="font-semibold">{currentMembership.levelName}</div>

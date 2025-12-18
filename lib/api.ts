@@ -208,12 +208,12 @@ async function request<T = any>(
 
 // Login Response Interface（双Token机制）
 export interface LoginResponse {
-  accessToken: string  // 访问令牌（2小时有效期）
+  accessToken: string  // 访问令牌（7天有效期）
   refreshToken: string // 刷新令牌（30天过期）
   userId: string       // 使用string类型避免JavaScript大整数精度丢失
   email: string
   role: string
-  expiresIn: number    // AccessToken过期时间（秒，7200=2小时）
+  expiresIn: number    // AccessToken过期时间（秒，604800=7天）
   refreshExpiresIn: number  // RefreshToken过期时间（秒，2592000=30天）
 }
 
@@ -1018,6 +1018,126 @@ export const accountPoolApi = {
    */
   getMonthUsageRate: async (accountId: string): Promise<AccountPoolUsageTimeSeriesVO[]> => {
     return request(`/account-pools/usage-rate/month/${accountId}`)
+  },
+}
+
+// ==================== Domain Health Monitoring API ====================
+
+/**
+ * 域名健康记录（单条历史记录）
+ */
+export interface DomainHealthRecord {
+  time: string            // ISO时间字符串
+  status: 'available' | 'degraded' | 'unavailable'
+  latencyMs: number       // 延迟毫秒
+  successRate: number     // 成功率 0-100
+}
+
+/**
+ * 单个渠道的健康数据
+ */
+export interface ChannelHealthData {
+  alias: string           // 渠道别名
+  url: string             // 渠道URL
+  currentStatus: 'available' | 'unavailable'
+  availabilityRate: number  // 可用率 0-100
+  avgLatencyMs: number    // 平均延迟
+  checkCount: number      // 检测次数
+  availableCount: number  // 可用次数
+  degradedCount: number   // 波动次数
+  unavailableCount: number // 不可用次数
+  lastCheckTime: string | null  // 最后检测时间
+  history: DomainHealthRecord[]  // 历史记录
+}
+
+/**
+ * 域名健康快照
+ */
+export interface DomainHealthSnapshot {
+  url: string
+  alias: string
+  alive: boolean
+  circuitState: 'CLOSED' | 'OPEN' | 'HALF_OPEN'
+  ewmaLatencyMs: number
+  inflightRequests: number
+  successCount: number
+  failureCount: number
+  consecutiveFailures: number
+  successRate: string
+  score: string
+  lastSuccessTime: string | null
+  lastProbeTime: string | null
+}
+
+/**
+ * 仪表盘数据（综合）
+ */
+export interface DomainHealthDashboardData {
+  queryTime: string
+  enabled: boolean
+  channelCount: number
+  currentStatus: DomainHealthSnapshot[]
+  history24h: Record<string, ChannelHealthData>
+  realtimeData: Array<Record<string, unknown>>
+}
+
+/**
+ * 域名健康监控 API
+ * 对应后端 DomainHealthController
+ */
+export const domainHealthApi = {
+  /**
+   * 获取当前所有域名健康状态
+   * 对应后端接口: GET /api/domain-health/status
+   */
+  getStatus: async (): Promise<{
+    enabled: boolean
+    domainCount: number
+    queryTime: string
+    domains: DomainHealthSnapshot[]
+  }> => {
+    return request('/api/domain-health/status')
+  },
+
+  /**
+   * 获取24小时健康历史（用于条形监测图）
+   * 对应后端接口: GET /api/domain-health/history/24h
+   */
+  get24HourHistory: async (): Promise<{
+    queryTime: string
+    channels: Record<string, ChannelHealthData>
+  }> => {
+    return request('/api/domain-health/history/24h')
+  },
+
+  /**
+   * 获取实时监控数据（用于折线图）
+   * 对应后端接口: GET /api/domain-health/realtime
+   */
+  getRealtimeData: async (): Promise<{
+    queryTime: string
+    data: Array<Record<string, unknown>>
+    currentStatus: DomainHealthSnapshot[]
+  }> => {
+    return request('/api/domain-health/realtime')
+  },
+
+  /**
+   * 获取综合仪表盘数据（一次性获取所有数据）
+   * 对应后端接口: GET /api/domain-health/dashboard
+   */
+  getDashboard: async (): Promise<DomainHealthDashboardData> => {
+    return request('/api/domain-health/dashboard')
+  },
+
+  /**
+   * 手动触发探测
+   * 对应后端接口: POST /api/domain-health/probe
+   */
+  triggerProbe: async (): Promise<string> => {
+    return request('/api/domain-health/probe', {
+      method: 'POST',
+    })
   },
 }
 

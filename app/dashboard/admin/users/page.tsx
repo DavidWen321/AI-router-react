@@ -148,7 +148,7 @@ export default function UsersPage() {
           </div>
           <button
             onClick={handleBatchCompensate}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl shadow-sm hover:shadow-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all duration-200"
           >
             <Gift className="w-4 h-4" />
             {t("一键会员补偿", "Batch Compensation")}

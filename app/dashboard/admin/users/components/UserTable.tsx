@@ -2,7 +2,7 @@
  * 用户表格组件
  */
 
-import { Eye, Trash2, BarChart3, UserPlus, TrendingUp, RefreshCw, DollarSign } from "lucide-react"
+import { Eye, Trash2, BarChart3, UserPlus, TrendingUp, RefreshCw, DollarSign, Zap } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
 import {
   getStatusColor,
@@ -190,6 +190,20 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                           title={t("临时调整额度", "Adjust Temporary Limit")}
                         >
                           <DollarSign className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* 临时体验 - 仅当用户无活跃会员时显示 */}
+                      {user.planStatus !== "活跃" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onAdjustTempLimit(user)
+                          }}
+                          className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+                          title={t("临时体验", "Temporary Trial")}
+                        >
+                          <Zap className="w-4 h-4" />
                         </button>
                       )}
 

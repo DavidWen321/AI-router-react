@@ -12,7 +12,10 @@
       "Bash(rm:*)",
       "Bash(git init)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch -M main)",
+      "Bash(git push -u origin main)"
     ],
     "deny": [],
     "ask": []

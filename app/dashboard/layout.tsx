@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
-import { Users, Key, Database, Package } from "lucide-react"
+import { Users, Key, Database, Package, Activity } from "lucide-react"
 import Link from "next/link"
 
 /**
@@ -62,6 +62,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       href: "/dashboard/admin/packages",
       icon: Package,
       color: "bg-gradient-to-br from-indigo-400 to-indigo-500",
+    },
+    {
+      name: t("渠道监控", "Channel Health"),
+      href: "/dashboard/admin/channel-health",
+      icon: Activity,
+      color: "bg-gradient-to-br from-cyan-500 to-teal-500",
     },
   ]
 

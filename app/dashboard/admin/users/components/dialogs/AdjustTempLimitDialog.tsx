@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useLanguage } from "@/lib/language-context"
 import { useToast } from "@/hooks/use-toast"
 import { usageApi } from "@/lib/api"
-import { Clock, DollarSign, Info, AlertCircle } from "lucide-react"
+import { Clock, DollarSign, Info, AlertCircle, Zap } from "lucide-react"
 import type { UserData } from "../../types"
 
 interface AdjustTempLimitDialogProps {
@@ -146,16 +146,31 @@ export function AdjustTempLimitDialog({ open, onOpenChange, user, onSuccess }: A
     }
   }
 
+  // 判断用户是否是非会员（用于显示不同的标题）
+  const isNonMember = !user?.planStatus || user?.planStatus !== "活跃"
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            {t("临时调整额度", "Adjust Temporary Limit")}
+            {isNonMember ? (
+              <>
+                <Zap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                {t("开通临时体验", "Grant Temporary Trial")}
+              </>
+            ) : (
+              <>
+                <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                {t("临时调整额度", "Adjust Temporary Limit")}
+              </>
+            )}
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400">
-            {t("为用户临时调整当天的每日限额，仅当天有效", "Temporarily adjust daily limit for the user, valid only for today")}
+            {isNonMember
+              ? t("为非会员用户开通当天临时体验额度", "Grant temporary trial quota for non-member user, valid only for today")
+              : t("为用户临时调整当天的每日限额，仅当天有效", "Temporarily adjust daily limit for the user, valid only for today")
+            }
           </DialogDescription>
         </DialogHeader>
 
