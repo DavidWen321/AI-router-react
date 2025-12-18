@@ -899,6 +899,107 @@ export interface AccountPoolPageData {
   pages?: number
 }
 
+// ==================== 号池健康度分析类型定义 ====================
+
+/**
+ * 号池健康度详情
+ * 包含号池基础信息和实时健康度指标
+ */
+export interface AccountPoolHealthVO {
+  // 基础信息
+  accountId: number
+  account: string
+  supplierWeb: string
+  dailyQuota: number
+  dailyRemaining: number
+  quotaUsageRate: number
+  expireTime: string
+
+  // 健康度指标
+  healthScore: number
+  healthStatus: 'HEALTHY' | 'WARNING' | 'CRITICAL'
+  successRate: number
+  totalRequests: number
+  successCount: number
+  failureCount: number
+  consecutiveFailures: number
+  avgResponseTimeMs: number
+
+  // 熔断信息
+  isCircuitBreakerOpen: boolean
+  circuitBreakerUntil: string | null
+  circuitBreakerRemainingSeconds: number
+
+  // 时间信息
+  lastSuccessTime: string | null
+  lastFailureTime: string | null
+  lastFailureReason: string | null
+}
+
+/**
+ * 号池健康度仪表盘数据
+ * 包含汇总统计和详细列表
+ */
+export interface AccountPoolHealthDashboardVO {
+  // 汇总统计
+  totalPools: number
+  healthyPools: number
+  warningPools: number
+  criticalPools: number
+  circuitBreakerPools: number
+  avgHealthScore: number
+  avgSuccessRate: number
+  avgResponseTimeMs: number
+  totalRequests: number
+  totalSuccessCount: number
+  totalFailureCount: number
+
+  // 详细列表
+  pools: AccountPoolHealthVO[]
+
+  // 元数据
+  generatedAt: string
+  nextRefreshAt: string
+}
+
+/**
+ * 账号健康度历史事件
+ * 单条状态变化或快照记录
+ */
+export interface AccountHealthEventVO {
+  accountId: number
+  accountName: string
+  healthScore: number
+  healthStatus: 'HEALTHY' | 'WARNING' | 'CRITICAL' | 'CIRCUIT_OPEN'
+  successRate: number
+  totalRequests: number
+  consecutiveFailures: number
+  avgResponseTimeMs: number
+  isCircuitBreakerOpen: boolean
+  lastFailureReason?: string
+  eventType: 'STATE_CHANGE' | 'SNAPSHOT'  // 事件类型：状态变化/定时快照
+  eventTime: string  // ISO时间字符串
+  changeDescription?: string  // 状态变化描述（仅STATE_CHANGE有值）
+}
+
+/**
+ * 账号24小时健康历史
+ * 包含过去24小时内的所有健康度变化记录
+ */
+export interface AccountHealth24HoursVO {
+  accountId: number
+  accountName: string
+  supplierWeb: string
+  currentHealthScore: number
+  currentHealthStatus: 'HEALTHY' | 'WARNING' | 'CRITICAL' | 'CIRCUIT_OPEN'
+  stateChangeCount: number  // 24小时内状态变化次数
+  minHealthScore: number    // 24小时内最低健康度
+  maxHealthScore: number    // 24小时内最高健康度
+  avgHealthScore: number    // 24小时平均健康度
+  events: AccountHealthEventVO[]  // 历史事件列表（按时间倒序）
+  timeRangeDescription: string    // 时间范围描述
+}
+
 /**
  * Account Pool Management API
  * 对应后端 AccountPoolController
@@ -1018,6 +1119,38 @@ export const accountPoolApi = {
    */
   getMonthUsageRate: async (accountId: string): Promise<AccountPoolUsageTimeSeriesVO[]> => {
     return request(`/account-pools/usage-rate/month/${accountId}`)
+  },
+
+  // ==================== 健康度分析 ====================
+
+  /**
+   * 获取号池健康度分析数据
+   * 对应后端接口: GET /account-pools/health-analysis
+   * 返回完整的健康度仪表盘数据（包含汇总和详细列表）
+   */
+  getHealthAnalysis: async (): Promise<AccountPoolHealthDashboardVO> => {
+    return request('/account-pools/health-analysis')
+  },
+
+  /**
+   * 重置指定号池的健康度数据
+   * 对应后端接口: POST /account-pools/health/{accountId}/reset
+   * @param accountId 号池ID
+   */
+  resetHealth: async (accountId: number): Promise<void> => {
+    return request(`/account-pools/health/${accountId}/reset`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 获取号池24小时健康历史
+   * 对应后端接口: GET /account-pools/health/{accountId}/24hours
+   * 返回过去24小时内的健康度变化记录，包括状态变化事件和定时快照
+   * @param accountId 号池ID
+   */
+  getHealth24Hours: async (accountId: number): Promise<AccountHealth24HoursVO> => {
+    return request(`/account-pools/health/${accountId}/24hours`)
   },
 }
 

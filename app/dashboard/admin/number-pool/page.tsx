@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useLanguage } from "@/lib/language-context"
-import { Database, Search, DollarSign, TrendingUp, Activity, BarChart3, X, ArrowLeft, Clock, Plus, Edit, Trash2, Eye } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Database, Search, DollarSign, TrendingUp, Activity, BarChart3, X, ArrowLeft, Clock, Plus, Edit, Trash2, Eye, HeartPulse } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -18,6 +19,7 @@ import { ViewAccountPoolDialog } from "./components/ViewAccountPoolDialog"
 export default function NumberPoolPage() {
   const { t } = useLanguage()
   const { toast } = useToast()
+  const router = useRouter()
 
   // 搜索筛选状态
   const [accountSearch, setAccountSearch] = useState("")
@@ -712,12 +714,24 @@ export default function NumberPoolPage() {
 
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
+      {/* Header Section with Health Analysis Button */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Database className="w-8 h-8 text-green-600 dark:text-green-400" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {t("号池管理", "Number Pool Management")}
-          </h1>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <Database className="w-8 h-8 text-green-600 dark:text-green-400" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("号池管理", "Number Pool Management")}
+            </h1>
+          </div>
+          {/* Health Analysis Button */}
+          <Button
+            onClick={() => router.push('/dashboard/admin/number-pool/health')}
+            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <HeartPulse className="w-4 h-4" />
+            <span className="hidden sm:inline">{t("健康度分析", "Health Analysis")}</span>
+            <span className="sm:hidden">{t("健康度", "Health")}</span>
+          </Button>
         </div>
         <p className="text-gray-600 dark:text-gray-400">
           {t(
