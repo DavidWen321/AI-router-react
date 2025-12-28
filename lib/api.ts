@@ -236,11 +236,16 @@ function onTokenRefreshed(newToken: string) {
 export const authApi = {
   /**
    * Send verification code to email
+   * @param email - 邮箱地址
+   * @param captchaToken - Cloudflare Turnstile验证码token（可选，启用验证码时必填）
    */
-  sendCode: async (email: string): Promise<void> => {
+  sendCode: async (email: string, captchaToken?: string): Promise<void> => {
     await request('/login/sendcode', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({
+        email,
+        captchaTicket: captchaToken,
+      }),
     })
   },
 
@@ -372,6 +377,16 @@ export const membershipApi = {
    */
   getMembershipStatistics: async (): Promise<MembershipStatisticsData> => {
     return request('/membership/business/statistics')
+  },
+
+  /**
+   * Get user's all active plans (current + future)
+   * 对应后端接口: GET /user-membership/all-plans/{userId}
+   * @param userId - 字符串类型的userId,避免JavaScript大整数精度丢失
+   * @returns 套餐列表（当前在前，未来在后，按开始时间排序）
+   */
+  getAllActivePlans: async (userId: string): Promise<UserMembershipData[]> => {
+    return request(`/user-membership/all-plans/${userId}`)
   },
 }
 

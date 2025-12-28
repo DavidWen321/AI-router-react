@@ -236,138 +236,159 @@ export default function NumberPoolHealthPage() {
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => router.back()}
-              className="mr-2"
+              className="mr-1 sm:mr-2 w-8 h-8 sm:w-10 sm:h-10"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            <HeartPulse className="w-8 h-8 text-green-600 dark:text-green-400" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <HeartPulse className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
               {t("号池健康度分析", "Number Pool Health Analysis")}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-10 sm:ml-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className={autoRefresh ? "text-green-600" : ""}
+              className={`${autoRefresh ? "text-green-600" : ""} text-xs sm:text-sm px-2 sm:px-3`}
             >
-              <Clock className="w-4 h-4 mr-2" />
-              {autoRefresh ? t("自动刷新", "Auto Refresh") : t("手动刷新", "Manual Refresh")}
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{autoRefresh ? t("自动刷新", "Auto Refresh") : t("手动刷新", "Manual Refresh")}</span>
+              <span className="sm:hidden">{autoRefresh ? t("自动", "Auto") : t("手动", "Manual")}</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => fetchHealthData()}
               disabled={refreshing}
+              className="text-xs sm:text-sm px-2 sm:px-3"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               {t("刷新", "Refresh")}
             </Button>
           </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-400 ml-[52px]">
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 ml-10 sm:ml-[52px]">
           {t("实时监控所有号池的健康状态和性能指标", "Real-time monitoring of all number pools' health status and performance metrics")}
         </p>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         {/* Total Pools */}
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">
+                <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 mb-0.5 sm:mb-1">
                   {t("总号池数", "Total Pools")}
                 </p>
-                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
+                <p className="text-xl sm:text-3xl font-bold text-blue-900 dark:text-blue-100">
                   {dashboard.totalPools}
                 </p>
               </div>
-              <CircleDot className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+              <CircleDot className="w-8 h-8 sm:w-12 sm:h-12 text-blue-600 dark:text-blue-400" />
             </div>
           </CardContent>
         </Card>
 
         {/* Healthy Pools */}
         <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-700 dark:text-green-300 mb-1">
+                <p className="text-xs sm:text-sm text-green-700 dark:text-green-300 mb-0.5 sm:mb-1">
                   {t("健康号池", "Healthy Pools")}
                 </p>
-                <p className="text-3xl font-bold text-green-900 dark:text-green-100">
+                <p className="text-xl sm:text-3xl font-bold text-green-900 dark:text-green-100">
                   {dashboard.healthyPools}
-                  <span className="text-base ml-2 text-green-600">
+                  <span className="text-xs sm:text-base ml-1 sm:ml-2 text-green-600">
                     ({dashboard.totalPools > 0 ? Math.round(dashboard.healthyPools / dashboard.totalPools * 100) : 0}%)
                   </span>
                 </p>
               </div>
-              <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 text-green-600 dark:text-green-400" />
             </div>
           </CardContent>
         </Card>
 
         {/* Warning Pools */}
         <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-800">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">
+                <p className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300 mb-0.5 sm:mb-1">
                   {t("预警号池", "Warning Pools")}
                 </p>
-                <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100">
+                <p className="text-xl sm:text-3xl font-bold text-yellow-900 dark:text-yellow-100">
                   {dashboard.warningPools}
-                  <span className="text-base ml-2 text-yellow-600">
+                  <span className="text-xs sm:text-base ml-1 sm:ml-2 text-yellow-600">
                     ({dashboard.totalPools > 0 ? Math.round(dashboard.warningPools / dashboard.totalPools * 100) : 0}%)
                   </span>
                 </p>
               </div>
-              <AlertTriangle className="w-12 h-12 text-yellow-600 dark:text-yellow-400" />
+              <AlertTriangle className="w-8 h-8 sm:w-12 sm:h-12 text-yellow-600 dark:text-yellow-400" />
             </div>
           </CardContent>
         </Card>
 
         {/* Circuit Breaker Pools */}
         <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-800">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-red-700 dark:text-red-300 mb-1">
+                <p className="text-xs sm:text-sm text-red-700 dark:text-red-300 mb-0.5 sm:mb-1">
                   {t("熔断号池", "Circuit Breaker")}
                 </p>
-                <p className="text-3xl font-bold text-red-900 dark:text-red-100">
+                <p className="text-xl sm:text-3xl font-bold text-red-900 dark:text-red-100">
                   {dashboard.circuitBreakerPools}
-                  <span className="text-base ml-2 text-red-600">
+                  <span className="text-xs sm:text-base ml-1 sm:ml-2 text-red-600">
                     ({dashboard.totalPools > 0 ? Math.round(dashboard.circuitBreakerPools / dashboard.totalPools * 100) : 0}%)
                   </span>
                 </p>
               </div>
-              <XCircle className="w-12 h-12 text-red-600 dark:text-red-400" />
+              <XCircle className="w-8 h-8 sm:w-12 sm:h-12 text-red-600 dark:text-red-400" />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         {/* Health Distribution Pie Chart */}
         <Card>
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-green-600" />
+          <CardContent className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               {t("健康度分布", "Health Distribution")}
             </h3>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={220} className="sm:hidden">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={60}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={280} className="hidden sm:block">
               <PieChart>
                 <Pie
                   data={pieData}
@@ -391,71 +412,71 @@ export default function NumberPoolHealthPage() {
 
         {/* Average Metrics */}
         <Card>
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-green-600" />
+          <CardContent className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               {t("平均指标", "Average Metrics")}
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {/* Average Health Score */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     {t("平均健康度", "Avg Health Score")}
                   </span>
-                  <span className="text-lg font-bold">
+                  <span className="text-base sm:text-lg font-bold">
                     {dashboard.avgHealthScore.toFixed(1)}
                   </span>
                 </div>
                 <Progress
                   value={dashboard.avgHealthScore}
-                  className="h-2"
+                  className="h-1.5 sm:h-2"
                 />
               </div>
 
               {/* Average Success Rate */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     {t("平均成功率", "Avg Success Rate")}
                   </span>
-                  <span className="text-lg font-bold text-green-600">
+                  <span className="text-base sm:text-lg font-bold text-green-600">
                     {dashboard.avgSuccessRate.toFixed(2)}%
                   </span>
                 </div>
                 <Progress
                   value={dashboard.avgSuccessRate}
-                  className="h-2"
+                  className="h-1.5 sm:h-2"
                 />
               </div>
 
               {/* Average Response Time */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     {t("平均响应时间", "Avg Response Time")}
                   </span>
-                  <span className="text-lg font-bold text-blue-600">
+                  <span className="text-base sm:text-lg font-bold text-blue-600">
                     {dashboard.avgResponseTimeMs.toFixed(0)} ms
                   </span>
                 </div>
               </div>
 
               {/* Total Requests */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     {t("总请求数", "Total Requests")}
                   </span>
-                  <span className="text-lg font-bold">
+                  <span className="text-base sm:text-lg font-bold">
                     {dashboard.totalRequests.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm text-green-600">
+                <div className="flex items-center justify-between mt-1.5 sm:mt-2 text-xs sm:text-sm">
+                  <span className="text-green-600">
                     {t("成功", "Success")}: {dashboard.totalSuccessCount.toLocaleString()}
                   </span>
-                  <span className="text-sm text-red-600">
+                  <span className="text-red-600">
                     {t("失败", "Failed")}: {dashboard.totalFailureCount.toLocaleString()}
                   </span>
                 </div>
@@ -467,17 +488,17 @@ export default function NumberPoolHealthPage() {
 
       {/* Detailed Table */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               {t("详细数据", "Detailed Data")}
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="text-xs sm:text-sm text-gray-500 ml-1 sm:ml-2">
                 ({filteredPools.length} {t("个号池", "pools")})
               </span>
             </h3>
             <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
@@ -491,7 +512,94 @@ export default function NumberPoolHealthPage() {
             </Select>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {filteredPools.length === 0 ? (
+              <div className="text-center py-12">
+                <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t("暂无数据", "No data available")}
+                </p>
+              </div>
+            ) : (
+              filteredPools.map((pool) => (
+                <div key={pool.accountId} className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+                  {/* Header: Status + Pool Name */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {getHealthBadge(pool)}
+                    </div>
+                    <span className="text-xs text-gray-500">ID: {pool.accountId}</span>
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-3">
+                    {pool.account}
+                  </div>
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-2 gap-3 text-xs mb-3">
+                    <div>
+                      <span className="text-gray-500 block">{t("健康度", "Health")}</span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Progress value={pool.healthScore} className="h-1.5 flex-1" />
+                        <span className="font-medium">{pool.healthScore}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block">{t("成功率", "Success")}</span>
+                      <p className={`font-medium mt-1 ${pool.successRate >= 95 ? "text-green-600" : pool.successRate >= 80 ? "text-yellow-600" : "text-red-600"}`}>
+                        {pool.successRate.toFixed(2)}%
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block">{t("响应时间", "Latency")}</span>
+                      <p className={`font-medium mt-1 ${pool.avgResponseTimeMs < 1000 ? "text-green-600" : pool.avgResponseTimeMs < 3000 ? "text-yellow-600" : "text-red-600"}`}>
+                        {pool.avgResponseTimeMs.toFixed(0)} ms
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block">{t("请求数", "Requests")}</span>
+                      <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
+                        {pool.totalRequests.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Footer: Consecutive Failures + Actions */}
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="text-xs">
+                      <span className="text-gray-500">{t("连续失败", "Failures")}:</span>
+                      {pool.consecutiveFailures > 0 ? (
+                        <Badge variant="destructive" className="ml-1.5 text-[10px]">
+                          {pool.consecutiveFailures}
+                        </Badge>
+                      ) : (
+                        <span className="ml-1.5 text-gray-500">0</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewHistory(pool.accountId, pool.account)}
+                        className="text-blue-600 hover:text-blue-700 px-2 h-7"
+                      >
+                        <History className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleResetHealth(pool.accountId, pool.account)}
+                        className="text-orange-600 hover:text-orange-700 px-2 h-7"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -626,7 +734,7 @@ export default function NumberPoolHealthPage() {
       </Card>
 
       {/* Footer Info */}
-      <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
+      <div className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center">
         {t("数据生成时间", "Generated at")}: {new Date(dashboard.generatedAt).toLocaleString()}
         {autoRefresh && (
           <>

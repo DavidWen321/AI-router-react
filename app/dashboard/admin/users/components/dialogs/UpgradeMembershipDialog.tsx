@@ -130,35 +130,35 @@ export function UpgradeMembershipDialog({ open, onOpenChange, user, onSuccess }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900/20 dark:via-amber-900/20 dark:to-yellow-900/20 -mx-6 -mt-6 px-6 pt-6 pb-4 rounded-t-xl">
-          <DialogTitle className="text-xl font-semibold">{t("会员升级", "Upgrade Membership")}</DialogTitle>
-          <DialogDescription>{t("升级用户的会员套餐", "Upgrade user's membership plan")}</DialogDescription>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900/20 dark:via-amber-900/20 dark:to-yellow-900/20 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-4 rounded-t-xl sm:rounded-t-2xl">
+          <DialogTitle className="text-lg sm:text-xl font-semibold">{t("会员升级", "Upgrade Membership")}</DialogTitle>
+          <DialogDescription className="text-sm">{t("升级用户的会员套餐", "Upgrade user's membership plan")}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-3 sm:space-y-4 py-2 sm:py-4">
           {/* 用户邮箱 */}
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("用户邮箱", "User Email")}
             </label>
-            <div className="mt-1 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+            <div className="mt-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-50 dark:bg-gray-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 truncate">
               {user?.email}
             </div>
           </div>
 
           {/* 当前会员信息 */}
           {currentMembership && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-              <div className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
+            <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg sm:rounded-xl border border-blue-200 dark:border-blue-800">
+              <div className="text-xs sm:text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
                 {t("当前会员", "Current Membership")}
               </div>
               <div className="text-gray-900 dark:text-gray-100">
-                <div className="font-semibold">{currentMembership.levelName}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <div className="font-semibold text-sm sm:text-base">{currentMembership.levelName}</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                   ${currentMembership.dailyUsage}/天
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">
                   {currentMembership.startTime.slice(0, 10)} ~ {currentMembership.expireTime.slice(0, 10)}
                 </div>
               </div>
@@ -167,33 +167,27 @@ export function UpgradeMembershipDialog({ open, onOpenChange, user, onSuccess }:
 
           {/* 升级预览 */}
           {currentMembership && selectedPlan && (
-            <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
-              <div className="text-sm font-medium text-green-900 dark:text-green-300 mb-2">
+            <div className="p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg sm:rounded-xl border border-green-200 dark:border-green-800">
+              <div className="text-xs sm:text-sm font-medium text-green-900 dark:text-green-300 mb-2">
                 {t("升级预览", "Upgrade Preview")}
               </div>
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
                 <span className="text-gray-600 dark:text-gray-400">{currentMembership.levelName}</span>
-                <ArrowRight className="w-4 h-4 text-green-600" />
+                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                 <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedPlan.levelName}</span>
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                {t(
-                  `旧会员将截止到今天，新会员从今天开始至 ${endDate}`,
-                  `Old membership ends today, new starts today until ${endDate}`
-                )}
               </div>
             </div>
           )}
 
           {/* 新会员套餐选择 */}
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("升级至套餐", "Upgrade to")}
             </label>
             <select
               value={selectedMembership || ""}
               onChange={(e) => setSelectedMembership(Number(e.target.value))}
-              className="mt-1 w-full px-4 py-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+              className="mt-1 w-full px-3 sm:px-4 py-2 sm:py-2.5 text-sm bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
             >
               {memberships
                 .filter((m) => m.id !== currentMembership?.membershipId)
@@ -207,7 +201,7 @@ export function UpgradeMembershipDialog({ open, onOpenChange, user, onSuccess }:
 
           {/* 结束时间 */}
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("新会员结束时间", "New End Date")}
             </label>
             <div className="relative mt-1">
@@ -216,30 +210,28 @@ export function UpgradeMembershipDialog({ open, onOpenChange, user, onSuccess }:
                 value={endDate}
                 min={today}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-2.5 pl-10 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 pl-9 sm:pl-10 text-sm bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
               />
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {t("默认保持原结束时间，可修改", "Default: keeps original end date, editable")}
-            </p>
           </div>
         </div>
 
-        <div className="flex gap-3 bg-gray-50 dark:bg-gray-900 -mx-6 -mb-6 px-6 py-4 rounded-b-xl">
+        {/* 底部按钮 */}
+        <div className="flex gap-2 sm:gap-3 bg-gray-50 dark:bg-gray-900 -mx-4 sm:-mx-6 -mb-4 sm:-mb-6 px-4 sm:px-6 py-3 sm:py-4 rounded-b-xl sm:rounded-b-2xl sticky bottom-0 z-10">
           <button
             onClick={() => onOpenChange(false)}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 disabled:opacity-50"
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 disabled:opacity-50"
           >
             {t("取消", "Cancel")}
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl shadow-sm hover:shadow-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-sm bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? t("升级中...", "Upgrading...") : t("确认升级", "Confirm")}
+            {loading ? t("升级中...", "Upgrading...") : t("确认", "Confirm")}
           </button>
         </div>
       </DialogContent>

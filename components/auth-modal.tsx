@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/language-context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { authApi, userApi, ApiError } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { Turnstile } from "@/components/turnstile"
 
 interface AuthModalProps {
   open: boolean
@@ -23,6 +24,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [code, setCode] = useState(["", "", "", "", "", ""])
   const [countdown, setCountdown] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string>("")
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       setCode(["", "", "", "", "", ""])
       setCountdown(0)
       setIsLoading(false)
+      setCaptchaToken("")
     }
   }, [open])
 
@@ -48,7 +51,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
     setIsLoading(true)
     try {
-      await authApi.sendCode(email)
+      await authApi.sendCode(email, captchaToken)
       setStep("code")
       setCountdown(60)
       toast({
@@ -56,6 +59,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
         description: t("请查收您的邮箱", "Please check your email"),
       })
     } catch (error) {
+      // 验证失败时重置captcha token，需要用户重新验证
+      setCaptchaToken("")
       if (error instanceof ApiError) {
         toast({
           title: t("发送失败", "Failed to send"),
@@ -153,7 +158,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
     setIsLoading(true)
     try {
-      await authApi.sendCode(email)
+      await authApi.sendCode(email, captchaToken)
       setCountdown(60)
       toast({
         title: t("验证码已重新发送", "Verification code resent"),
@@ -180,39 +185,55 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] mx-auto" animation="fade">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">{t("登录", "Login")}</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-center">{t("登录", "Login")}</DialogTitle>
         </DialogHeader>
 
         {step === "email" ? (
-          <form onSubmit={handleSendCode} className="space-y-6 pt-4">
-            <p className="text-center text-gray-600 text-sm">
+          <form onSubmit={handleSendCode} className="space-y-4 sm:space-y-6 pt-2 sm:pt-4">
+            <p className="text-center text-gray-600 text-xs sm:text-sm px-2">
               {t("我们将向您的邮箱发送验证码进行登录", "We will send a verification code to your email for login")}
             </p>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">{t("邮箱地址", "Email Address")}</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-700">{t("邮箱地址", "Email Address")}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("请输入您的邮箱地址", "Please enter your email address")}
-                className="w-full px-4 py-3 text-base text-gray-900 bg-white border-2 border-gray-300 rounded-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-gray-900 bg-white border-2 border-gray-300 rounded-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 required
                 disabled={isLoading}
               />
             </div>
 
+            {/* Cloudflare Turnstile 人机验证 */}
+            <Turnstile
+              onVerify={(token) => setCaptchaToken(token)}
+              onError={(error) => {
+                toast({
+                  title: t("验证失败", "Verification failed"),
+                  description: error,
+                  variant: "destructive",
+                })
+              }}
+              onExpire={() => setCaptchaToken("")}
+              theme="auto"
+              size="normal"
+              className="mt-2"
+            />
+
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-cyan-600 text-white font-medium rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 sm:py-3 bg-cyan-600 text-white text-sm sm:text-base font-medium rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? t("发送中...", "Sending...") : t("发送验证码", "Send Verification Code")}
             </button>
 
-            <p className="text-center text-xs text-gray-500">
+            <p className="text-center text-[10px] sm:text-xs text-gray-500 px-2">
               {t(
                 "登录即表示您同意我们的服务条款和隐私政策",
                 "By logging in, you agree to our Terms of Service and Privacy Policy",
@@ -220,22 +241,22 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             </p>
           </form>
         ) : (
-          <div className="space-y-6 pt-4">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-gray-600">
-                {t("已向", "Verification code sent to")} <span className="font-medium text-gray-900">{email}</span>{" "}
+          <div className="space-y-4 sm:space-y-6 pt-2 sm:pt-4">
+            <div className="text-center space-y-1 sm:space-y-2">
+              <p className="text-xs sm:text-sm text-gray-600 px-2">
+                {t("已向", "Verification code sent to")} <span className="font-medium text-gray-900 break-all">{email}</span>{" "}
                 {t("发送验证码", "")}
               </p>
               {countdown > 0 && (
-                <p className="text-sm text-cyan-600">
+                <p className="text-xs sm:text-sm text-cyan-600">
                   {t("验证码有效期", "Code valid for")} {countdown} {t("秒", "seconds")}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">{t("验证码", "Verification Code")}</label>
-              <div className="flex gap-2 justify-center">
+              <label className="text-xs sm:text-sm font-medium text-gray-700">{t("验证码", "Verification Code")}</label>
+              <div className="flex gap-1.5 sm:gap-2 justify-center">
                 {code.map((digit, index) => (
                   <input
                     key={index}
@@ -247,7 +268,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     onChange={(e) => handleCodeChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     disabled={isLoading}
-                    className="w-12 h-12 text-center text-2xl font-bold text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all caret-cyan-600 disabled:opacity-50"
+                    className="w-9 h-11 sm:w-12 sm:h-12 text-center text-xl sm:text-2xl font-bold text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all caret-cyan-600 disabled:opacity-50"
                     style={{ color: "#111827" }}
                   />
                 ))}
@@ -257,12 +278,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             <button
               onClick={handleVerify}
               disabled={code.some((d) => !d) || isLoading}
-              className="w-full py-3 bg-cyan-600 text-white font-medium rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 sm:py-3 bg-cyan-600 text-white text-sm sm:text-base font-medium rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? t("验证中...", "Verifying...") : t("验证并登录", "Verify and Login")}
             </button>
 
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm">
               <button
                 onClick={() => setStep("email")}
                 className="text-gray-600 hover:text-gray-900 transition-colors"

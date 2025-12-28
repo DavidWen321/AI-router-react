@@ -15,7 +15,18 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git branch -M main)",
-      "Bash(git push -u origin main)"
+      "Bash(git push -u origin main)",
+      "Bash(tree:*)",
+      "Bash(powershell -Command \"[System.IO.File]::ReadAllBytes(''C:\\Users\\14297\\Desktop\\新建 文本文档.txt'')[0..10] -join '',''\")",
+      "Bash(powershell -Command \"[System.Text.Encoding]::GetEncoding(''''GB2312'''').GetString([System.IO.File]::ReadAllBytes(''''C:\\Users\\14297\\Desktop\\新建 文本文档.txt''''))\")",
+      "Bash(powershell -Command \"Get-Content ''''C:\\Users\\14297\\Desktop\\新建 文本文档.txt'''' -Raw -Encoding Unicode\")",
+      "Bash(powershell -Command \"$bytes = [System.IO.File]::ReadAllBytes(''C:\\Users\\14297\\Desktop\\新建 文本文档.txt''); $hex = ($bytes[0..30] | ForEach-Object { ''{0:X2}'' -f $_}) -join '' ''; Write-Host $hex\")",
+      "Bash(certutil -encodehex \"C:\\Users\\14297\\Desktop\\新建 文本文档.txt\" con 4)",
+      "Bash(copy \"C:\\Users\\14297\\Desktop\\新建 文本文档.txt\" \"C:\\Users\\14297\\Desktop\\temp_doc.txt\")",
+      "Bash(cmd /c copy \"C:\\Users\\14297\\Desktop\\新建 文本文档.txt\" \"C:\\Users\\14297\\Desktop\\temp_doc.txt\")",
+      "Bash(powershell -Command:*)",
+      "Bash(python:*)",
+      "Bash(del \"C:\\Users\\14297\\Desktop\\check\\AIClaude\\src\\main\\java\\com\\export\\aiclaude\\common\\captcha\\TencentCaptchaService.java\")"
     ],
     "deny": [],
     "ask": []

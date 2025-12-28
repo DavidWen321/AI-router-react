@@ -425,23 +425,23 @@ export default function NumberPoolPage() {
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-2">
         {/* Header with back button */}
         <div className="mb-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-600 dark:text-cyan-400" />
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {t("使用率统计", "Usage Rate Statistics")} - {t("号池", "Pool")} #{selectedPoolId}
               </h1>
             </div>
             <Button
               variant="outline"
               onClick={handleBackToTable}
-              className="flex items-center gap-2 bg-white dark:bg-gray-800 border-2 border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:border-cyan-400 dark:hover:border-cyan-600 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm hover:shadow-md font-medium"
+              className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border-2 border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:border-cyan-400 dark:hover:border-cyan-600 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm hover:shadow-md font-medium w-full sm:w-auto"
             >
               <ArrowLeft className="w-4 h-4" />
               {t("返回号池列表", "Back to Pool List")}
             </Button>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {selectedPool?.account} • {t("每日额度", "Daily Quota")}: ${selectedPool?.accountDailyUsage.toFixed(2) || "0.00"}
           </p>
         </div>
@@ -714,26 +714,17 @@ export default function NumberPoolPage() {
 
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
-      {/* Header Section with Health Analysis Button */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <Database className="w-8 h-8 text-green-600 dark:text-green-400" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+      {/* Header Section */}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Database className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
               {t("号池管理", "Number Pool Management")}
             </h1>
           </div>
-          {/* Health Analysis Button */}
-          <Button
-            onClick={() => router.push('/dashboard/admin/number-pool/health')}
-            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            <HeartPulse className="w-4 h-4" />
-            <span className="hidden sm:inline">{t("健康度分析", "Health Analysis")}</span>
-            <span className="sm:hidden">{t("健康度", "Health")}</span>
-          </Button>
         </div>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           {t(
             "管理所有号池的配置、额度和成本信息",
             "Manage all number pool configurations, quotas, and cost information",
@@ -855,8 +846,15 @@ export default function NumberPoolPage() {
         </div>
       </div>
 
-      {/* 创建号池按钮 */}
-      <div className="flex justify-end mb-4">
+      {/* 操作按钮 */}
+      <div className="flex justify-end mb-4 gap-3">
+        <Button
+          onClick={() => router.push('/dashboard/admin/number-pool/health')}
+          className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all"
+        >
+          <HeartPulse className="w-4 h-4" />
+          {t("健康度分析", "Health Analysis")}
+        </Button>
         <Button
           onClick={() => setIsCreateDialogOpen(true)}
           className="bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2"
@@ -867,174 +865,306 @@ export default function NumberPoolPage() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-shadow hover:shadow-md">
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-gray-500">{t("加载中...", "Loading...")}</div>
-            </div>
-          ) : filteredData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-              <Database className="w-12 h-12 mb-4 text-gray-300" />
-              <p>{t("暂无号池数据", "No account pool data available")}</p>
-            </div>
-          ) : (
-            <table className="w-full min-w-max">
-              <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                <tr>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("号池ID", "Pool ID")}
-                  </th>
-                  <th className="hidden xl:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("供应商网址", "Provider URL")}
-                  </th>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("账号", "Account")}
-                  </th>
-                  <th className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("号池密钥", "Pool Key")}
-                  </th>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("每日额度", "Daily Quota")}
-                  </th>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("每日剩余", "Daily Remaining")}
-                  </th>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("使用率", "Usage Rate")}
-                  </th>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("月成本", "Monthly Cost")}
-                  </th>
-                  <th className="hidden md:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("开始时间", "Start Time")}
-                  </th>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("过期时间", "Expiration Time")}
-                  </th>
-                  <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                    {t("操作", "Actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-gray-500">{t("加载中...", "Loading...")}</div>
+          </div>
+        ) : filteredData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+            <Database className="w-12 h-12 mb-4 text-gray-300" />
+            <p>{t("暂无号池数据", "No account pool data available")}</p>
+          </div>
+        ) : (
+          <>
+            {/* 移动端卡片视图 */}
+            <div className="lg:hidden">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredData.map((pool) => {
                   const usageRate = calculateUsageRate(pool.accountDailyUsage, pool.accountDailyRemainingUsage)
-                return (
-                  <tr
-                    key={pool.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all hover:shadow-sm"
-                  >
-                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                      {pool.id || "-"}
-                    </td>
-                    <td className="hidden xl:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm text-cyan-600 dark:text-cyan-400 hover:underline whitespace-nowrap max-w-[200px] truncate">
-                      <a href={pool.supplierWeb} target="_blank" rel="noopener noreferrer" title={pool.supplierWeb}>
-                        {pool.supplierWeb}
-                      </a>
-                    </td>
-                    <td
-                      className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap max-w-[150px] truncate"
-                      title={pool.account}
+                  const isExpired = new Date(pool.expireTime) < new Date()
+
+                  return (
+                    <div
+                      key={pool.id}
+                      className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                     >
-                      {pool.account || "-"}
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                      {pool.accountPoolKey ? `${pool.accountPoolKey.substring(0, 15)}...` : "-"}
-                    </td>
-                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 dark:text-white whitespace-nowrap">
-                      ${pool.accountDailyUsage.toFixed(2)}
-                    </td>
-                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
-                      <span
-                        className={cn(
-                          "font-medium",
-                          pool.accountDailyRemainingUsage > pool.accountDailyUsage * 0.5
-                            ? "text-green-600 dark:text-green-400"
-                            : pool.accountDailyRemainingUsage > pool.accountDailyUsage * 0.2
-                              ? "text-orange-600 dark:text-orange-400"
-                              : "text-red-600 dark:text-red-400",
-                        )}
-                      >
-                        ${pool.accountDailyRemainingUsage.toFixed(2)}
-                      </span>
-                    </td>
-                    <td
-                      className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap cursor-pointer group"
-                      onClick={() => {
-                        if (pool.id) {
-                          setSelectedPoolId(pool.id)
-                        }
-                      }}
-                    >
-                      <div className="flex items-center gap-2 group-hover:opacity-80 transition-opacity">
-                        <div className="flex-1 min-w-[80px]">
-                          <Progress
-                            value={usageRate}
-                            className={cn(
-                              "h-2",
-                              usageRate < 50
-                                ? "[&>div]:bg-green-500"
-                                : usageRate < 80
-                                  ? "[&>div]:bg-orange-500"
-                                  : "[&>div]:bg-red-500",
-                            )}
-                          />
+                      {/* 顶部：账号 + 过期状态 */}
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <Database className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {pool.account || "-"}
+                          </span>
                         </div>
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 min-w-[45px] text-right">
-                          {usageRate.toFixed(1)}%
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded flex-shrink-0 ${
+                          isExpired
+                            ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                            : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                        }`}>
+                          {isExpired ? t("已过期", "Expired") : t("活跃", "Active")}
                         </span>
-                        <BarChart3 className="w-4 h-4 text-gray-400 group-hover:text-cyan-500 transition-colors" />
                       </div>
-                    </td>
-                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                      ${pool.accountCost.toFixed(2)}
-                    </td>
-                    <td className="hidden md:table-cell px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                      {new Date(pool.startTime).toLocaleDateString()}
-                    </td>
-                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
-                      <span
-                        className={cn(
-                          new Date(pool.expireTime) < new Date()
-                            ? "text-red-600 dark:text-red-400 font-medium"
-                            : "text-gray-600 dark:text-gray-400",
-                        )}
+
+                      {/* ID 信息 */}
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                        ID: {pool.id} • {t("过期", "Expires")}: {new Date(pool.expireTime).toLocaleDateString()}
+                      </div>
+
+                      {/* 额度信息网格 */}
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("每日额度", "Daily")}</span>
+                          <span className="text-xs font-semibold text-gray-900 dark:text-white">
+                            ${pool.accountDailyUsage.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("剩余", "Left")}</span>
+                          <span className={cn(
+                            "text-xs font-semibold",
+                            pool.accountDailyRemainingUsage > pool.accountDailyUsage * 0.5
+                              ? "text-green-600 dark:text-green-400"
+                              : pool.accountDailyRemainingUsage > pool.accountDailyUsage * 0.2
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-red-600 dark:text-red-400"
+                          )}>
+                            ${pool.accountDailyRemainingUsage.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("月成本", "Monthly")}</span>
+                          <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+                            ${pool.accountCost.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 使用率进度条 */}
+                      <div
+                        className="mb-3 cursor-pointer"
+                        onClick={() => {
+                          if (pool.id) {
+                            setSelectedPoolId(pool.id)
+                          }
+                        }}
                       >
-                        {new Date(pool.expireTime).toLocaleDateString()}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleViewClick(pool)}
-                          className="p-1.5 text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-colors"
-                          title={t("查看", "View")}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEditClick(pool)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                          title={t("编辑", "Edit")}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(pool)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                          title={t("删除", "Delete")}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400">{t("使用率", "Usage")}</span>
+                          <div className="flex items-center gap-1">
+                            <span className={cn(
+                              "text-xs font-semibold",
+                              usageRate < 50 ? "text-green-600" : usageRate < 80 ? "text-orange-600" : "text-red-600"
+                            )}>
+                              {usageRate.toFixed(1)}%
+                            </span>
+                            <BarChart3 className="w-3 h-3 text-cyan-500" />
+                          </div>
+                        </div>
+                        <Progress
+                          value={usageRate}
+                          className={cn(
+                            "h-1.5",
+                            usageRate < 50
+                              ? "[&>div]:bg-green-500"
+                              : usageRate < 80
+                                ? "[&>div]:bg-orange-500"
+                                : "[&>div]:bg-red-500"
+                          )}
+                        />
                       </div>
-                    </td>
+
+                      {/* 底部：操作按钮 */}
+                      <div className="flex items-center justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleViewClick(pool)}
+                            className="p-1.5 text-gray-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
+                            title={t("查看", "View")}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEditClick(pool)}
+                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                            title={t("编辑", "Edit")}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(pool)}
+                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title={t("删除", "Delete")}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* 桌面端表格视图 */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full min-w-max">
+                <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                  <tr>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("号池ID", "Pool ID")}
+                    </th>
+                    <th className="hidden xl:table-cell px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("供应商网址", "Provider URL")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("账号", "Account")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("号池密钥", "Pool Key")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("每日额度", "Daily Quota")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("每日剩余", "Daily Remaining")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("使用率", "Usage Rate")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("月成本", "Monthly Cost")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("开始时间", "Start Time")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("过期时间", "Expiration Time")}
+                    </th>
+                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      {t("操作", "Actions")}
+                    </th>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredData.map((pool) => {
+                    const usageRate = calculateUsageRate(pool.accountDailyUsage, pool.accountDailyRemainingUsage)
+                  return (
+                    <tr
+                      key={pool.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all hover:shadow-sm"
+                    >
+                      <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                        {pool.id || "-"}
+                      </td>
+                      <td className="hidden xl:table-cell px-4 lg:px-6 py-4 text-sm text-cyan-600 dark:text-cyan-400 hover:underline whitespace-nowrap max-w-[200px] truncate">
+                        <a href={pool.supplierWeb} target="_blank" rel="noopener noreferrer" title={pool.supplierWeb}>
+                          {pool.supplierWeb}
+                        </a>
+                      </td>
+                      <td
+                        className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap max-w-[150px] truncate"
+                        title={pool.account}
+                      >
+                        {pool.account || "-"}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        {pool.accountPoolKey ? `${pool.accountPoolKey.substring(0, 15)}...` : "-"}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        ${pool.accountDailyUsage.toFixed(2)}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap">
+                        <span
+                          className={cn(
+                            "font-medium",
+                            pool.accountDailyRemainingUsage > pool.accountDailyUsage * 0.5
+                              ? "text-green-600 dark:text-green-400"
+                              : pool.accountDailyRemainingUsage > pool.accountDailyUsage * 0.2
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-red-600 dark:text-red-400",
+                          )}
+                        >
+                          ${pool.accountDailyRemainingUsage.toFixed(2)}
+                        </span>
+                      </td>
+                      <td
+                        className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap cursor-pointer group"
+                        onClick={() => {
+                          if (pool.id) {
+                            setSelectedPoolId(pool.id)
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-2 group-hover:opacity-80 transition-opacity">
+                          <div className="flex-1 min-w-[80px]">
+                            <Progress
+                              value={usageRate}
+                              className={cn(
+                                "h-2",
+                                usageRate < 50
+                                  ? "[&>div]:bg-green-500"
+                                  : usageRate < 80
+                                    ? "[&>div]:bg-orange-500"
+                                    : "[&>div]:bg-red-500",
+                              )}
+                            />
+                          </div>
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 min-w-[45px] text-right">
+                            {usageRate.toFixed(1)}%
+                          </span>
+                          <BarChart3 className="w-4 h-4 text-gray-400 group-hover:text-cyan-500 transition-colors" />
+                        </div>
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                        ${pool.accountCost.toFixed(2)}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        {new Date(pool.startTime).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap">
+                        <span
+                          className={cn(
+                            new Date(pool.expireTime) < new Date()
+                              ? "text-red-600 dark:text-red-400 font-medium"
+                              : "text-gray-600 dark:text-gray-400",
+                          )}
+                        >
+                          {new Date(pool.expireTime).toLocaleDateString()}
+                        </span>
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewClick(pool)}
+                            className="p-1.5 text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-colors"
+                            title={t("查看", "View")}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEditClick(pool)}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                            title={t("编辑", "Edit")}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(pool)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                            title={t("删除", "Delete")}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
         )}
-        </div>
       </div>
 
       {/* 对话框组件 */}

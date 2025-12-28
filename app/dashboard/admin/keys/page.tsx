@@ -139,12 +139,12 @@ export default function KeysPage() {
 
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Key className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("密钥管理", "Key Management")}</h1>
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2">
+          <Key className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 dark:text-purple-400" />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t("密钥管理", "Key Management")}</h1>
         </div>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           {t("管理所有API密钥和访问权限", "Manage all API keys and access permissions")}
         </p>
       </div>
@@ -169,29 +169,117 @@ export default function KeysPage() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm transition-shadow hover:shadow-md">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        {/* 移动端卡片视图 */}
+        <div className="lg:hidden">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {keys.length === 0 ? (
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                {t("暂无密钥数据", "No key data")}
+              </div>
+            ) : (
+              keys.map((key) => (
+                <div
+                  key={key.id}
+                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                >
+                  {/* 顶部：密钥名称 + 状态 */}
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Key className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {translateKeyName(key.name)}
+                      </span>
+                    </div>
+                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded flex-shrink-0 ${getStatusColor(key.status)}`}>
+                      {translateStatus(key.status)}
+                    </span>
+                  </div>
+
+                  {/* 密钥显示 */}
+                  <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">{t("密钥", "Key")}</span>
+                    <code className="text-xs font-mono text-gray-700 dark:text-gray-300 break-all">{key.key}</code>
+                  </div>
+
+                  {/* 信息网格 */}
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block">
+                        <Calendar className="w-3 h-3 inline mr-1" />
+                        {t("创建时间", "Created")}
+                      </span>
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">{key.createdAt}</span>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block">
+                        <Activity className="w-3 h-3 inline mr-1" />
+                        {t("调用次数", "Calls")}
+                      </span>
+                      <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
+                        {key.totalCalls.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 底部：最后使用时间 + 操作按钮 */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <span className="text-[10px] text-gray-400">
+                      {t("最后使用", "Last used")}: {key.lastUsed}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleViewKey(key)}
+                        className="p-1.5 text-gray-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
+                        title={t("查看详情", "View Details")}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleCopyKey(key)}
+                        className="p-1.5 text-gray-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
+                        title={t("复制密钥", "Copy Key")}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteKey(key)}
+                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        title={t("删除密钥", "Delete Key")}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* 桌面端表格视图 */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full min-w-max">
             <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   {t("密钥名称", "Key Name")}
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   {t("密钥", "Key")}
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   {t("创建时间", "Created At")}
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   {t("最后使用", "Last Used")}
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   {t("状态", "Status")}
                 </th>
-                <th className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                <th className="px-4 lg:px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   {t("调用次数", "Total Calls")}
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                <th className="px-4 lg:px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   {t("操作", "Actions")}
                 </th>
               </tr>
@@ -202,21 +290,21 @@ export default function KeysPage() {
                   key={key.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                     {translateKeyName(key.name)}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 font-mono">{key.key}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{key.createdAt}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{key.lastUsed}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 font-mono whitespace-nowrap">{key.key}</td>
+                  <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{key.createdAt}</td>
+                  <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{key.lastUsed}</td>
+                  <td className="px-4 lg:px-6 py-4">
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusColor(key.status)}`}>
                       {translateStatus(key.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">
+                  <td className="px-4 lg:px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100 whitespace-nowrap">
                     {key.totalCalls.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 lg:px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={(e) => {

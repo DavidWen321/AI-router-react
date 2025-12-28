@@ -185,20 +185,20 @@ export default function PackagesPage() {
 
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <Package className="w-8 h-8 text-indigo-500 dark:text-indigo-300" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Package className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500 dark:text-indigo-300" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
               {t("套餐管理", "Package Management")}
             </h1>
           </div>
-          <Button onClick={handleAddPackage} className="bg-indigo-500 hover:bg-indigo-600 text-white">
+          <Button onClick={handleAddPackage} className="bg-indigo-500 hover:bg-indigo-600 text-white w-full sm:w-auto justify-center">
             <Plus className="w-4 h-4 mr-2" />
             {t("新增套餐", "Add Package")}
           </Button>
         </div>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           {t("管理所有套餐类型和定价配置", "Manage all package types and pricing configurations")}
         </p>
       </div>
@@ -247,7 +247,7 @@ export default function PackagesPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
                   {t("会员等级名称", "Membership Name")}
@@ -270,7 +270,7 @@ export default function PackagesPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
                   {t("价格 (¥)", "Price (¥)")}
@@ -356,7 +356,7 @@ export default function PackagesPage() {
 
           {packageToEdit && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
                     {t("会员等级名称", "Membership Name")}
@@ -377,7 +377,7 @@ export default function PackagesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
                     {t("价格 (¥)", "Price (¥)")}

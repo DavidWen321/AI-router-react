@@ -381,42 +381,42 @@ export default function UsageStatsPage() {
       <DashboardHeader userEmail={userEmail} onLogout={handleLogout} />
 
       {/* Main Content */}
-      <main className="max-w-[1800px] mx-auto px-12 py-8 pt-24 page-transition">
+      <main className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 pt-[88px] sm:pt-[96px] pb-6 sm:pb-8 page-transition">
         {/* Page Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-8 h-8 text-cyan-600" />
-              <h1 className="text-3xl font-bold">{t("使用统计", "Usage Statistics")}</h1>
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-600" />
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">{t("使用统计", "Usage Statistics")}</h1>
             </div>
-            <p className="text-gray-600">{t("查看每日API费用统计", "View daily API cost statistics")}</p>
+            <p className="text-sm sm:text-base text-gray-600">{t("查看每日API费用统计", "View daily API cost statistics")}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <RefreshCw className="w-5 h-5 text-gray-600" />
-              <span className="text-sm text-gray-600">{t("刷新", "Refresh")}</span>
+              <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              <span className="text-xs sm:text-sm text-gray-600">{t("刷新", "Refresh")}</span>
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Calendar className="w-5 h-5 text-gray-600" />
+            <button className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             </button>
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
               >
-                <span>{timeRange}</span>
+                <span className="whitespace-nowrap">{timeRange}</span>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   {timeRangeOptions.map((option) => (
                     <button
                       key={option}
                       onClick={() => handleTimeRangeSelect(option)}
-                      className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors"
+                      className="w-full flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 text-left text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors"
                     >
                       <span className="text-gray-700">{option}</span>
                       {timeRange === option && <Check className="w-4 h-4 text-cyan-600" />}
@@ -438,41 +438,41 @@ export default function UsageStatsPage() {
         {/* Stats Cards */}
         {!loading && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {/* Today's Cost */}
-              <div className="bg-white rounded-xl p-6 border border-gray-200 transition-all duration-200 hover:scale-105 hover:shadow-lg hover:border-gray-300 cursor-pointer">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-gray-600">{t("今日费用", "Today's Cost")}</span>
-                  <BarChart3 className="w-5 h-5 text-gray-400" />
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 transition-all duration-200 hover:scale-[1.02] sm:hover:scale-105 hover:shadow-lg hover:border-gray-300 cursor-pointer">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <span className="text-sm sm:text-base text-gray-600">{t("今日费用", "Today's Cost")}</span>
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                 </div>
-                <div className="text-4xl font-bold mb-1">${todayCost.toFixed(4)}</div>
-                <div className="text-sm text-gray-500">{new Date().toLocaleDateString()}</div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1">${todayCost.toFixed(4)}</div>
+                <div className="text-xs sm:text-sm text-gray-500">{new Date().toLocaleDateString()}</div>
               </div>
 
               {/* Total Cost */}
-              <div className="bg-white rounded-xl p-6 border border-gray-200 transition-all duration-200 hover:scale-105 hover:shadow-lg hover:border-gray-300 cursor-pointer">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-gray-600">{t("总计费用", "Total Cost")}</span>
-                  <Calendar className="w-5 h-5 text-gray-400" />
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 transition-all duration-200 hover:scale-[1.02] sm:hover:scale-105 hover:shadow-lg hover:border-gray-300 cursor-pointer">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <span className="text-sm sm:text-base text-gray-600">{t("总计费用", "Total Cost")}</span>
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                 </div>
-                <div className="text-4xl font-bold mb-1">${totalCost.toFixed(4)}</div>
-                <div className="text-sm text-gray-500">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1">${totalCost.toFixed(4)}</div>
+                <div className="text-xs sm:text-sm text-gray-500">
                   {t("过去", "Past")} {getDaysFromTimeRange()} {t("天总计", "days total")}
                 </div>
               </div>
             </div>
 
             {/* Chart Section */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200">
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2">{t("每日费用趋势", "Daily Cost Trend")}</h2>
-                <p className="text-gray-600 text-sm">
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">{t("每日费用趋势", "Daily Cost Trend")}</h2>
+                <p className="text-gray-600 text-xs sm:text-sm">
                   {t("过去", "Past")} {getDaysFromTimeRange()} {t("天的API费用变化", "days of API cost changes")} (
                   {timeRange})
                 </p>
               </div>
 
-              <div className="flex items-center justify-between mb-6 text-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 sm:mb-6 text-xs sm:text-sm">
                 <span className="text-gray-600">
                   {timeRange} {t("的费用趋势", "'s cost trend")}
                 </span>
@@ -481,7 +481,7 @@ export default function UsageStatsPage() {
                 </span>
               </div>
 
-              <div className="h-80">
+              <div className="h-60 sm:h-72 lg:h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -509,23 +509,23 @@ export default function UsageStatsPage() {
             </div>
 
             {/* Detailed Usage Records Section */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 mt-8">
-              <div className="flex items-start justify-between mb-6">
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 mt-6 sm:mt-8">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4 sm:mb-6">
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <BarChart3 className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-xl font-semibold">{t("详细用量记录", "Detailed Usage Records")}</h2>
+                  <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                    <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                    <h2 className="text-lg sm:text-xl font-semibold">{t("详细用量记录", "Detailed Usage Records")}</h2>
                   </div>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-600 text-xs sm:text-sm">
                     {t("查看每次请求的详细 Token 使用和费用明细", "View detailed token usage and cost for each request")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">{t("每页显示", "Items per page")}:</span>
+                  <span className="text-xs sm:text-sm text-gray-600">{t("每页显示", "Items per page")}:</span>
                   <select
                     value={itemsPerPage}
                     onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                    className="px-3 py-1.5 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
+                    className="px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-xs sm:text-sm"
                   >
                     <option value={10}>10</option>
                     <option value={20}>20</option>
@@ -535,7 +535,62 @@ export default function UsageStatsPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {usageRecords.length === 0 ? (
+                  <div className="py-12 text-center text-gray-500">
+                    {t("暂无使用记录", "No usage records found")}
+                  </div>
+                ) : (
+                  usageRecords.map((record) => (
+                    <div key={record.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                      {/* Header Row: Time + Model */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-gray-500" />
+                          <span className="text-xs text-gray-600">{formatDateTime(record.createdAt)}</span>
+                        </div>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-700 text-xs font-medium">
+                          {record.modelName}
+                        </span>
+                      </div>
+                      {/* Token Info Grid */}
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div>
+                          <span className="text-gray-500 block">{t("输入", "Input")}</span>
+                          <p className="font-medium text-gray-900">{record.inputTokens.toLocaleString()}</p>
+                          {record.cacheReadTokens && record.cacheReadTokens > 0 && (
+                            <p className="text-[10px] text-gray-400">({record.cacheReadTokens.toLocaleString()} {t("缓存", "cache")})</p>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-gray-500 block">{t("输出", "Output")}</span>
+                          <p className="font-medium text-gray-900">{record.outputTokens.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 block">{t("总计", "Total")}</span>
+                          <p className="font-medium text-gray-900">{record.totalTokens.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      {/* Footer: Cache Creation + Cost */}
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                        <div className="text-xs">
+                          <span className="text-gray-500">{t("缓存创建", "Cache")}:</span>
+                          <span className="ml-1 text-gray-700">
+                            {record.cacheCreationTokens && record.cacheCreationTokens > 0
+                              ? record.cacheCreationTokens.toLocaleString()
+                              : "-"}
+                          </span>
+                        </div>
+                        <div className="text-sm font-semibold text-cyan-600">${record.cost.toFixed(6)}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
@@ -588,65 +643,66 @@ export default function UsageStatsPage() {
                     ) : (
                       usageRecords.map((record) => (
                         <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-4 text-sm text-gray-700">{formatDateTime(record.createdAt)}</td>
-                        <td className="py-3 px-4">
-                          <span className="inline-flex items-center px-3 py-1 rounded-md bg-cyan-100 text-cyan-700 text-xs font-medium">
-                            {record.modelName}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-700">
-                          <div>
-                            <div className="font-medium">{record.inputTokens.toLocaleString()}</div>
-                            {record.cacheReadTokens && record.cacheReadTokens > 0 && (
-                              <div className="text-xs text-gray-500">
-                                ({record.cacheReadTokens.toLocaleString()} {t("缓存", "cached")})
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-700 font-medium">
-                          {record.outputTokens.toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-700 font-medium">
-                          {record.totalTokens.toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-700">
-                          {record.cacheCreationTokens && record.cacheCreationTokens > 0
-                            ? record.cacheCreationTokens.toLocaleString()
-                            : "-"}
-                        </td>
-                        <td className="py-3 px-4 text-sm font-semibold text-gray-900">${record.cost.toFixed(6)}</td>
-                      </tr>
+                          <td className="py-3 px-4 text-sm text-gray-700">{formatDateTime(record.createdAt)}</td>
+                          <td className="py-3 px-4">
+                            <span className="inline-flex items-center px-3 py-1 rounded-md bg-cyan-100 text-cyan-700 text-xs font-medium">
+                              {record.modelName}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            <div>
+                              <div className="font-medium">{record.inputTokens.toLocaleString()}</div>
+                              {record.cacheReadTokens && record.cacheReadTokens > 0 && (
+                                <div className="text-xs text-gray-500">
+                                  ({record.cacheReadTokens.toLocaleString()} {t("缓存", "cached")})
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700 font-medium">
+                            {record.outputTokens.toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700 font-medium">
+                            {record.totalTokens.toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {record.cacheCreationTokens && record.cacheCreationTokens > 0
+                              ? record.cacheCreationTokens.toLocaleString()
+                              : "-"}
+                          </td>
+                          <td className="py-3 px-4 text-sm font-semibold text-gray-900">${record.cost.toFixed(6)}</td>
+                        </tr>
                       ))
                     )}
                   </tbody>
                 </table>
               </div>
 
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 sm:mt-6 pt-4 border-t border-gray-200">
+                <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
                   {t("显示第", "Showing")} {startRecord} {t("到", "to")} {endRecord} {t("条,共", "of")} {totalRecords}{" "}
                   {t("条", "records")}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 order-1 sm:order-2">
                   <button
                     onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    className="px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
-                    <ChevronLeft className="w-4 h-4" />
-                    {t("上一页", "Previous")}
+                    <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">{t("上一页", "Previous")}</span>
                   </button>
-                  <div className="px-3 py-1.5 text-sm text-gray-700">
-                    {t("第", "Page")} {currentPage}
+                  <div className="px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-700">
+                    {t("第", "Page")} {currentPage} / {totalPages || 1}
                   </div>
                   <button
                     onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
-                    {t("下一页", "Next")}
-                    <ChevronRight className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t("下一页", "Next")}</span>
+                    <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>

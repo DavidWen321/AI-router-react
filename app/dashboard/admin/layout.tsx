@@ -68,8 +68,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardHeader userEmail={userEmail} onLogout={handleLogout} />
 
-      {/* 管理员页面内容区域，顶部留出 header 空间 */}
-      <main className="pt-[72px] px-6 pb-8">{children}</main>
+      {/* 管理员页面内容区域，顶部留出 header 空间，响应式 padding */}
+      <main className="pt-[72px] px-2 sm:px-4 lg:px-6 pb-4 sm:pb-6 lg:pb-8">{children}</main>
     </div>
   )
 }

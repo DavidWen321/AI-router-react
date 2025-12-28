@@ -4,9 +4,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLanguage } from "@/lib/language-context"
-import { Key, TrendingUp, DollarSign, Users, Copy, Settings, Mail } from "lucide-react"
+import { Key, TrendingUp, DollarSign, Users, Copy, Settings, Mail, Package } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { DashboardHeader } from "@/components/dashboard-header"
+import { MyPlansDialog } from "@/components/my-plans-dialog"
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const [apiKey, setApiKey] = useState<string>("")  // 从后端获取的第一个API密钥
   const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false)
+  const [isMyPlansDialogOpen, setIsMyPlansDialogOpen] = useState(false)
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
   const [isSupportDialogOpen, setIsSupportDialogOpen] = useState(false)
   const [activationCode, setActivationCode] = useState("")
@@ -172,6 +174,10 @@ export default function DashboardPage() {
     router.push("/dashboard/api")
   }
 
+  const handleViewMyPlans = () => {
+    setIsMyPlansDialogOpen(true)
+  }
+
   const handleActivatePlan = () => {
     setIsActivateDialogOpen(true)
     setActivationCode("")
@@ -270,13 +276,13 @@ export default function DashboardPage() {
       <DashboardHeader userEmail={userEmail} onLogout={handleLogout} />
 
       {/* Main Content */}
-      <main className="max-w-[1800px] mx-auto px-12 py-8 page-transition">
+      <main className="max-w-[1800px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-[88px] sm:pt-[96px] pb-4 sm:pb-6 md:pb-8 page-transition">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
-            {t("欢迎回来", "Welcome back")}, {userEmail}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-1 sm:mb-2 break-all sm:break-normal">
+            {t("欢迎回来", "Welcome back")}, <span className="block sm:inline">{userEmail}</span>
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600">
             {t(
               "管理您的API密钥、查看使用统计和配置设置",
               "Manage your API keys, view usage statistics and configure settings",
@@ -285,19 +291,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl border border-gray-200/50 p-8 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-cyan-200 cursor-pointer group"
+              className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/50 p-5 sm:p-6 md:p-8 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-cyan-200 cursor-pointer group"
             >
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-sm font-medium text-gray-600 group-hover:text-cyan-600 transition-colors">{stat.title}</span>
-                <div className="p-3 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl group-hover:from-cyan-100 group-hover:to-blue-100 transition-colors">
-                  <stat.icon className="w-5 h-5 text-cyan-600" />
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <span className="text-xs sm:text-sm font-medium text-gray-600 group-hover:text-cyan-600 transition-colors">{stat.title}</span>
+                <div className="p-2 sm:p-3 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg sm:rounded-xl group-hover:from-cyan-100 group-hover:to-blue-100 transition-colors">
+                  <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-1 sm:mb-2">
                 {stat.value}
               </div>
               {stat.subtitle && <div className="text-sm text-gray-500">{stat.subtitle}</div>}
@@ -305,17 +311,17 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {/* API Key Management */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl border border-gray-200/50 p-8 hover:shadow-lg transition-all">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg">
-                  <Key className="w-5 h-5 text-cyan-600" />
+            <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/50 p-5 sm:p-6 md:p-8 hover:shadow-lg transition-all">
+              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="p-1.5 sm:p-2 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg">
+                  <Key className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">{t("API密钥管理", "API Key Management")}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">{t("API密钥管理", "API Key Management")}</h2>
               </div>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
                 {t("管理您的API密钥和配置", "Manage your API keys and configuration")}
               </p>
 
@@ -377,11 +383,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Account Information and Plan Management sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 mt-4 sm:mt-6 md:mt-8">
           {/* Account Information */}
-          <div className="bg-white rounded-2xl border border-gray-200/50 p-8 hover:shadow-lg transition-all">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{t("账户信息", "Account Information")}</h2>
-            <p className="text-sm text-gray-600 mb-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/50 p-5 sm:p-6 md:p-8 hover:shadow-lg transition-all">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">{t("账户信息", "Account Information")}</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
               {t("您的账户详情和使用情况", "Your account details and usage")}
             </p>
 
@@ -430,17 +436,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Plan Management */}
-          <div className="bg-white rounded-2xl border border-gray-200/50 p-8 hover:shadow-lg transition-all">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{t("套餐管理", "Plan Management")}</h2>
-            <p className="text-sm text-gray-600 mb-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/50 p-5 sm:p-6 md:p-8 hover:shadow-lg transition-all">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">{t("套餐管理", "Plan Management")}</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
               {t("管理您的订阅和激活码", "Manage your subscriptions and activation codes")}
             </p>
 
             <button
-              onClick={handleActivatePlan}
-              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium py-4 rounded-xl mb-6 transition-all shadow-lg shadow-cyan-500/20 hover:shadow-xl hover:shadow-cyan-500/30"
+              onClick={handleViewMyPlans}
+              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium py-4 rounded-xl mb-6 transition-all shadow-lg shadow-cyan-500/20 hover:shadow-xl hover:shadow-cyan-500/30 flex items-center justify-center gap-2"
             >
-              {t("激活套餐", "Activate Plan")}
+              <Package className="w-5 h-5" />
+              {t("我的套餐", "My Plans")}
             </button>
 
             <div className="space-y-4">
@@ -498,13 +505,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Support and Help section */}
-        <div className="bg-white rounded-2xl border border-gray-200/50 p-8 mt-8 hover:shadow-lg transition-all">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t("支持和帮助", "Support and Help")}</h2>
-          <p className="text-sm text-gray-600 mb-6">
+        <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/50 p-5 sm:p-6 md:p-8 mt-4 sm:mt-6 md:mt-8 hover:shadow-lg transition-all">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">{t("支持和帮助", "Support and Help")}</h2>
+          <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
             {t("获取帮助和联系支持团队", "Get help and contact support team")}
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             <Link
               href="/docs"
               className="flex items-center justify-center px-6 py-4 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:border-gray-300 transition-all"
@@ -636,6 +643,13 @@ export default function DashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* My Plans Dialog */}
+      <MyPlansDialog
+        open={isMyPlansDialogOpen}
+        onOpenChange={setIsMyPlansDialogOpen}
+        userId={userId}
+      />
     </div>
   )
 }

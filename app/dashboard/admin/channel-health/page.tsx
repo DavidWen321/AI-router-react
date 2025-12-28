@@ -144,29 +144,29 @@ export default function ChannelHealthPage() {
   }
 
   return (
-    <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-8">
+    <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-6 sm:pb-8">
       {/* 页面标题 */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-cyan-500 to-teal-500 rounded-xl shadow-lg shadow-cyan-500/20">
-              <Activity className="w-7 h-7 text-white" />
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-cyan-500 to-teal-500 rounded-lg sm:rounded-xl shadow-lg shadow-cyan-500/20">
+              <Activity className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {t("渠道健康监控", "Channel Health Monitor")}
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 {t("实时监控所有 API 渠道的健康状态", "Real-time health monitoring for all API channels")}
               </p>
             </div>
           </div>
 
           {/* 操作按钮 */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {lastUpdated && (
-              <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
+              <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 {t("更新于", "Updated")} {formatTime(lastUpdated)}
               </span>
             )}
@@ -175,17 +175,17 @@ export default function ChannelHealthPage() {
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm px-2 sm:px-3"
             >
-              <RefreshCw className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
+              <RefreshCw className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2", isRefreshing && "animate-spin")} />
               {t("刷新", "Refresh")}
             </Button>
             <Button
               size="sm"
               onClick={handleTriggerProbe}
-              className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white shadow-lg shadow-cyan-500/20"
+              className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white shadow-lg shadow-cyan-500/20 text-xs sm:text-sm px-2 sm:px-3"
             >
-              <Zap className="w-4 h-4 mr-2" />
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               {t("立即探测", "Probe Now")}
             </Button>
           </div>
@@ -194,72 +194,72 @@ export default function ChannelHealthPage() {
 
       {/* 状态概览卡片 */}
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {/* 总渠道数 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <Wifi className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
               </div>
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
                 {t("总渠道", "Total")}
               </span>
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalChannels}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{stats.totalChannels}</p>
           </div>
 
           {/* 健康渠道 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-green-100 dark:border-green-900/30 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-green-100 dark:border-green-900/30 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
               </div>
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
                 {t("健康", "Healthy")}
               </span>
             </div>
-            <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.healthyChannels}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">{stats.healthyChannels}</p>
           </div>
 
           {/* 波动渠道 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-yellow-100 dark:border-yellow-900/30 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-yellow-100 dark:border-yellow-900/30 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
                 {t("波动", "Degraded")}
               </span>
             </div>
-            <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.degradedChannels}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.degradedChannels}</p>
           </div>
 
           {/* 离线渠道 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-red-100 dark:border-red-900/30 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <WifiOff className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-red-100 dark:border-red-900/30 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <WifiOff className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
               </div>
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
                 {t("离线", "Offline")}
               </span>
             </div>
-            <p className="text-3xl font-bold text-red-600 dark:text-red-400">{stats.downChannels}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400">{stats.downChannels}</p>
           </div>
 
           {/* 平均延迟 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-cyan-100 dark:border-cyan-900/30 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+          <div className="col-span-2 sm:col-span-1 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-cyan-100 dark:border-cyan-900/30 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
               </div>
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
                 {t("平均延迟", "Avg Latency")}
               </span>
             </div>
-            <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
+            <p className="text-2xl sm:text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {Math.round(stats.avgLatency)}
-              <span className="text-lg font-normal text-gray-400 ml-1">ms</span>
+              <span className="text-base sm:text-lg font-normal text-gray-400 ml-1">ms</span>
             </p>
           </div>
         </div>
@@ -267,19 +267,19 @@ export default function ChannelHealthPage() {
 
       {/* 实时延迟折线图 */}
       {dashboardData && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 {t("实时延迟监控", "Real-time Latency Monitor")}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 {t("最近 1 小时各渠道延迟趋势", "Latency trends for all channels in the last hour")}
               </p>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-full">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-xs font-medium text-green-600 dark:text-green-400">
+            <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-green-50 dark:bg-green-900/20 rounded-full self-start sm:self-auto">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[10px] sm:text-xs font-medium text-green-600 dark:text-green-400">
                 {t("实时更新", "Live")}
               </span>
             </div>
@@ -293,17 +293,17 @@ export default function ChannelHealthPage() {
 
       {/* 24小时可用性监测 */}
       {dashboardData && dashboardData.history24h && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-6">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-4 sm:p-6">
+          <div className="mb-4 sm:mb-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
               {t("24 小时可用性", "24-Hour Availability")}
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               {t("每个时段的健康状态记录", "Health status for each time period")}
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {Object.entries(dashboardData.history24h).map(([alias, channelData]) => (
               <UptimeBar24h
                 key={alias}
@@ -317,12 +317,12 @@ export default function ChannelHealthPage() {
 
       {/* 无数据状态 */}
       {!dashboardData?.enabled && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-12 text-center">
-          <WifiOff className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-8 sm:p-12 text-center">
+          <WifiOff className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 dark:text-gray-600 mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
             {t("健康监控未启用", "Health Monitoring Disabled")}
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">
             {t(
               "请在后端配置中启用域名健康监控功能",
               "Please enable domain health monitoring in backend configuration"
