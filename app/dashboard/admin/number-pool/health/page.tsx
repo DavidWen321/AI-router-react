@@ -513,7 +513,7 @@ export default function NumberPoolHealthPage() {
           </div>
 
           {/* Mobile Card View */}
-          <div className="md:hidden space-y-3">
+          <div className="lg:hidden space-y-3">
             {filteredPools.length === 0 ? (
               <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -599,7 +599,7 @@ export default function NumberPoolHealthPage() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">

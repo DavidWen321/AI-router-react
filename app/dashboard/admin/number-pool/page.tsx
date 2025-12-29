@@ -7,8 +7,9 @@ import { Database, Search, DollarSign, TrendingUp, Activity, BarChart3, X, Arrow
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts"
 import { useToast } from "@/hooks/use-toast"
 import { accountPoolApi, type AccountPoolVO, ApiError } from "@/lib/api"
 import { CreateAccountPoolDialog } from "./components/CreateAccountPoolDialog"
@@ -1005,42 +1006,53 @@ export default function NumberPoolPage() {
               </div>
             </div>
 
-            {/* 桌面端表格视图 */}
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full min-w-max">
-                <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+            {/* 桌面端表格视图 - 智能响应式设计，无滚动条 */}
+            <div className="hidden lg:block">
+              <table className="w-full table-fixed">
+                <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                   <tr>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("号池ID", "Pool ID")}
+                    {/* 号池ID - 始终显示 */}
+                    <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[8%]">
+                      {t("ID", "ID")}
                     </th>
-                    <th className="hidden xl:table-cell px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("供应商网址", "Provider URL")}
+                    {/* 供应商网址 - 2xl以上显示 */}
+                    <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
+                      {t("供应商", "Provider")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                    {/* 账号 - 始终显示 */}
+                    <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[14%]">
                       {t("账号", "Account")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("号池密钥", "Pool Key")}
+                    {/* 号池密钥 - 始终显示 */}
+                    <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
+                      {t("密钥", "Key")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("每日额度", "Daily Quota")}
+                    {/* 每日额度 - 始终显示 */}
+                    <th className="px-2 xl:px-3 py-3 text-right text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
+                      {t("额度", "Quota")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("每日剩余", "Daily Remaining")}
+                    {/* 每日剩余 - 始终显示 */}
+                    <th className="px-2 xl:px-3 py-3 text-right text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
+                      {t("剩余", "Left")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("使用率", "Usage Rate")}
+                    {/* 使用率 - 始终显示 */}
+                    <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[14%]">
+                      {t("使用率", "Usage")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("月成本", "Monthly Cost")}
+                    {/* 月成本 - xl以上显示 */}
+                    <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-right text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
+                      {t("月成本", "Cost")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("开始时间", "Start Time")}
+                    {/* 开始时间 - 2xl以上显示 */}
+                    <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
+                      {t("开始", "Start")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                      {t("过期时间", "Expiration Time")}
+                    {/* 过期时间 - xl以上显示 */}
+                    <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
+                      {t("过期", "Expire")}
                     </th>
-                    <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                    {/* 操作 - 始终显示 */}
+                    <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
                       {t("操作", "Actions")}
                     </th>
                   </tr>
@@ -1053,27 +1065,27 @@ export default function NumberPoolPage() {
                       key={pool.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all hover:shadow-sm"
                     >
-                      <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
                         {pool.id || "-"}
                       </td>
-                      <td className="hidden xl:table-cell px-4 lg:px-6 py-4 text-sm text-cyan-600 dark:text-cyan-400 hover:underline whitespace-nowrap max-w-[200px] truncate">
+                      <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm text-cyan-600 dark:text-cyan-400 hover:underline whitespace-nowrap max-w-[200px] truncate">
                         <a href={pool.supplierWeb} target="_blank" rel="noopener noreferrer" title={pool.supplierWeb}>
                           {pool.supplierWeb}
                         </a>
                       </td>
                       <td
-                        className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap max-w-[150px] truncate"
+                        className="px-2 xl:px-3 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap max-w-[150px] truncate"
                         title={pool.account}
                       >
                         {pool.account || "-"}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                        {pool.accountPoolKey ? `${pool.accountPoolKey.substring(0, 15)}...` : "-"}
+                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        {pool.accountPoolKey ? `${pool.accountPoolKey.substring(0, 12)}...` : "-"}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm text-right text-gray-900 dark:text-white whitespace-nowrap">
                         ${pool.accountDailyUsage.toFixed(2)}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap">
+                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm text-right whitespace-nowrap">
                         <span
                           className={cn(
                             "font-medium",
@@ -1088,19 +1100,19 @@ export default function NumberPoolPage() {
                         </span>
                       </td>
                       <td
-                        className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap cursor-pointer group"
+                        className="px-2 xl:px-3 py-3 text-xs xl:text-sm whitespace-nowrap cursor-pointer group"
                         onClick={() => {
                           if (pool.id) {
                             setSelectedPoolId(pool.id)
                           }
                         }}
                       >
-                        <div className="flex items-center gap-2 group-hover:opacity-80 transition-opacity">
-                          <div className="flex-1 min-w-[80px]">
+                        <div className="flex items-center gap-1 xl:gap-2 group-hover:opacity-80 transition-opacity">
+                          <div className="flex-1 min-w-[60px] xl:min-w-[80px]">
                             <Progress
                               value={usageRate}
                               className={cn(
-                                "h-2",
+                                "h-1.5 xl:h-2",
                                 usageRate < 50
                                   ? "[&>div]:bg-green-500"
                                   : usageRate < 80
@@ -1109,19 +1121,19 @@ export default function NumberPoolPage() {
                               )}
                             />
                           </div>
-                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 min-w-[45px] text-right">
+                          <span className="text-[10px] xl:text-xs font-medium text-gray-700 dark:text-gray-300 min-w-[40px] text-right">
                             {usageRate.toFixed(1)}%
                           </span>
-                          <BarChart3 className="w-4 h-4 text-gray-400 group-hover:text-cyan-500 transition-colors" />
+                          <BarChart3 className="hidden xl:block w-4 h-4 text-gray-400 group-hover:text-cyan-500 transition-colors" />
                         </div>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
                         ${pool.accountCost.toFixed(2)}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                      <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                         {new Date(pool.startTime).toLocaleDateString()}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap">
+                      <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm whitespace-nowrap">
                         <span
                           className={cn(
                             new Date(pool.expireTime) < new Date()
@@ -1132,28 +1144,28 @@ export default function NumberPoolPage() {
                           {new Date(pool.expireTime).toLocaleDateString()}
                         </span>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 text-sm whitespace-nowrap">
-                        <div className="flex items-center gap-2">
+                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-0.5 xl:gap-1">
                           <button
                             onClick={() => handleViewClick(pool)}
-                            className="p-1.5 text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-colors"
+                            className="p-1 xl:p-1.5 text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-colors"
                             title={t("查看", "View")}
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
                           </button>
                           <button
                             onClick={() => handleEditClick(pool)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                            className="p-1 xl:p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
                             title={t("编辑", "Edit")}
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteClick(pool)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                            className="p-1 xl:p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                             title={t("删除", "Delete")}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
                           </button>
                         </div>
                       </td>

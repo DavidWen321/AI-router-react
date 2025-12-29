@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useLanguage } from "@/lib/language-context"
 import { Eye, Copy, Trash2, Key, Calendar, Activity, Hash } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   Dialog,
   DialogContent,
@@ -256,30 +257,37 @@ export default function KeysPage() {
           </div>
         </div>
 
-        {/* 桌面端表格视图 */}
-        <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full min-w-max">
-            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+        {/* 桌面端表格视图 - 智能响应式设计，无滚动条 */}
+        <div className="hidden lg:block">
+          <table className="w-full table-fixed">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {/* 密钥名称 - 始终显示 */}
+                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[18%]">
                   {t("密钥名称", "Key Name")}
                 </th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {/* 密钥 - 始终显示 */}
+                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[22%]">
                   {t("密钥", "Key")}
                 </th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {/* 创建时间 - xl以上显示 */}
+                <th className="hidden xl:table-cell px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
                   {t("创建时间", "Created At")}
                 </th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {/* 最后使用 - 始终显示 */}
+                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[16%]">
                   {t("最后使用", "Last Used")}
                 </th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {/* 状态 - 始终显示 */}
+                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
                   {t("状态", "Status")}
                 </th>
-                <th className="px-4 lg:px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {/* 调用次数 - 始终显示 */}
+                <th className="px-2 xl:px-4 py-3 text-right text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
                   {t("调用次数", "Total Calls")}
                 </th>
-                <th className="px-4 lg:px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {/* 操作 - 始终显示 */}
+                <th className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
                   {t("操作", "Actions")}
                 </th>
               </tr>
@@ -288,53 +296,99 @@ export default function KeysPage() {
               {keys.map((key) => (
                 <tr
                   key={key.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 cursor-pointer"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
                 >
-                  <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                    {translateKeyName(key.name)}
+                  {/* 密钥名称 + Tooltip */}
+                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="block truncate cursor-default">{translateKeyName(key.name)}</span>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="bottom"
+                        sideOffset={4}
+                        className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium"
+                      >
+                        {translateKeyName(key.name)}
+                      </TooltipContent>
+                    </Tooltip>
                   </td>
-                  <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 font-mono whitespace-nowrap">{key.key}</td>
-                  <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{key.createdAt}</td>
-                  <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{key.lastUsed}</td>
-                  <td className="px-4 lg:px-6 py-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusColor(key.status)}`}>
+                  {/* 密钥 + Tooltip */}
+                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400 font-mono">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="block truncate cursor-default">{key.key}</span>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="bottom"
+                        sideOffset={4}
+                        className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-mono max-w-[300px] break-all"
+                      >
+                        {key.key}
+                      </TooltipContent>
+                    </Tooltip>
+                  </td>
+                  {/* 创建时间 - xl以上显示 */}
+                  <td className="hidden xl:table-cell px-2 xl:px-4 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                    {key.createdAt}
+                  </td>
+                  {/* 最后使用 + Tooltip */}
+                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="block truncate cursor-default">{key.lastUsed}</span>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="bottom"
+                        sideOffset={4}
+                        className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium"
+                      >
+                        {t("最后使用", "Last Used")}: {key.lastUsed}
+                      </TooltipContent>
+                    </Tooltip>
+                  </td>
+                  {/* 状态 */}
+                  <td className="px-2 xl:px-4 py-3">
+                    <span className={`inline-flex px-1.5 xl:px-2 py-0.5 text-[10px] xl:text-xs font-medium rounded ${getStatusColor(key.status)}`}>
                       {translateStatus(key.status)}
                     </span>
                   </td>
-                  <td className="px-4 lg:px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                  {/* 调用次数 */}
+                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm text-right text-gray-900 dark:text-gray-100">
                     {key.totalCalls.toLocaleString()}
                   </td>
-                  <td className="px-4 lg:px-6 py-4">
-                    <div className="flex items-center justify-center gap-2">
+                  {/* 操作按钮 - 响应式间距 */}
+                  <td className="px-2 xl:px-4 py-3">
+                    <div className="flex items-center justify-center gap-0.5 xl:gap-1">
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleViewKey(key)
                         }}
-                        className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-all duration-200 hover:scale-110"
+                        className="p-1 xl:p-1.5 text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-all duration-200 hover:scale-110"
                         title={t("查看详情", "View Details")}
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleCopyKey(key)
                         }}
-                        className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-all duration-200 hover:scale-110"
+                        className="p-1 xl:p-1.5 text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-all duration-200 hover:scale-110"
                         title={t("复制密钥", "Copy Key")}
                       >
-                        <Copy className="w-4 h-4" />
+                        <Copy className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleDeleteKey(key)
                         }}
-                        className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all duration-200 hover:scale-110"
+                        className="p-1 xl:p-1.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
                         title={t("删除密钥", "Delete Key")}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
                       </button>
                     </div>
                   </td>

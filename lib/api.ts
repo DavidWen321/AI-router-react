@@ -1205,6 +1205,7 @@ export interface DomainHealthSnapshot {
   url: string
   alias: string
   alive: boolean
+  enabled: boolean  // ⭐ 新增：渠道启用状态
   circuitState: 'CLOSED' | 'OPEN' | 'HALF_OPEN'
   ewmaLatencyMs: number
   inflightRequests: number
@@ -1285,6 +1286,34 @@ export const domainHealthApi = {
   triggerProbe: async (): Promise<string> => {
     return request('/api/domain-health/probe', {
       method: 'POST',
+    })
+  },
+
+  /**
+   * ⭐ 切换渠道启用状态（toggle）
+   * 对应后端接口: PUT /api/domain-health/toggle/{alias}
+   */
+  toggleChannel: async (alias: string): Promise<{
+    alias: string
+    enabled: boolean
+    message: string
+  }> => {
+    return request(`/api/domain-health/toggle/${alias}`, {
+      method: 'PUT',
+    })
+  },
+
+  /**
+   * 设置渠道启用状态
+   * 对应后端接口: PUT /api/domain-health/enabled/{alias}
+   */
+  setChannelEnabled: async (alias: string, enabled: boolean): Promise<{
+    alias: string
+    enabled: boolean
+    message: string
+  }> => {
+    return request(`/api/domain-health/enabled/${alias}?enabled=${enabled}`, {
+      method: 'PUT',
     })
   },
 }

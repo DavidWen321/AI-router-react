@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useLanguage } from "@/lib/language-context"
 import type { ChannelHealthData, DomainHealthRecord } from "@/lib/api"
 import { cn } from "@/lib/utils"
-import { CheckCircle2, AlertTriangle, XCircle, Info } from "lucide-react"
+import { CheckCircle2, AlertTriangle, XCircle, Info, Power } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -15,6 +15,7 @@ import {
 interface UptimeBar24hProps {
   channelName: string
   channelData: ChannelHealthData
+  enabled?: boolean  // ⭐ 新增：渠道是否启用
 }
 
 /**
@@ -26,7 +27,7 @@ interface UptimeBar24hProps {
  * - 鼠标悬停显示详情
  * - 流畅的动画过渡
  */
-export function UptimeBar24h({ channelName, channelData }: UptimeBar24hProps) {
+export function UptimeBar24h({ channelName, channelData, enabled = true }: UptimeBar24hProps) {
   const { t } = useLanguage()
 
   // 将历史记录按时间分组（每5分钟一个块）
@@ -123,13 +124,14 @@ export function UptimeBar24h({ channelName, channelData }: UptimeBar24hProps) {
   }
 
   // 当前状态指示器
-  const currentStatusColor =
-    channelData.currentStatus === "available"
+  const currentStatusColor = !enabled
+    ? "bg-gray-400"
+    : channelData.currentStatus === "available"
       ? "bg-green-500"
       : "bg-red-500"
 
   return (
-    <div className="group">
+    <div className={cn("group", !enabled && "opacity-60")}>
       {/* 渠道信息头部 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -138,13 +140,22 @@ export function UptimeBar24h({ channelName, channelData }: UptimeBar24hProps) {
             className={cn(
               "w-2.5 h-2.5 rounded-full",
               currentStatusColor,
-              channelData.currentStatus === "available" && "animate-pulse"
+              enabled && channelData.currentStatus === "available" && "animate-pulse"
             )}
           />
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white text-sm">
-              {channelName}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-gray-900 dark:text-white text-sm">
+                {channelName}
+              </h3>
+              {/* ⭐ 禁用标签 */}
+              {!enabled && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                  <Power className="w-3 h-3" />
+                  {t("已禁用", "DISABLED")}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[300px]">
               {channelData.url}
             </p>
@@ -157,23 +168,28 @@ export function UptimeBar24h({ channelName, channelData }: UptimeBar24hProps) {
             <span
               className={cn(
                 "text-lg font-bold",
-                channelData.availabilityRate >= 99
-                  ? "text-green-600 dark:text-green-400"
-                  : channelData.availabilityRate >= 95
-                    ? "text-yellow-600 dark:text-yellow-400"
-                    : "text-red-600 dark:text-red-400"
+                !enabled
+                  ? "text-gray-400"
+                  : channelData.availabilityRate >= 99
+                    ? "text-green-600 dark:text-green-400"
+                    : channelData.availabilityRate >= 95
+                      ? "text-yellow-600 dark:text-yellow-400"
+                      : "text-red-600 dark:text-red-400"
               )}
             >
-              {channelData.availabilityRate.toFixed(2)}%
+              {enabled ? `${channelData.availabilityRate.toFixed(2)}%` : "--"}
             </span>
             <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
               {t("可用率", "uptime")}
             </span>
           </div>
           <div className="text-right">
-            <span className="text-sm font-medium text-cyan-600 dark:text-cyan-400">
-              {/* 可用率低于50%或当前不可用时，显示--避免误导 */}
-              {channelData.currentStatus === "available" && channelData.availabilityRate >= 50
+            <span className={cn(
+              "text-sm font-medium",
+              enabled ? "text-cyan-600 dark:text-cyan-400" : "text-gray-400"
+            )}>
+              {/* 禁用或可用率低于50%时显示-- */}
+              {enabled && channelData.currentStatus === "available" && channelData.availabilityRate >= 50
                 ? channelData.avgLatencyMs
                 : "--"}
               <span className="text-xs text-gray-500 ml-0.5">ms</span>

@@ -12,8 +12,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Zap,
+  Power,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import {
@@ -44,6 +46,7 @@ export default function ChannelHealthPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [togglingChannels, setTogglingChannels] = useState<Set<string>>(new Set()) // 正在切换状态的渠道
 
   // 自动刷新间隔（毫秒）
   const AUTO_REFRESH_INTERVAL = 30000 // 30秒
@@ -92,6 +95,46 @@ export default function ChannelHealthPage() {
         title: t("触发失败", "Trigger Failed"),
         description: error instanceof ApiError ? error.message : t("无法触发探测", "Failed to trigger probe"),
         variant: "destructive",
+      })
+    }
+  }
+
+  // ⭐ 切换渠道开关
+  const handleToggleChannel = async (alias: string, currentEnabled: boolean) => {
+    // 添加到正在切换的集合
+    setTogglingChannels(prev => new Set(prev).add(alias))
+
+    try {
+      const result = await domainHealthApi.toggleChannel(alias)
+      toast({
+        title: result.enabled
+          ? t("渠道已启用", "Channel Enabled")
+          : t("渠道已禁用", "Channel Disabled"),
+        description: result.enabled
+          ? t(`${alias} 将恢复监控和探测`, `${alias} monitoring and probing resumed`)
+          : t(`${alias} 已停止监控和探测`, `${alias} monitoring and probing stopped`),
+      })
+      // 更新本地状态
+      if (dashboardData) {
+        setDashboardData({
+          ...dashboardData,
+          currentStatus: dashboardData.currentStatus.map(channel =>
+            channel.alias === alias ? { ...channel, enabled: result.enabled } : channel
+          ),
+        })
+      }
+    } catch (error) {
+      toast({
+        title: t("切换失败", "Toggle Failed"),
+        description: error instanceof ApiError ? error.message : t("无法切换渠道状态", "Failed to toggle channel"),
+        variant: "destructive",
+      })
+    } finally {
+      // 从正在切换的集合中移除
+      setTogglingChannels(prev => {
+        const next = new Set(prev)
+        next.delete(alias)
+        return next
       })
     }
   }
@@ -265,6 +308,118 @@ export default function ChannelHealthPage() {
         </div>
       )}
 
+      {/* ⭐ 渠道控制开关区域 */}
+      {dashboardData && dashboardData.currentStatus && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg sm:rounded-xl shadow-lg shadow-violet-500/20">
+              <Power className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                {t("渠道控制", "Channel Control")}
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                {t("手动启用或禁用渠道的监控和探测", "Manually enable or disable channel monitoring and probing")}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {dashboardData.currentStatus.map((channel) => {
+              const isToggling = togglingChannels.has(channel.alias)
+              const isEnabled = channel.enabled !== false // 默认为启用
+
+              return (
+                <div
+                  key={channel.alias}
+                  className={cn(
+                    "relative p-3 sm:p-4 rounded-xl border transition-all duration-300",
+                    isEnabled
+                      ? "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 border-gray-200 dark:border-gray-700"
+                      : "bg-gray-100 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700/50 opacity-70"
+                  )}
+                >
+                  {/* 渠道名称和状态 */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "w-2 h-2 rounded-full",
+                          isEnabled && channel.alive ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                        )}
+                      />
+                      <span className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
+                        {channel.alias}
+                      </span>
+                    </div>
+
+                    {/* 开关 - 启用时绿色 */}
+                    <Switch
+                      checked={isEnabled}
+                      disabled={isToggling}
+                      onCheckedChange={() => handleToggleChannel(channel.alias, isEnabled)}
+                      className={cn(
+                        isToggling && "opacity-50 cursor-wait",
+                        "data-[state=checked]:bg-green-500 data-[state=checked]:dark:bg-green-500"
+                      )}
+                    />
+                  </div>
+
+                  {/* 渠道 URL */}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate mb-2" title={channel.url}>
+                    {channel.url.replace("https://", "").replace("http://", "")}
+                  </p>
+
+                  {/* 状态标签 */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {isEnabled ? (
+                      <>
+                        {channel.alive ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                            <CheckCircle2 className="w-3 h-3" />
+                            {t("在线", "Online")}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                            <WifiOff className="w-3 h-3" />
+                            {t("离线", "Offline")}
+                          </span>
+                        )}
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {channel.ewmaLatencyMs}ms
+                        </span>
+                      </>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        <Power className="w-3 h-3" />
+                        {t("已禁用", "Disabled")}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 切换中加载指示器 */}
+                  {isToggling && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-800/50 rounded-xl">
+                      <div className="w-5 h-5 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* 提示信息 */}
+          <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+            <AlertCircle className="w-3.5 h-3.5" />
+            {t(
+              "禁用渠道后，该渠道将不再被监控和探测，也不会被选为请求目标",
+              "Disabled channels will not be monitored, probed, or selected as request targets"
+            )}
+          </p>
+        </div>
+      )}
+
       {/* 实时延迟折线图 */}
       {dashboardData && (
         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-4 sm:p-6 mb-6 sm:mb-8">
@@ -304,13 +459,20 @@ export default function ChannelHealthPage() {
           </div>
 
           <div className="space-y-4 sm:space-y-6">
-            {Object.entries(dashboardData.history24h).map(([alias, channelData]) => (
-              <UptimeBar24h
-                key={alias}
-                channelName={alias}
-                channelData={channelData as ChannelHealthData}
-              />
-            ))}
+            {Object.entries(dashboardData.history24h).map(([alias, channelData]) => {
+              // 从 currentStatus 中获取该渠道的启用状态
+              const channelStatus = dashboardData.currentStatus?.find(c => c.alias === alias)
+              const isEnabled = channelStatus?.enabled !== false
+
+              return (
+                <UptimeBar24h
+                  key={alias}
+                  channelName={alias}
+                  channelData={channelData as ChannelHealthData}
+                  enabled={isEnabled}
+                />
+              )
+            })}
           </div>
         </div>
       )}

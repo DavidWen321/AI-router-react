@@ -142,19 +142,24 @@ export function RealtimeChart({ data, channels }: RealtimeChartProps) {
       })
     }
 
-    // ⭐⭐⭐ 渠道卡片排序：在线的按延迟升序，离线的排最后
+    // ⭐⭐⭐ 渠道卡片排序：启用且在线的按延迟升序，禁用/离线的排最后
     const sortedCards = [...channelAliases].sort((a, b) => {
       const channelA = channels.find(c => c.alias === a)
       const channelB = channels.find(c => c.alias === b)
+      const isEnabledA = channelA?.enabled !== false
+      const isEnabledB = channelB?.enabled !== false
       const isOnlineA = channelA?.alive ?? false
       const isOnlineB = channelB?.alive ?? false
       const latencyA = latest[a] ?? Infinity
       const latencyB = latest[b] ?? Infinity
 
-      // 离线的排最后
+      // 禁用的排最后
+      if (isEnabledA && !isEnabledB) return -1
+      if (!isEnabledA && isEnabledB) return 1
+      // 离线的排在禁用前面
       if (isOnlineA && !isOnlineB) return -1
       if (!isOnlineA && isOnlineB) return 1
-      // 都离线按名称排序
+      // 都离线/禁用按名称排序
       if (!isOnlineA && !isOnlineB) return a.localeCompare(b)
       // 都在线按延迟升序
       return latencyA - latencyB
@@ -235,13 +240,15 @@ export function RealtimeChart({ data, channels }: RealtimeChartProps) {
 
   return (
     <div className="space-y-4">
-      {/* 实时数值卡片 - 按延迟排序：低延迟在左，离线在右 */}
+      {/* 实时数值卡片 - 按延迟排序：低延迟在左，禁用/离线在右 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {sortedChannelsForCards.map((alias) => {
           const originalIndex = channelList.indexOf(alias)
           const color = getColor(alias, originalIndex)
           const value = latestValues[alias]
-          const isOnline = channels.find(c => c.alias === alias)?.alive
+          const channel = channels.find(c => c.alias === alias)
+          const isEnabled = channel?.enabled !== false
+          const isOnline = channel?.alive
 
           return (
             <div
@@ -249,20 +256,29 @@ export function RealtimeChart({ data, channels }: RealtimeChartProps) {
               className={cn(
                 "relative px-4 py-3 rounded-xl border transition-all",
                 "bg-white dark:bg-gray-800/50",
-                isOnline
-                  ? "border-gray-100 dark:border-gray-700"
-                  : "border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10"
+                !isEnabled
+                  ? "border-gray-300 dark:border-gray-600 bg-gray-100/80 dark:bg-gray-800/30 opacity-60"
+                  : isOnline
+                    ? "border-gray-100 dark:border-gray-700"
+                    : "border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10"
               )}
             >
               <div className="flex items-center gap-2 mb-1">
                 <span
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: color.line }}
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    !isEnabled && "bg-gray-400"
+                  )}
+                  style={{ backgroundColor: isEnabled ? color.line : undefined }}
                 />
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {alias}
                 </span>
-                {!isOnline && (
+                {!isEnabled ? (
+                  <span className="ml-auto text-[10px] font-medium text-gray-500 bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                    {t("已禁用", "DISABLED")}
+                  </span>
+                ) : !isOnline && (
                   <span className="ml-auto text-[10px] font-medium text-red-500 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded">
                     OFFLINE
                   </span>
@@ -270,11 +286,14 @@ export function RealtimeChart({ data, channels }: RealtimeChartProps) {
               </div>
               <div className="flex items-baseline gap-1">
                 <span
-                  className="text-2xl font-bold tabular-nums"
-                  style={{ color: isOnline ? color.line : '#ef4444' }}
+                  className={cn(
+                    "text-2xl font-bold tabular-nums",
+                    !isEnabled && "text-gray-400"
+                  )}
+                  style={{ color: isEnabled ? (isOnline ? color.line : '#ef4444') : undefined }}
                 >
-                  {/* 不可用时显示 -- 而不是 0，避免误导用户 */}
-                  {isOnline && value !== undefined ? Math.round(value) : '--'}
+                  {/* 禁用或不可用时显示 -- */}
+                  {isEnabled && isOnline && value !== undefined ? Math.round(value) : '--'}
                 </span>
                 <span className="text-sm text-gray-400">ms</span>
               </div>
