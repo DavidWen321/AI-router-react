@@ -18,10 +18,8 @@ import {
   Gem,
   Flame,
   Brain,
-  TrendingUp,
-  Database,
-  FileText,
-  BookOpen,
+  AlertCircle,
+  Info,
 } from "lucide-react"
 import {
   Dialog,
@@ -47,244 +45,310 @@ export default function PricingPage() {
     setIsPurchaseModalOpen(true)
   }
 
-  const tiers = [
+  // 所有套餐数据
+  const allPlans = [
+    // 标准系列
     {
       id: "mini",
-      name: t("迷你套餐", "Mini"),
-      price: "60",
-      dailyQuota: "$6",
-      monthlyQuota: "~$180",
-      description: t("入门体验，轻度尝鲜", "Entry level trial"),
+      name: t("迷你体验", "Mini"),
+      series: "standard",
+      price: "39",
+      dailyQuota: "$5",
+      monthlyQuota: "~$150",
+      haiku: "~1.7M",
+      sonnet: "~420K",
+      opus: "~85K",
+      support: t("基础支持", "Basic"),
+      description: t("入门体验", "Entry Level"),
+      tag: t("入门探索", "Entry"),
+      tagColor: "sky",
       icon: Zap,
-      gradient: "from-emerald-400 via-teal-500 to-cyan-500",
-      shadowColor: "shadow-emerald-500/20",
-      borderGlow: "hover:shadow-emerald-500/30",
-      iconBg: "bg-gradient-to-br from-emerald-400 to-teal-500",
-      badgeStyle: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-      features: [
-        { label: t("每日额度", "Daily Quota"), value: "$6" },
-        { label: t("月度额度", "Monthly Quota"), value: "~$180" },
-        { label: "Haiku 4.5", value: t("~2M tokens/天", "~2M/day") },
-        { label: "Sonnet 4.5", value: t("~500K tokens/天", "~500K/day") },
-        { label: "Opus 4.5", value: t("~100K tokens/天", "~100K/day") },
-      ],
-      includes: [t("无限API调用", "Unlimited API"), t("基础支持", "Basic Support")],
     },
     {
       id: "light",
-      name: t("轻量套餐", "Light"),
-      price: "120",
+      name: t("轻量开发", "Light"),
+      series: "standard",
+      price: "89",
       dailyQuota: "$15",
       monthlyQuota: "~$450",
-      description: t("个人开发者首选", "For Developers"),
+      haiku: "~5M",
+      sonnet: "~1.4M",
+      opus: "~270K",
+      support: t("标准支持", "Standard"),
+      description: t("个人开发", "Personal Dev"),
+      tag: t("进阶选择", "Advanced"),
+      tagColor: "blue",
       icon: Rocket,
-      gradient: "from-blue-400 via-indigo-500 to-violet-500",
-      shadowColor: "shadow-blue-500/20",
-      borderGlow: "hover:shadow-blue-500/30",
-      iconBg: "bg-gradient-to-br from-blue-400 to-indigo-500",
-      badgeStyle: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-      features: [
-        { label: t("每日额度", "Daily Quota"), value: "$15" },
-        { label: t("月度额度", "Monthly Quota"), value: "~$450" },
-        { label: "Haiku 4.5", value: t("~5M tokens/天", "~5M/day") },
-        { label: "Sonnet 4.5", value: t("~1.4M tokens/天", "~1.4M/day") },
-        { label: "Opus 4.5", value: t("~270K tokens/天", "~270K/day") },
-      ],
-      includes: [t("无限API调用", "Unlimited API"), t("标准支持", "Standard Support")],
-    },
-    {
-      id: "plus",
-      name: t("进阶套餐", "Plus"),
-      price: "160",
-      dailyQuota: "$20",
-      monthlyQuota: "~$600",
-      description: t("进阶开发者之选", "For Growing Teams"),
-      icon: TrendingUp,
-      gradient: "from-violet-400 via-purple-500 to-fuchsia-500",
-      shadowColor: "shadow-violet-500/20",
-      borderGlow: "hover:shadow-violet-500/30",
-      iconBg: "bg-gradient-to-br from-violet-400 to-purple-500",
-      badgeStyle: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20",
-      features: [
-        { label: t("每日额度", "Daily Quota"), value: "$20" },
-        { label: t("月度额度", "Monthly Quota"), value: "~$600" },
-        { label: "Haiku 4.5", value: t("~6.8M tokens/天", "~6.8M/day") },
-        { label: "Sonnet 4.5", value: t("~1.8M tokens/天", "~1.8M/day") },
-        { label: "Opus 4.5", value: t("~360K tokens/天", "~360K/day") },
-      ],
-      includes: [t("无限API调用", "Unlimited API"), t("优先支持", "Priority Support")],
     },
     {
       id: "standard",
-      name: t("标准套餐", "Standard"),
+      name: t("标准生产力", "Standard"),
+      series: "standard",
       price: "249",
-      dailyQuota: "$35",
-      monthlyQuota: "~$1,050",
-      description: t("专业开发必备", "Professional Choice"),
+      dailyQuota: "$40",
+      monthlyQuota: "~$1,200",
+      haiku: "~13M",
+      sonnet: "~3.6M",
+      opus: "~720K",
+      support: t("优先支持", "Priority"),
+      description: t("专业开发", "Professional"),
+      tag: t("推荐选择", "Recommended"),
+      tagColor: "violet",
+      recommended: true,
       icon: Star,
-      gradient: "from-amber-400 via-orange-500 to-red-500",
-      shadowColor: "shadow-amber-500/20",
-      borderGlow: "hover:shadow-amber-500/30",
-      iconBg: "bg-gradient-to-br from-amber-400 to-orange-500",
-      badgeStyle: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-      features: [
-        { label: t("每日额度", "Daily Quota"), value: "$35" },
-        { label: t("月度额度", "Monthly Quota"), value: "~$1,050" },
-        { label: "Haiku 4.5", value: t("~12M tokens/天", "~12M/day") },
-        { label: "Sonnet 4.5", value: t("~3.2M tokens/天", "~3.2M/day") },
-        { label: "Opus 4.5", value: t("~640K tokens/天", "~640K/day") },
-      ],
-      includes: [t("无限API调用", "Unlimited API"), t("专属支持", "Dedicated Support"), t("7×24服务", "24/7 Service")],
     },
+    // 旗舰系列
     {
       id: "pro",
-      name: t("专业套餐", "Pro"),
-      price: "420",
-      dailyQuota: "$60",
-      monthlyQuota: "~$1,800",
-      popular: true,
-      description: t("高效团队首选", "Best for Teams"),
+      name: t("专业工作室", "Pro Studio"),
+      series: "flagship",
+      price: "399",
+      dailyQuota: "$80",
+      monthlyQuota: "~$2,400",
+      haiku: "~27M",
+      sonnet: "~7.2M",
+      opus: "~1.4M",
+      support: t("VIP专属", "VIP"),
+      description: t("团队首选", "Team Choice"),
+      tag: t("推荐选择", "Recommended"),
+      tagColor: "emerald",
+      recommended: true,
       icon: Crown,
-      gradient: "from-rose-400 via-pink-500 to-fuchsia-500",
-      shadowColor: "shadow-rose-500/25",
-      borderGlow: "hover:shadow-rose-500/40",
-      iconBg: "bg-gradient-to-br from-rose-400 to-pink-500",
-      badgeStyle: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
-      features: [
-        { label: t("每日额度", "Daily Quota"), value: "$60" },
-        { label: t("月度额度", "Monthly Quota"), value: "~$1,800" },
-        { label: "Haiku 4.5", value: t("~20M tokens/天", "~20M/day") },
-        { label: "Sonnet 4.5", value: t("~5.5M tokens/天", "~5.5M/day") },
-        { label: "Opus 4.5", value: t("~1.1M tokens/天", "~1.1M/day") },
-      ],
-      includes: [t("无限API调用", "Unlimited API"), t("VIP专属支持", "VIP Support"), t("7×24服务", "24/7 Service")],
     },
     {
       id: "max",
-      name: t("Max 套餐", "Max"),
-      price: "900",
-      dailyQuota: "$180",
-      monthlyQuota: "~$5,400",
-      description: t("企业级无限可能", "Enterprise Power"),
+      name: t("旗舰算力", "Max Power"),
+      series: "flagship",
+      price: "599",
+      dailyQuota: "$120",
+      monthlyQuota: "~$3,600",
+      haiku: "~40M",
+      sonnet: "~11M",
+      opus: "~2.2M",
+      support: t("企业级", "Enterprise"),
+      description: t("架构师首选", "Architect"),
+      tag: t("架构师首选", "Architect"),
+      tagColor: "teal",
       icon: Gem,
-      gradient: "from-slate-400 via-zinc-500 to-neutral-600",
-      shadowColor: "shadow-slate-500/20",
-      borderGlow: "hover:shadow-slate-500/30",
-      iconBg: "bg-gradient-to-br from-slate-600 to-zinc-700",
-      badgeStyle: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
-      features: [
-        { label: t("每日额度", "Daily Quota"), value: "$180" },
-        { label: t("月度额度", "Monthly Quota"), value: "~$5,400" },
-        { label: "Haiku 4.5", value: t("~61M tokens/天", "~61M/day") },
-        { label: "Sonnet 4.5", value: t("~16M tokens/天", "~16M/day") },
-        { label: "Opus 4.5", value: t("~3.3M tokens/天", "~3.3M/day") },
-      ],
-      includes: [t("无限API调用", "Unlimited API"), t("企业级支持", "Enterprise Support"), t("优先处理", "Priority Queue")],
+    },
+    {
+      id: "ultra",
+      name: t("Ultra 至尊", "Ultra"),
+      series: "flagship",
+      price: "899",
+      dailyQuota: "$200",
+      monthlyQuota: "~$6,000",
+      haiku: "~67M",
+      sonnet: "~18M",
+      opus: "~3.6M",
+      support: t("专属客服", "Dedicated"),
+      description: t("无限算力", "Unlimited"),
+      tag: t("量大管够", "Unlimited"),
+      tagColor: "amber",
+      icon: Flame,
     },
   ]
 
-  // Claude 官方完整定价
-  const claudePricing = [
-    {
-      name: "Claude Haiku 4.5",
-      description: t("快速响应，高效经济", "Fast & Economical"),
-      color: "emerald",
-      prices: {
-        input: "$0.80",
-        output: "$4.00",
-        cacheWrite: "$1.00",
-        cacheRead: "$0.08",
-      },
-    },
-    {
-      name: "Claude Sonnet 4.5",
-      description: t("智能平衡，性价比优", "Balanced Performance"),
-      color: "blue",
-      prices: {
-        input: "$3.00",
-        output: "$15.00",
-        cacheWrite: "$3.75",
-        cacheRead: "$0.30",
-      },
-    },
-    {
-      name: "Claude Opus 4.5",
-      description: t("顶级智能，极致性能", "Maximum Intelligence"),
-      color: "violet",
-      prices: {
-        input: "$5.00",
-        output: "$25.00",
-        cacheWrite: "$6.25",
-        cacheRead: "$0.50",
-      },
-    },
+  const standardPlans = allPlans.filter(p => p.series === "standard")
+  const flagshipPlans = allPlans.filter(p => p.series === "flagship")
+
+  // 标准系列显示顺序（中间推荐）
+  const standardDisplay = [
+    allPlans.find(p => p.id === "mini")!,
+    allPlans.find(p => p.id === "standard")!,
+    allPlans.find(p => p.id === "light")!,
   ]
 
-  const faqs = [
-    {
-      q: t("可以随时更改套餐吗？", "Can I change plans anytime?"),
-      a: t("是的，您可以随时升级套餐，升级后立即生效，差价按剩余天数折算。", "Yes, upgrade anytime with immediate effect. Price difference calculated by remaining days."),
-    },
-    {
-      q: t("超过每日额度怎么办？", "What if I exceed daily quota?"),
-      a: t("超出额度后当日API将暂停，次日0点自动重置。您也可以随时升级套餐。", "API pauses after exceeding. Resets at midnight or upgrade your plan."),
-    },
-    {
-      q: t("提供退款吗？", "Do you offer refunds?"),
-      a: t("购买后24小时内不满意可申请全额退款，超过24小时按剩余天数退款。", "Full refund within 24h. Partial refund based on remaining days after that."),
-    },
-    {
-      q: t("什么是Ultrathink模式？", "What is Ultrathink mode?"),
-      a: t("Claude深度思考模式，会产生更长的思考链，消耗约30%-50%额外tokens，但输出更准确。", "Claude's extended thinking mode. Uses 30-50% more tokens but provides more accurate responses."),
-    },
+  // 旗舰系列显示顺序（中间推荐）
+  const flagshipDisplay = [
+    allPlans.find(p => p.id === "max")!,
+    allPlans.find(p => p.id === "pro")!,
+    allPlans.find(p => p.id === "ultra")!,
   ]
+
+  // VIP等级数据
+  const vipLevels = [
+    { level: "VIP1", name: t("白银会员", "Silver"), threshold: "0", windows: "3", discount: t("原价", "100%"), color: "slate" },
+    { level: "VIP2", name: t("黄金会员", "Gold"), threshold: "1,000", windows: "5", discount: "95%", color: "amber" },
+    { level: "VIP3", name: t("铂金会员", "Platinum"), threshold: "2,000", windows: "10", discount: "90%", color: "cyan" },
+    { level: "SVIP", name: t("至尊会员", "Diamond"), threshold: "3,000", windows: "15", discount: "85%", color: "violet" },
+  ]
+
+  // 套餐卡片组件
+  const PlanCard = ({
+    plan,
+    isCenter = false,
+    accentColor = "violet"
+  }: {
+    plan: typeof allPlans[0]
+    isCenter?: boolean
+    accentColor?: "violet" | "amber"
+  }) => {
+    const colorMap = {
+      violet: {
+        ring: "ring-violet-500",
+        shadow: "shadow-violet-500/20",
+        gradient: "from-violet-500 to-fuchsia-500",
+        bg: "bg-violet-50",
+        text: "text-violet-600",
+        border: "border-violet-200",
+      },
+      amber: {
+        ring: "ring-amber-500",
+        shadow: "shadow-amber-500/20",
+        gradient: "from-amber-500 to-orange-500",
+        bg: "bg-amber-50",
+        text: "text-amber-600",
+        border: "border-amber-200",
+      }
+    }
+    const colors = colorMap[accentColor]
+
+    return (
+      <div className={`relative ${isCenter ? 'md:scale-105 md:z-10' : ''}`}>
+        {plan.recommended && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+            <div className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-xs font-bold shadow-lg bg-gradient-to-r ${colors.gradient}`}>
+              <Star className="w-3.5 h-3.5" />
+              {t("推荐选择", "RECOMMENDED")}
+            </div>
+          </div>
+        )}
+
+        <div className={`relative h-full rounded-2xl bg-white transition-all duration-300 ${
+          isCenter ? `ring-2 ${colors.ring} shadow-xl ${colors.shadow}` : 'border border-gray-200 hover:shadow-lg'
+        }`}>
+          {isCenter && (
+            <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl bg-gradient-to-r ${colors.gradient}`} />
+          )}
+
+          <div className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                isCenter ? `bg-gradient-to-br ${colors.gradient}` : 'bg-gray-100'
+              }`}>
+                <plan.icon className={`w-6 h-6 ${isCenter ? 'text-white' : 'text-gray-600'}`} />
+              </div>
+              <div className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                isCenter ? `${colors.bg} ${colors.text} ${colors.border}` : 'border-gray-200 text-gray-500 bg-gray-50'
+              }`}>
+                {plan.dailyQuota}/{t("天", "day")}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-lg font-bold text-gray-900 mb-1">{plan.name}</h3>
+              <div className="flex items-baseline gap-1">
+                <span className={`font-bold ${isCenter ? 'text-4xl' : 'text-3xl'} text-gray-900`}>
+                  ¥{plan.price}
+                </span>
+                <span className="text-gray-500 text-sm">{t("/月", "/mo")}</span>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">{plan.description}</p>
+            </div>
+
+            <button
+              onClick={() => handlePurchaseClick(plan.name)}
+              className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                isCenter
+                  ? `text-white bg-gradient-to-r ${colors.gradient} shadow-lg hover:shadow-xl hover:-translate-y-0.5`
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-2">
+                {t("立即订阅", "Subscribe")}
+                {isCenter && <ArrowRight className="w-4 h-4" />}
+              </span>
+            </button>
+
+            <div className="my-5 h-px bg-gray-100" />
+
+            <div className="space-y-2.5 text-xs">
+              {[
+                { label: t("每日额度", "Daily"), value: plan.dailyQuota },
+                { label: t("月度额度", "Monthly"), value: plan.monthlyQuota },
+                { label: "Haiku 4.5", value: `${plan.haiku}/天` },
+                { label: "Sonnet 4.5", value: `${plan.sonnet}/天` },
+                { label: "Opus 4.5", value: `${plan.opus}/天` },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-gray-400">{item.label}</span>
+                  <span className="font-medium text-gray-700">{item.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                  isCenter ? `bg-gradient-to-br ${colors.gradient}` : 'bg-gray-200'
+                }`}>
+                  <Check className={`w-3 h-3 ${isCenter ? 'text-white' : 'text-gray-600'}`} />
+                </div>
+                <span className="text-sm text-gray-600">{plan.support}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const tagColorClasses: Record<string, string> = {
+    sky: "bg-sky-100 text-sky-700 border-sky-200",
+    blue: "bg-blue-100 text-blue-700 border-blue-200",
+    violet: "bg-violet-100 text-violet-700 border-violet-200",
+    emerald: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    teal: "bg-teal-100 text-teal-700 border-teal-200",
+    amber: "bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 border-amber-200",
+  }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a]">
-      {/* 动态背景 */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[1000px] h-[1000px] bg-gradient-to-br from-violet-500/[0.07] via-fuchsia-500/[0.05] to-transparent rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute top-1/3 right-0 w-[800px] h-[800px] bg-gradient-to-br from-cyan-500/[0.07] via-blue-500/[0.05] to-transparent rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-        <div className="absolute bottom-0 left-0 w-[900px] h-[900px] bg-gradient-to-br from-rose-500/[0.06] via-orange-500/[0.04] to-transparent rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] overflow-hidden">
+      {/* Background - 与主页和功能页统一风格 */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div
+          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+        <div className="absolute top-0 right-1/4 w-[1000px] h-[1000px] bg-gradient-to-br from-violet-500/20 to-purple-500/20 rounded-full blur-[150px] animate-pulse-slow" />
+        <div className="absolute top-1/3 left-0 w-[800px] h-[800px] bg-gradient-to-br from-cyan-500/15 to-blue-500/15 rounded-full blur-[130px] animate-pulse-slow animation-delay-2000" />
+        <div className="absolute bottom-0 right-0 w-[900px] h-[900px] bg-gradient-to-br from-emerald-500/15 to-teal-500/15 rounded-full blur-[130px] animate-pulse-slow animation-delay-4000" />
       </div>
 
       <Navigation />
 
       {/* Hero */}
-      <section className="relative pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 px-4 sm:px-6">
-        <div className="max-w-[1200px] mx-auto text-center">
+      <section className="relative pt-24 sm:pt-28 pb-12 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto text-center">
           <div className={`${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <div className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 mb-6 sm:mb-8 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 shadow-lg shadow-gray-200/20 dark:shadow-none">
-              <div className="relative">
-                <Sparkles className="w-4 h-4 text-violet-500" />
-                <div className="absolute inset-0 animate-ping">
-                  <Sparkles className="w-4 h-4 text-violet-500 opacity-50" />
-                </div>
-              </div>
-              <span className="text-sm font-medium bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-600 bg-clip-text text-transparent">
+            <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+              <Sparkles className="w-4 h-4 text-violet-500" />
+              <span className="text-sm font-medium bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
                 {t("简单透明的定价方案", "Simple & Transparent Pricing")}
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
               <span className="text-gray-900 dark:text-white">{t("选择适合您的", "Choose Your")}</span>
-              <br />
-              <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent ml-2">
                 {t("完美方案", "Perfect Plan")}
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8 sm:mb-10 px-2">
-              {t("6种套餐灵活选择，支持全系列 Claude AI 模型，按需付费，随时升级", "6 flexible plans with full Claude AI model support. Pay as you need, upgrade anytime.")}
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
+              {t("6种套餐灵活选择，支持全系列 Claude AI 模型", "6 flexible plans with full Claude AI model support")}
             </p>
 
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm">
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
               {[
-                { icon: Shield, text: t("安全可靠", "Secure & Safe"), color: "text-emerald-500" },
-                { icon: Clock, text: t("即时开通", "Instant Access"), color: "text-blue-500" },
-                { icon: Headphones, text: t("专业支持", "Pro Support"), color: "text-violet-500" },
+                { icon: Shield, text: t("安全可靠", "Secure"), color: "text-emerald-500" },
+                { icon: Clock, text: t("即时开通", "Instant"), color: "text-blue-500" },
+                { icon: Headphones, text: t("专业支持", "Support"), color: "text-violet-500" },
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur border border-gray-200/50 dark:border-white/10">
+                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 dark:bg-gray-800/60 backdrop-blur border border-gray-200/50 dark:border-gray-700/50">
                   <item.icon className={`w-4 h-4 ${item.color}`} />
                   <span className="text-gray-700 dark:text-gray-300 font-medium">{item.text}</span>
                 </div>
@@ -294,239 +358,431 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* 套餐卡片 */}
-      <section className="relative pb-24 px-4 sm:px-6">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-            {tiers.map((tier, index) => (
-              <div
-                key={tier.id}
-                className={`group relative ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {/* 热门标签 */}
-                {tier.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full blur-lg opacity-50 animate-pulse" />
-                      <div className="relative inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold shadow-xl">
-                        <Flame className="w-3.5 h-3.5 animate-bounce" style={{ animationDuration: '1s' }} />
-                        {t("最受欢迎", "MOST POPULAR")}
+      {/* VIP 会员权益 - 表格形式 */}
+      <section className="relative py-8 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className={`relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900 shadow-lg ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500" />
+
+            {/* 表头 */}
+            <div className="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20 mb-3">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t("VIP 会员权益", "VIP Benefits")}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t("累计消费解锁专属特权", "Unlock privileges with spending")}</p>
+              </div>
+            </div>
+
+            {/* 移动端卡片视图 */}
+            <div className="block lg:hidden p-4 space-y-3">
+              {vipLevels.map((vip, i) => (
+                <div key={i} className={`p-4 rounded-xl border ${
+                  vip.level === 'SVIP'
+                    ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-violet-200 dark:border-violet-700'
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700'
+                }`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${
+                        vip.color === 'slate' ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200' :
+                        vip.color === 'amber' ? 'bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-200' :
+                        vip.color === 'cyan' ? 'bg-cyan-200 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-200' :
+                        'bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-200'
+                      }`}>
+                        {vip.level}
                       </div>
+                      <span className="font-bold text-gray-900 dark:text-white">{vip.name}</span>
                     </div>
+                    <span className={`font-bold text-sm ${vip.level === 'VIP1' ? 'text-gray-500' : 'text-green-600 dark:text-green-400'}`}>{vip.discount}</span>
                   </div>
-                )}
-
-                {/* 卡片主体 */}
-                <div
-                  className={`relative h-full rounded-3xl transition-all duration-500 ${
-                    tier.popular
-                      ? 'ring-2 ring-rose-500/50 shadow-2xl shadow-rose-500/20'
-                      : `shadow-xl ${tier.shadowColor} hover:shadow-2xl ${tier.borderGlow}`
-                  }`}
-                >
-                  {/* 渐变边框效果 */}
-                  <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${tier.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl -z-10`} />
-
-                  {/* 顶部渐变条 */}
-                  <div className={`absolute top-0 left-6 right-6 h-1 rounded-b-full bg-gradient-to-r ${tier.gradient} opacity-80`} />
-
-                  <div className="relative h-full rounded-3xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 overflow-hidden">
-                    {/* 微光效果 */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                      <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 group-hover:left-full transition-all duration-1000 ease-out" />
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex justify-between p-2 bg-white/50 dark:bg-gray-700/50 rounded-lg">
+                      <span className="text-gray-500 dark:text-gray-400">{t("门槛", "Threshold")}</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-200">¥{vip.threshold}</span>
                     </div>
-
-                    <div className="relative p-7">
-                      {/* 头部 */}
-                      <div className="flex items-start justify-between mb-5">
-                        <div className={`relative w-14 h-14 rounded-2xl ${tier.iconBg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                          <tier.icon className="w-7 h-7 text-white" />
-                          <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${tier.gradient} opacity-0 group-hover:opacity-30 blur-lg transition-opacity duration-300`} />
-                        </div>
-                        <div className={`px-3.5 py-1.5 rounded-full text-xs font-bold border ${tier.badgeStyle} backdrop-blur-sm`}>
-                          {tier.dailyQuota}/{t("天", "day")}
-                        </div>
-                      </div>
-
-                      {/* 名称和价格 */}
-                      <div className="mb-5">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{tier.name}</h3>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-4xl font-extrabold bg-gradient-to-br from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-                            ¥{tier.price}
-                          </span>
-                          <span className="text-gray-500 font-medium">{t("/月", "/mo")}</span>
-                        </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{tier.description}</p>
-                      </div>
-
-                      {/* 按钮 */}
-                      <button
-                        onClick={() => handlePurchaseClick(tier.name)}
-                        className={`relative w-full py-3.5 rounded-2xl font-semibold text-sm overflow-hidden transition-all duration-300 group/btn ${
-                          tier.popular
-                            ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/40 hover:-translate-y-0.5'
-                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:shadow-lg hover:-translate-y-0.5'
-                        }`}
-                      >
-                        <span className="relative z-10 flex items-center justify-center gap-2">
-                          {t("立即订阅", "Subscribe Now")}
-                          <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                        </span>
-                      </button>
-
-                      {/* 分隔线 */}
-                      <div className="my-6 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
-
-                      {/* 额度详情 */}
-                      <div className="space-y-3">
-                        {tier.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-500 dark:text-gray-400">{feature.label}</span>
-                            <span className="text-sm font-semibold text-gray-900 dark:text-white">{feature.value}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* 包含功能 */}
-                      <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{t("包含服务", "Includes")}</p>
-                        <div className="space-y-2.5">
-                          {tier.includes.map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-2.5">
-                              <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${tier.gradient} flex items-center justify-center`}>
-                                <Check className="w-3 h-3 text-white" />
-                              </div>
-                              <span className="text-sm text-gray-600 dark:text-gray-300">{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="flex justify-between p-2 bg-white/50 dark:bg-gray-700/50 rounded-lg">
+                      <span className="text-gray-500 dark:text-gray-400">{t("并发", "Windows")}</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-200">{vip.windows}</span>
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* 桌面端表格视图 */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/50 dark:border-gray-700/50">
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("VIP 等级", "VIP Level")}</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("等级名称", "Name")}</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("累计消费门槛", "Threshold")}</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("并发窗口数", "Concurrent Windows")}</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("专属折扣", "Discount")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {vipLevels.map((vip, i) => (
+                    <tr key={i} className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors ${
+                      vip.level === 'SVIP' ? 'bg-gradient-to-r from-violet-50/50 to-fuchsia-50/50 dark:from-violet-900/10 dark:to-fuchsia-900/10' : ''
+                    }`}>
+                      <td className="px-6 py-4 text-center">
+                        <div className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${
+                          vip.color === 'slate' ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200' :
+                          vip.color === 'amber' ? 'bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-200' :
+                          vip.color === 'cyan' ? 'bg-cyan-200 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-200' :
+                          'bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-200'
+                        }`}>
+                          {vip.level}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center font-semibold text-gray-900 dark:text-white">{vip.name}</td>
+                      <td className="px-6 py-4 text-center text-gray-700 dark:text-gray-300">¥{vip.threshold}</td>
+                      <td className="px-6 py-4 text-center text-gray-700 dark:text-gray-300">{vip.windows}</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`font-bold ${vip.level === 'VIP1' ? 'text-gray-500 dark:text-gray-400' : 'text-green-600 dark:text-green-400'}`}>
+                          {vip.discount}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 温馨提示 */}
+            <div className="px-6 py-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-t border-amber-100 dark:border-amber-800/50">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  {t("温馨提示：退订套餐将重置累计消费记录，请珍惜您的会员等级！", "Note: Unsubscribing resets accumulated spending. Cherish your VIP level!")}
+                </p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Claude 官方完整定价 */}
-      <section className="py-20 px-4 sm:px-6 bg-gradient-to-b from-gray-50/80 to-white dark:from-gray-900/50 dark:to-gray-950">
-        <div className="max-w-[1200px] mx-auto">
-          {/* 标题 */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 mb-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{t("与官方计费完全一致", "100% Consistent with Official Pricing")}</span>
+      {/* 套餐对比表格 */}
+      <section className="relative py-8 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className={`relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900 shadow-lg ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            {/* 表格头部 */}
+            <div className="border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900 px-6 py-5">
+              <div className="flex flex-col items-center text-center">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="w-5 h-5 text-violet-500" />
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t("套餐对比", "Plan Comparison")}</h2>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {t("标准系列适合个人开发，配额相对有限；旗舰系列配额充裕，适合团队使用", "Standard for individuals; Flagship for teams with abundant quota")}
+                </p>
+                <div className="flex flex-wrap justify-center gap-3 mt-4">
+                  <div className="inline-flex items-center px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg text-xs">
+                    <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mr-1.5" />
+                    <span className="text-amber-800 dark:text-amber-200">{t("推荐旗舰系列，配额充裕，适合日常开发使用", "Recommend Flagship series for daily development")}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Claude {t("模型官方定价", "Official Model Pricing")}
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-4">
-              {t("每百万 tokens 计费 · 包含输入、输出、缓存写入、缓存读取", "Per million tokens · Including input, output, cache write & read")}
-            </p>
-            <a
-              href="https://claude.com/pricing#api"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
-            >
-              {t("查看 Claude 官方 API 定价", "View Claude Official API Pricing")}
-              <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
 
-          {/* 价格卡片 */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {claudePricing.map((model, idx) => (
-              <div
-                key={idx}
-                className={`relative group rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 hover:shadow-xl transition-all duration-300 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}
-                style={{ animationDelay: `${idx * 100}ms` }}
-              >
-                {/* 模型标识 */}
-                <div className="flex items-center gap-3 mb-5">
-                  <div className={`w-12 h-12 rounded-xl bg-${model.color}-100 dark:bg-${model.color}-900/30 flex items-center justify-center`}>
-                    <Brain className={`w-6 h-6 text-${model.color}-600 dark:text-${model.color}-400`} />
+            {/* 移动端卡片视图 */}
+            <div className="block lg:hidden p-4 space-y-4">
+              {/* 标准系列 */}
+              <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 rounded-xl p-4 border border-violet-200/50 dark:border-violet-700/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white">{model.name}</h3>
-                    <p className="text-xs text-gray-500">{model.description}</p>
+                    <div className="font-bold text-gray-900 dark:text-white">{t("标准系列", "Standard")}</div>
+                    <div className="text-xs text-violet-600 dark:text-violet-400">{t("适合个人开发", "For Individuals")}</div>
                   </div>
                 </div>
-
-                {/* 价格表格 */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{t("输入", "Input")}</span>
+                <div className="space-y-2">
+                  {standardPlans.map(plan => (
+                    <div
+                      key={plan.id}
+                      onClick={() => handlePurchaseClick(plan.name)}
+                      className={`bg-white dark:bg-gray-800 rounded-lg p-3 border cursor-pointer transition-all ${
+                        plan.recommended ? 'border-violet-300 dark:border-violet-600 ring-1 ring-violet-200 dark:ring-violet-700' : 'border-gray-200 dark:border-gray-700 hover:border-violet-200 dark:hover:border-violet-600'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+                            {plan.name}
+                            {plan.recommended && (
+                              <span className="text-xs bg-violet-100 dark:bg-violet-800 text-violet-600 dark:text-violet-300 px-1.5 py-0.5 rounded">★</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{plan.dailyQuota}/{t("天", "day")}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-violet-600 dark:text-violet-400">¥{plan.price}</div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">{t("/月", "/mo")}</div>
+                        </div>
+                      </div>
                     </div>
-                    <span className={`text-sm font-bold text-${model.color}-600 dark:text-${model.color}-400`}>{model.prices.input}</span>
-                  </div>
-                  <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{t("输出", "Output")}</span>
-                    </div>
-                    <span className={`text-sm font-bold text-${model.color}-600 dark:text-${model.color}-400`}>{model.prices.output}</span>
-                  </div>
-                  <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                    <div className="flex items-center gap-2">
-                      <Database className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{t("缓存写入", "Cache Write")}</span>
-                    </div>
-                    <span className={`text-sm font-bold text-${model.color}-600 dark:text-${model.color}-400`}>{model.prices.cacheWrite}</span>
-                  </div>
-                  <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{t("缓存读取", "Cache Read")}</span>
-                    </div>
-                    <span className={`text-sm font-bold text-${model.color}-600 dark:text-${model.color}-400`}>{model.prices.cacheRead}</span>
-                  </div>
+                  ))}
                 </div>
               </div>
+
+              {/* 旗舰系列 */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-4 border border-amber-200/50 dark:border-amber-700/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                    <Crown className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900 dark:text-white">{t("旗舰系列", "Flagship")}</div>
+                    <div className="text-xs text-amber-600 dark:text-amber-400">{t("配额充裕稳定", "Abundant Quota")}</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {flagshipPlans.map(plan => (
+                    <div
+                      key={plan.id}
+                      onClick={() => handlePurchaseClick(plan.name)}
+                      className={`bg-white dark:bg-gray-800 rounded-lg p-3 border cursor-pointer transition-all ${
+                        plan.recommended ? 'border-amber-300 dark:border-amber-600 ring-1 ring-amber-200 dark:ring-amber-700' : 'border-gray-200 dark:border-gray-700 hover:border-amber-200 dark:hover:border-amber-600'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+                            {plan.name}
+                            {plan.recommended && (
+                              <span className="text-xs bg-amber-100 dark:bg-amber-800 text-amber-600 dark:text-amber-300 px-1.5 py-0.5 rounded">★</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{plan.dailyQuota}/{t("天", "day")}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-amber-600 dark:text-amber-400">¥{plan.price}</div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">{t("/月", "/mo")}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 桌面端表格视图 */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  {/* 系列分组头 */}
+                  <tr className="bg-gray-50 dark:bg-gray-800">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 w-[100px] border-r border-gray-200 dark:border-gray-700">
+                      {t("套餐对比", "Compare")}
+                    </th>
+                    <th colSpan={3} className="px-4 py-3 text-center border-r border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
+                          <Zap className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span className="text-base font-bold text-violet-700 dark:text-violet-400">{t("标准系列", "Standard Series")}</span>
+                      </div>
+                      <div className="text-xs text-violet-500 dark:text-violet-400 mt-1">{t("适合个人开发，配额相对有限", "For individuals, limited quota")}</div>
+                    </th>
+                    <th colSpan={3} className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                          <Crown className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span className="text-base font-bold text-amber-700 dark:text-amber-400">{t("旗舰系列", "Flagship Series")}</span>
+                      </div>
+                      <div className="text-xs text-amber-500 dark:text-amber-400 mt-1">{t("配额充裕稳定，适合团队使用", "Abundant quota for teams")}</div>
+                    </th>
+                  </tr>
+                  {/* 套餐名称行 */}
+                  <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-y border-gray-200 dark:border-gray-700">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">
+                      {t("产品规格", "Specs")}
+                    </th>
+                    {allPlans.map((plan, i) => (
+                      <th key={plan.id} className={`px-3 py-3 text-center min-w-[120px] ${
+                        i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''
+                      } ${plan.recommended ? (plan.series === 'standard' ? 'bg-violet-50/50 dark:bg-violet-900/20' : 'bg-amber-50/50 dark:bg-amber-900/20') : ''}`}>
+                        <div className="space-y-1.5">
+                          <div className="font-bold text-gray-900 dark:text-white">{plan.name}</div>
+                          <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${tagColorClasses[plan.tagColor]}`}>
+                            {plan.recommended && <Star className="w-3 h-3 mr-1" />}
+                            {plan.tag}
+                          </div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">
+                            {plan.series === 'standard' ? t("标准系列", "Standard") : t("旗舰系列", "Flagship")}
+                          </div>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {/* 支持模型 */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">{t("支持模型", "Models")}</td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        <div className="text-gray-900 dark:text-gray-100 text-xs">Sonnet 4.5</div>
+                        <div className="text-violet-600 dark:text-violet-400 text-xs font-medium">+ Opus 4.5</div>
+                      </td>
+                    ))}
+                  </tr>
+                  {/* 每日额度 */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-red-50/50 dark:bg-red-900/20 border-r border-gray-200 dark:border-gray-700">
+                      <span className="text-red-700 dark:text-red-400">{t("每日限制", "Daily")}</span>
+                    </td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''} ${
+                        plan.recommended ? (plan.series === 'standard' ? 'bg-violet-50/30 dark:bg-violet-900/10' : 'bg-amber-50/30 dark:bg-amber-900/10') : ''
+                      }`}>
+                        <span className="text-green-600 dark:text-green-400 font-medium text-xs">{t("每日上限", "Limit")} {plan.dailyQuota}</span>
+                      </td>
+                    ))}
+                  </tr>
+                  {/* 月度额度 */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">{t("月度额度", "Monthly")}</td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center text-gray-600 dark:text-gray-400 text-xs ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        {plan.monthlyQuota}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Haiku */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">Haiku 4.5</td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center text-gray-600 dark:text-gray-400 text-xs ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        {plan.haiku}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Sonnet */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">Sonnet 4.5</td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center text-gray-600 dark:text-gray-400 text-xs ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        {plan.sonnet}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Opus */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">Opus 4.5</td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center text-gray-600 dark:text-gray-400 text-xs ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        {plan.opus}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* 有效期 */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-green-50/50 dark:bg-green-900/20 border-r border-gray-200 dark:border-gray-700">
+                      <span className="text-green-700 dark:text-green-400">{t("有效期", "Validity")}</span>
+                    </td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center text-green-600 dark:text-green-400 text-xs font-medium ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        30{t("天", " days")}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* 技术支持 */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-green-50/50 dark:bg-green-900/20 border-r border-gray-200 dark:border-gray-700">
+                      <span className="text-green-700 dark:text-green-400">{t("技术支持", "Support")}</span>
+                    </td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-3 text-center ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        <Check className="w-4 h-4 text-green-500 mx-auto" />
+                      </td>
+                    ))}
+                  </tr>
+                  {/* 价格按钮 */}
+                  <tr className="bg-gray-50 dark:bg-gray-800">
+                    <td className="px-4 py-4 text-xs font-medium text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">{t("立即选购", "Buy Now")}</td>
+                    {allPlans.map((plan, i) => (
+                      <td key={plan.id} className={`px-3 py-4 text-center ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+                        <button
+                          onClick={() => handlePurchaseClick(plan.name)}
+                          className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                        >
+                          ¥{plan.price}/{t("月", "mo")}
+                        </button>
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 标准系列 */}
+      <section className="relative py-12 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className={`text-center mb-10 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 mb-4 rounded-full bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700">
+              <Zap className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+              <span className="text-base font-bold text-violet-700 dark:text-violet-300">{t("标准系列", "Standard Series")}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {t("个人开发者首选", "For Individual Developers")}
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+              {t("适合入门体验、个人项目、日常开发使用", "Ideal for entry-level, personal projects, daily development")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
+            {standardDisplay.map((plan, index) => (
+              <PlanCard key={plan.id} plan={plan} isCenter={index === 1} accentColor="violet" />
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-20 px-4 sm:px-6">
-        <div className="max-w-[900px] mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{t("常见问题", "FAQ")}</h2>
-            <p className="text-gray-500">{t("关于定价的常见疑问", "Common questions about pricing")}</p>
+      {/* 旗舰系列 */}
+      <section className="relative py-12 px-4 sm:px-6 bg-gradient-to-b from-amber-50/30 to-transparent dark:from-amber-900/10 dark:to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <div className={`text-center mb-10 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 mb-4 rounded-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+              <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <span className="text-base font-bold text-amber-700 dark:text-amber-300">{t("旗舰系列", "Flagship Series")}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {t("团队与企业之选", "For Teams & Enterprises")}
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+              {t("适合团队协作、高强度使用、企业级项目", "Ideal for teams, heavy usage, enterprise projects")}
+            </p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-5">
-            {faqs.map((faq, idx) => (
-              <div
-                key={idx}
-                className={`p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}
-                style={{ animationDelay: `${idx * 50}ms` }}
-              >
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{faq.q}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{faq.a}</p>
-              </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
+            {flagshipDisplay.map((plan, index) => (
+              <PlanCard key={plan.id} plan={plan} isCenter={index === 1} accentColor="amber" />
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-16 sm:py-20 px-4 sm:px-6">
-        <div className="max-w-[600px] mx-auto text-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-rose-500/20 rounded-2xl sm:rounded-3xl blur-2xl" />
-            <div className="relative p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">{t("准备好开始了吗？", "Ready to Start?")}</h2>
-              <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 px-2">{t("注册即享免费试用额度，立即体验 Claude AI 的强大能力", "Sign up for free credits and experience Claude AI's power")}</p>
+      <section className="py-16 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-xl mx-auto text-center">
+            <div className="relative p-8 rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{t("准备好开始了吗？", "Ready to Start?")}</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{t("注册即享免费试用额度", "Sign up for free credits")}</p>
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="relative w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base text-white bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 hover:opacity-90 transition-all shadow-xl shadow-violet-500/25 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-0.5 flex items-center justify-center gap-2 mx-auto"
+                className="px-8 py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 hover:opacity-90 transition-all shadow-xl shadow-violet-500/25 hover:-translate-y-0.5 flex items-center justify-center gap-2 mx-auto"
               >
                 {t("免费开始使用", "Get Started Free")}
                 <ArrowRight className="w-5 h-5" />
@@ -537,13 +793,13 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 dark:border-gray-800 py-10 px-6">
-        <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <footer className="border-t border-gray-200 dark:border-gray-800 py-10 px-6 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
             <img src="/ac-logo.png" alt="AiClaude" className="w-8 h-8 rounded-lg" />
             <span className="font-bold text-lg text-gray-900 dark:text-white">AiClaude</span>
           </div>
-          <div className="flex items-center gap-8 text-sm text-gray-500">
+          <div className="flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
             <Link href="/features" className="hover:text-gray-900 dark:hover:text-white transition-colors">{t("功能", "Features")}</Link>
             <Link href="/docs" className="hover:text-gray-900 dark:hover:text-white transition-colors">{t("文档", "Docs")}</Link>
             <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-white transition-colors">{t("隐私", "Privacy")}</Link>
@@ -553,27 +809,21 @@ export default function PricingPage() {
 
       {/* 订阅弹窗 */}
       <Dialog open={isPurchaseModalOpen} onOpenChange={setIsPurchaseModalOpen}>
-        <DialogContent
-          className="sm:max-w-[440px] p-0 gap-0 overflow-hidden border border-gray-200 dark:border-gray-800 shadow-2xl rounded-2xl bg-white dark:bg-gray-900"
-          hideCloseButton
-          animation="fade"
-        >
+        <DialogContent className="sm:max-w-[440px] p-0 gap-0 overflow-hidden border border-gray-200 shadow-2xl rounded-2xl bg-white" hideCloseButton animation="fade">
           <DialogTitle className="sr-only">{t("订阅套餐", "Subscribe Plan")}</DialogTitle>
           <DialogDescription className="sr-only">{t("扫码添加微信订阅", "Scan QR to subscribe")}</DialogDescription>
 
-          {/* 头部 */}
-          <div className="px-8 pt-8 pb-5 text-center border-b border-gray-100 dark:border-gray-800">
+          <div className="px-8 pt-8 pb-5 text-center border-b border-gray-100">
             <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
               <Crown className="w-7 h-7 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{selectedPlan}</h3>
-            <p className="text-sm text-gray-500">{t("扫码联系客服开通", "Scan to contact customer service")}</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedPlan}</h3>
+            <p className="text-sm text-gray-500">{t("扫码联系客服开通", "Scan to contact service")}</p>
           </div>
 
-          {/* 二维码 */}
           <div className="px-8 py-6">
             <div className="flex justify-center">
-              <div className="p-3 rounded-xl bg-white border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="p-3 rounded-xl bg-white border border-gray-200 shadow-sm">
                 <img
                   src="/wechat-qr.jpg"
                   alt="QR Code"
@@ -584,14 +834,13 @@ export default function PricingPage() {
                 />
               </div>
             </div>
-            <p className="text-center text-sm text-gray-400 mt-4">{t("微信扫一扫添加客服", "Scan with WeChat")}</p>
+            <p className="text-center text-sm text-gray-400 mt-4">{t("微信扫一扫", "Scan with WeChat")}</p>
           </div>
 
-          {/* 底部按钮 */}
           <div className="px-8 pb-8">
             <button
               onClick={() => setIsPurchaseModalOpen(false)}
-              className="w-full py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="w-full py-3 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               {t("关闭", "Close")}
             </button>
