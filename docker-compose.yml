@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  aiclaude-frontend:
+    # 使用本地 Dockerfile 构建镜像
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # 容器名称
+    container_name: aiclaude-frontend
+
+    # 镜像名称
+    image: aiclaude-frontend:latest
+
+    # 端口映射 (内部 3000 映射到主机 3000)
+    ports:
+      - "3000:3000"
+
+    # 环境变量
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=3000
+      # 后端 API 地址 (如果需要)
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+
+    # 连接到 claude 网络 (与后端在同一网络)
+    networks:
+      - claude
+
+    # 重启策略
+    restart: unless-stopped
+
+    # 健康检查
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx 反向代理 (用于域名访问和 SSL)
+  nginx:
+    image: nginx:alpine
+    container_name: aiclaude-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - claude
+    depends_on:
+      - aiclaude-frontend
+    restart: unless-stopped
+
+# 网络配置（使用已存在的外部网络 claude）
+networks:
+  claude:
+    external: true

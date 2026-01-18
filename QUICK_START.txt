@@ -1,0 +1,84 @@
+═══════════════════════════════════════════════════════════════
+    AIClaude Frontend - 一键部署快速参考
+═══════════════════════════════════════════════════════════════
+
+【部署步骤】
+
+1. 上传文件
+   用 MobaXterm 将整个 aiclaude-react 文件夹拖到服务器 /root/
+
+2. 执行部署
+   cd /root/aiclaude-react
+   chmod +x deploy.sh
+   ./deploy.sh
+
+3. 配置 DNS（域名注册商）
+   A记录: @ → 服务器IP
+   CNAME: www → aiclaude.online
+
+4. 访问网站
+   http://aiclaude.online
+
+═══════════════════════════════════════════════════════════════
+
+【常用命令】
+
+查看状态:    docker-compose ps
+查看日志:    docker-compose logs -f
+重启服务:    docker-compose restart
+停止服务:    docker-compose stop
+启动服务:    docker-compose up -d
+更新代码:    docker-compose up -d --build
+
+═══════════════════════════════════════════════════════════════
+
+【启用 HTTPS】
+
+1. 安装证书工具
+   sudo apt install certbot -y
+
+2. 停止 Nginx
+   docker-compose stop nginx
+
+3. 获取证书
+   sudo certbot certonly --standalone -d aiclaude.online
+
+4. 复制证书
+   sudo cp /etc/letsencrypt/live/aiclaude.online/fullchain.pem ./ssl/
+   sudo cp /etc/letsencrypt/live/aiclaude.online/privkey.pem ./ssl/
+   sudo chmod 644 ./ssl/*.pem
+
+5. 修改配置
+   nano nginx.conf
+   (删除 HTTPS 部分的 # 注释)
+
+6. 重启服务
+   docker-compose up -d
+
+7. 访问 HTTPS
+   https://aiclaude.online
+
+═══════════════════════════════════════════════════════════════
+
+【故障排查】
+
+防火墙:      sudo ufw allow 80 && sudo ufw allow 443
+DNS测试:     ping aiclaude.online
+容器状态:    docker ps
+进入容器:    docker exec -it aiclaude-frontend sh
+清理重建:    docker-compose down && docker system prune -a
+
+═══════════════════════════════════════════════════════════════
+
+【文件说明】
+
+deploy.sh           - 一键部署脚本
+docker-compose.yml  - Docker 编排配置
+Dockerfile          - Docker 镜像构建文件
+nginx.conf          - Nginx 反向代理配置
+DEPLOYMENT.md       - 详细部署文档
+README_DEPLOY.md    - 快速部署指南
+
+═══════════════════════════════════════════════════════════════
+
+🎉 部署成功后，用户输入 aiclaude.online 即可访问您的前端主页！
