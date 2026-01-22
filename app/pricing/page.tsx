@@ -218,10 +218,6 @@ export default function PricingPage() {
         <div className={`relative h-full rounded-2xl bg-white transition-all duration-300 ${
           isCenter ? `ring-2 ${colors.ring} shadow-xl ${colors.shadow}` : 'border border-gray-200 hover:shadow-lg'
         }`}>
-          {isCenter && (
-            <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl bg-gradient-to-r ${colors.gradient}`} />
-          )}
-
           <div className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -353,113 +349,6 @@ export default function PricingPage() {
                   <span className="text-gray-700 dark:text-gray-300 font-medium">{item.text}</span>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* VIP 会员权益 - 表格形式 */}
-      <section className="relative py-8 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className={`relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900 shadow-lg ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500" />
-
-            {/* 表头 */}
-            <div className="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20 mb-3">
-                  <Crown className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t("VIP 会员权益", "VIP Benefits")}</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t("累计消费解锁专属特权", "Unlock privileges with spending")}</p>
-              </div>
-            </div>
-
-            {/* 移动端卡片视图 */}
-            <div className="block lg:hidden p-4 space-y-3">
-              {vipLevels.map((vip, i) => (
-                <div key={i} className={`p-4 rounded-xl border ${
-                  vip.level === 'SVIP'
-                    ? 'bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 border-violet-200 dark:border-violet-700'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700'
-                }`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${
-                        vip.color === 'slate' ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200' :
-                        vip.color === 'amber' ? 'bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-200' :
-                        vip.color === 'cyan' ? 'bg-cyan-200 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-200' :
-                        'bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-200'
-                      }`}>
-                        {vip.level}
-                      </div>
-                      <span className="font-bold text-gray-900 dark:text-white">{vip.name}</span>
-                    </div>
-                    <span className={`font-bold text-sm ${vip.level === 'VIP1' ? 'text-gray-500' : 'text-green-600 dark:text-green-400'}`}>{vip.discount}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex justify-between p-2 bg-white/50 dark:bg-gray-700/50 rounded-lg">
-                      <span className="text-gray-500 dark:text-gray-400">{t("门槛", "Threshold")}</span>
-                      <span className="font-medium text-gray-700 dark:text-gray-200">¥{vip.threshold}</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-white/50 dark:bg-gray-700/50 rounded-lg">
-                      <span className="text-gray-500 dark:text-gray-400">{t("并发", "Windows")}</span>
-                      <span className="font-medium text-gray-700 dark:text-gray-200">{vip.windows}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 桌面端表格视图 */}
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/50 dark:border-gray-700/50">
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("VIP 等级", "VIP Level")}</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("等级名称", "Name")}</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("累计消费门槛", "Threshold")}</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("并发窗口数", "Concurrent Windows")}</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t("专属折扣", "Discount")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {vipLevels.map((vip, i) => (
-                    <tr key={i} className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors ${
-                      vip.level === 'SVIP' ? 'bg-gradient-to-r from-violet-50/50 to-fuchsia-50/50 dark:from-violet-900/10 dark:to-fuchsia-900/10' : ''
-                    }`}>
-                      <td className="px-6 py-4 text-center">
-                        <div className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${
-                          vip.color === 'slate' ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200' :
-                          vip.color === 'amber' ? 'bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-200' :
-                          vip.color === 'cyan' ? 'bg-cyan-200 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-200' :
-                          'bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-200'
-                        }`}>
-                          {vip.level}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center font-semibold text-gray-900 dark:text-white">{vip.name}</td>
-                      <td className="px-6 py-4 text-center text-gray-700 dark:text-gray-300">¥{vip.threshold}</td>
-                      <td className="px-6 py-4 text-center text-gray-700 dark:text-gray-300">{vip.windows}</td>
-                      <td className="px-6 py-4 text-center">
-                        <span className={`font-bold ${vip.level === 'VIP1' ? 'text-gray-500 dark:text-gray-400' : 'text-green-600 dark:text-green-400'}`}>
-                          {vip.discount}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* 温馨提示 */}
-            <div className="px-6 py-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-t border-amber-100 dark:border-amber-800/50">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 dark:text-amber-200">
-                  {t("温馨提示：退订套餐将重置累计消费记录，请珍惜您的会员等级！", "Note: Unsubscribing resets accumulated spending. Cherish your VIP level!")}
-                </p>
-              </div>
             </div>
           </div>
         </div>
@@ -728,10 +617,10 @@ export default function PricingPage() {
       {/* 标准系列 */}
       <section className="relative py-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className={`text-center mb-10 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 mb-4 rounded-full bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700">
-              <Zap className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-              <span className="text-base font-bold text-violet-700 dark:text-violet-300">{t("标准系列", "Standard Series")}</span>
+          <div className={`text-center mb-8 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 mb-3 rounded-full bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-200/50 dark:border-violet-700/50 backdrop-blur-sm">
+              <Zap className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+              <span className="text-sm font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">{t("标准系列", "Standard Series")}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {t("个人开发者首选", "For Individual Developers")}
@@ -752,10 +641,10 @@ export default function PricingPage() {
       {/* 旗舰系列 */}
       <section className="relative py-12 px-4 sm:px-6 bg-gradient-to-b from-amber-50/30 to-transparent dark:from-amber-900/10 dark:to-transparent">
         <div className="max-w-7xl mx-auto">
-          <div className={`text-center mb-10 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 mb-4 rounded-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
-              <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              <span className="text-base font-bold text-amber-700 dark:text-amber-300">{t("旗舰系列", "Flagship Series")}</span>
+          <div className={`text-center mb-8 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 mb-3 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-200/50 dark:border-amber-700/50 backdrop-blur-sm">
+              <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span className="text-sm font-semibold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{t("旗舰系列", "Flagship Series")}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {t("团队与企业之选", "For Teams & Enterprises")}

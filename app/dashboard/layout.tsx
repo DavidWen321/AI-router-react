@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
-import { Users, Key, Database, Package, Activity, Shield } from "lucide-react"
+import { Users, Key, Database, Package, Activity, Shield, DollarSign } from "lucide-react"
 import Link from "next/link"
 
 /**
@@ -74,6 +74,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       href: "/dashboard/admin/channel-health",
       icon: Activity,
       color: "bg-gradient-to-br from-cyan-500 to-teal-500",
+    },
+    {
+      name: t("模型定价", "Model Pricing"),
+      href: "/dashboard/admin/model-pricing",
+      icon: DollarSign,
+      color: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+    },
+    {
+      name: t("模型限制", "Model Restriction"),
+      href: "/dashboard/admin/model-restriction",
+      icon: Shield,
+      color: "bg-gradient-to-br from-rose-500 to-rose-600",
     },
   ]
 

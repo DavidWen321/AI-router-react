@@ -1421,5 +1421,176 @@ export const backupPoolApi = {
   },
 }
 
+// ==================== Model Pricing Management API ====================
+
+/**
+ * Model Pricing Data Interface
+ */
+export interface ModelPricingData {
+  id: number
+  modelKey: string              // 模型标识符（如 claude-sonnet-4-5）
+  modelName: string             // 模型全名（如 claude-sonnet-4-5-20250929）
+  inputPrice: number            // 输入价格（$/百万tokens）
+  outputPrice: number           // 输出价格（$/百万tokens）
+  cacheWritePrice: number       // 缓存写入价格（$/百万tokens）
+  cacheReadPrice: number        // 缓存读取价格（$/百万tokens）
+  isActive: boolean             // 是否启用
+  isAllowed: boolean            // 是否允许使用
+  createdAt: string             // 创建时间
+  updatedAt: string             // 更新时间
+}
+
+/**
+ * Create Pricing Form Data
+ */
+export interface CreatePricingFormData {
+  modelKey: string
+  modelName: string
+  inputPrice: number
+  outputPrice: number
+  cacheWritePrice: number
+  cacheReadPrice: number
+  isActive: boolean
+}
+
+/**
+ * Edit Pricing Form Data
+ */
+export interface EditPricingFormData extends CreatePricingFormData {
+  id: number
+}
+
+/**
+ * Model Pricing Management API
+ * 对应后端 ModelPricingController
+ */
+export const modelPricingApi = {
+  /**
+   * 获取所有模型定价
+   * 对应后端接口: GET /model-pricing
+   */
+  getAllPricings: async (): Promise<ModelPricingData[]> => {
+    return request('/model-pricing')
+  },
+
+  /**
+   * 创建模型定价
+   * 对应后端接口: POST /model-pricing
+   */
+  createPricing: async (data: CreatePricingFormData): Promise<void> => {
+    await request('/model-pricing', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 更新模型定价
+   * 对应后端接口: PUT /model-pricing (ID在请求体中)
+   */
+  updatePricing: async (id: number, data: EditPricingFormData): Promise<void> => {
+    await request('/model-pricing', {
+      method: 'PUT',
+      body: JSON.stringify({ ...data, id }),
+    })
+  },
+
+  /**
+   * 删除模型定价
+   * 对应后端接口: DELETE /model-pricing/{id}
+   */
+  deletePricing: async (id: number): Promise<void> => {
+    await request(`/model-pricing/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * 刷新价格缓存
+   * 注意: 后端暂未实现此接口,暂时注释
+   * TODO: 后端需要添加刷新缓存的API端点
+   */
+  refreshCache: async (): Promise<void> => {
+    // 暂时返回成功,不实际调用后端
+    console.warn('[API] refreshCache: 后端暂未实现此接口')
+    return Promise.resolve()
+  },
+}
+
+// ==================== Model Restriction Management API ====================
+
+/**
+ * Model Restriction Data Interface
+ */
+export interface ModelRestrictionData {
+  id: number
+  modelKey: string              // 模型标识符（如 claude-sonnet-4-5）
+  modelName: string             // 模型全名（如 claude-sonnet-4-5-20250929）
+  isActive: boolean             // 是否启用
+  isAllowed: boolean            // 是否允许使用（勾选状态）
+}
+
+/**
+ * Model Restriction Management API
+ * 对应后端 ModelRestrictionController
+ */
+export const modelRestrictionApi = {
+  /**
+   * 获取所有可用模型列表（从 model_pricing 表）
+   * 对应后端接口: GET /api/model-restriction/available-models
+   */
+  getAvailableModels: async (): Promise<ModelPricingData[]> => {
+    return request('/api/model-restriction/available-models')
+  },
+
+  /**
+   * 获取当前允许的模型列表
+   * 对应后端接口: GET /api/model-restriction/allowed-models
+   */
+  getAllowedModels: async (): Promise<string[]> => {
+    return request('/api/model-restriction/allowed-models')
+  },
+
+  /**
+   * 更新允许的模型列表（仅管理员）
+   * 对应后端接口: POST /api/model-restriction/allowed-models
+   * Body: {"modelKeys": ["claude-sonnet-4-5", "claude-haiku-3-5"]}
+   */
+  updateAllowedModels: async (modelKeys: string[]): Promise<void> => {
+    await request('/api/model-restriction/allowed-models', {
+      method: 'POST',
+      body: JSON.stringify({ modelKeys }),
+    })
+  },
+
+  /**
+   * 清空允许列表（恢复默认）（仅管理员）
+   * 对应后端接口: DELETE /api/model-restriction/allowed-models
+   */
+  clearAllowedModels: async (): Promise<void> => {
+    await request('/api/model-restriction/allowed-models', {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * 刷新缓存（仅管理员）
+   * 对应后端接口: POST /api/model-restriction/refresh-cache
+   */
+  refreshCache: async (): Promise<void> => {
+    await request('/api/model-restriction/refresh-cache', {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 测试模型是否允许使用
+   * 对应后端接口: GET /api/model-restriction/test?modelName=xxx
+   */
+  testModel: async (modelName: string): Promise<{ allowed: boolean }> => {
+    return request(`/api/model-restriction/test?modelName=${encodeURIComponent(modelName)}`)
+  },
+}
+
 export { ApiError }
 export type { ApiResponse }

@@ -28,6 +28,7 @@ export function CreateBackupPoolDialog({ open, onOpenChange, onSuccess }: Create
     accountUrl: "",
     accountPoolKey: "",
     accountDailyUsage: "",
+    accountDailyRemainingUsage: "",
     accountCost: "",
     priority: "5",
     status: "1",
@@ -47,6 +48,7 @@ export function CreateBackupPoolDialog({ open, onOpenChange, onSuccess }: Create
         accountUrl: formData.accountUrl,
         accountPoolKey: formData.accountPoolKey,
         accountDailyUsage: parseFloat(formData.accountDailyUsage),
+        accountDailyRemainingUsage: parseFloat(formData.accountDailyRemainingUsage),
         accountCost: parseFloat(formData.accountCost),
         priority: parseInt(formData.priority),
         status: parseInt(formData.status),
@@ -161,6 +163,20 @@ export function CreateBackupPoolDialog({ open, onOpenChange, onSuccess }: Create
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="accountDailyRemainingUsage">{t("剩余额度($)", "Remaining Quota($)")} *</Label>
+              <Input
+                id="accountDailyRemainingUsage"
+                type="number"
+                step="0.01"
+                value={formData.accountDailyRemainingUsage}
+                onChange={(e) => setFormData({ ...formData, accountDailyRemainingUsage: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="accountCost">{t("月成本($)", "Monthly Cost($)")} *</Label>
               <Input
                 id="accountCost"
@@ -171,9 +187,6 @@ export function CreateBackupPoolDialog({ open, onOpenChange, onSuccess }: Create
                 required
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="priority">{t("优先级", "Priority")} *</Label>
               <Input

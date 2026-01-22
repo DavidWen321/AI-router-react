@@ -29,6 +29,7 @@ export function EditBackupPoolDialog({ open, onOpenChange, pool, onSuccess }: Ed
     accountUrl: "",
     accountPoolKey: "",
     accountDailyUsage: "",
+    accountDailyRemainingUsage: "",
     accountCost: "",
     priority: "",
     status: "",
@@ -46,6 +47,7 @@ export function EditBackupPoolDialog({ open, onOpenChange, pool, onSuccess }: Ed
         accountUrl: pool.accountUrl,
         accountPoolKey: pool.accountPoolKey,
         accountDailyUsage: pool.accountDailyUsage.toString(),
+        accountDailyRemainingUsage: pool.accountDailyRemainingUsage.toString(),
         accountCost: pool.accountCost.toString(),
         priority: pool.priority.toString(),
         status: pool.status.toString(),
@@ -69,6 +71,7 @@ export function EditBackupPoolDialog({ open, onOpenChange, pool, onSuccess }: Ed
         accountUrl: formData.accountUrl,
         accountPoolKey: formData.accountPoolKey,
         accountDailyUsage: parseFloat(formData.accountDailyUsage),
+        accountDailyRemainingUsage: parseFloat(formData.accountDailyRemainingUsage),
         accountCost: parseFloat(formData.accountCost),
         priority: parseInt(formData.priority),
         status: parseInt(formData.status),
@@ -168,6 +171,20 @@ export function EditBackupPoolDialog({ open, onOpenChange, pool, onSuccess }: Ed
                 required
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-accountDailyRemainingUsage">{t("剩余额度($)", "Remaining Quota($)")} *</Label>
+              <Input
+                id="edit-accountDailyRemainingUsage"
+                type="number"
+                step="0.01"
+                value={formData.accountDailyRemainingUsage}
+                onChange={(e) => setFormData({ ...formData, accountDailyRemainingUsage: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-accountCost">{t("月成本($)", "Monthly Cost($)")} *</Label>
               <Input
