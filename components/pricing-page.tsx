@@ -118,7 +118,7 @@ const pricingTiers = [
     description: "适合大规模企业和高强度使用的旗舰方案",
     features: [
       { text: "月度预算", value: "$3,600.00" },
-      { text: "日度预算", value: "$120.00" },
+      { text: "日度预算", value: "$135.00" },
       { text: "包含杂额", value: "$3,600.00" },
       { text: "最多 无限制 次请求/月", value: null },
       { text: "专属客户经理", value: null },

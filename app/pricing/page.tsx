@@ -120,7 +120,7 @@ export default function PricingPage() {
       name: t("旗舰算力", "Max Power"),
       series: "flagship",
       price: "599",
-      dailyQuota: "$120",
+      dailyQuota: "$135",
       monthlyQuota: "~$3,600",
       haiku: "~40M",
       sonnet: "~11M",
