@@ -70,14 +70,9 @@ export function ModelPricingTable({
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {pricing.modelKey}
                   </span>
-                  <div className="flex gap-2">
-                    <Badge variant={pricing.isActive ? "default" : "secondary"}>
-                      {pricing.isActive ? t("启用", "Active") : t("禁用", "Inactive")}
-                    </Badge>
-                    <Badge variant={pricing.isAllowed ? "default" : "destructive"}>
-                      {pricing.isAllowed ? t("允许", "Allowed") : t("禁止", "Denied")}
-                    </Badge>
-                  </div>
+                  <Badge variant={pricing.isActive ? "default" : "secondary"}>
+                    {pricing.isActive ? t("启用", "Active") : t("禁用", "Inactive")}
+                  </Badge>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">{pricing.modelName}</div>
               </div>
@@ -211,14 +206,9 @@ export function ModelPricingTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex gap-2">
-                    <Badge variant={pricing.isActive ? "default" : "secondary"}>
-                      {pricing.isActive ? t("启用", "Active") : t("禁用", "Inactive")}
-                    </Badge>
-                    <Badge variant={pricing.isAllowed ? "default" : "destructive"}>
-                      {pricing.isAllowed ? t("允许", "Allowed") : t("禁止", "Denied")}
-                    </Badge>
-                  </div>
+                  <Badge variant={pricing.isActive ? "default" : "secondary"}>
+                    {pricing.isActive ? t("启用", "Active") : t("禁用", "Inactive")}
+                  </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex gap-2">

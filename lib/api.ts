@@ -1230,6 +1230,65 @@ export interface DomainHealthDashboardData {
   realtimeData: Array<Record<string, unknown>>
 }
 
+// ==================== 多模型健康监控类型 ====================
+
+/**
+ * 单个模型的健康数据
+ */
+export interface ModelHealthData {
+  modelId: string           // 模型ID
+  currentStatus: 'available' | 'unavailable'
+  ewmaLatencyMs: number     // EWMA延迟
+  successRate: number       // 成功率 0-100
+  lastProbeTime: string | null
+  fullyHealthy: boolean     // 是否完全健康
+  availabilityRate: number  // 可用率 0-100
+  history: Array<{
+    time: string
+    status: 'available' | 'unavailable'
+    latencyMs: number
+  }>
+}
+
+/**
+ * 单个渠道的多模型健康数据
+ */
+export interface MultiModelChannelData {
+  alias: string
+  url: string
+  enabled: boolean
+  overallStatus: 'available' | 'partial' | 'degraded' | 'unavailable' | 'unknown'
+  models: {
+    haiku?: ModelHealthData
+    sonnet?: ModelHealthData
+    opus?: ModelHealthData
+  }
+}
+
+/**
+ * 多模型仪表盘数据
+ */
+export interface MultiModelDashboardData {
+  queryTime: string
+  enabled: boolean
+  channelCount: number
+  probeStrategy: {
+    highFrequency: {
+      models: string[]
+      intervalSeconds: number
+      description?: string
+    }
+    lowFrequency: {
+      models: string[]
+      intervalSeconds: number
+      description?: string
+    }
+  }
+  multiModelHistory?: Record<string, MultiModelChannelData>
+  channels?: Record<string, MultiModelChannelData>
+  currentStatus: DomainHealthSnapshot[]
+}
+
 /**
  * 域名健康监控 API
  * 对应后端 DomainHealthController
@@ -1315,6 +1374,22 @@ export const domainHealthApi = {
     return request(`/api/domain-health/enabled/${alias}?enabled=${enabled}`, {
       method: 'PUT',
     })
+  },
+
+  /**
+   * ⭐ 获取多模型24小时健康历史
+   * 对应后端接口: GET /api/domain-health/history/24h/multi-model
+   */
+  getMultiModel24HourHistory: async (): Promise<MultiModelDashboardData> => {
+    return request('/api/domain-health/history/24h/multi-model')
+  },
+
+  /**
+   * ⭐ 获取多模型综合仪表盘数据
+   * 对应后端接口: GET /api/domain-health/dashboard/multi-model
+   */
+  getMultiModelDashboard: async (): Promise<MultiModelDashboardData> => {
+    return request('/api/domain-health/dashboard/multi-model')
   },
 }
 
@@ -1594,3 +1669,76 @@ export const modelRestrictionApi = {
 
 export { ApiError }
 export type { ApiResponse }
+
+// ==================== Pool Usage Statistics API ====================
+
+/**
+ * 号池使用统计汇总
+ */
+export interface PoolUsageSummaryStats {
+  totalRequests: number
+  mainPoolRequests: number
+  mainPoolPercentage: number
+  backupPoolRequests: number
+  backupPoolPercentage: number
+  totalCost: number
+  mainPoolCost: number
+  backupPoolCost: number
+}
+
+/**
+ * 模型分布数据
+ */
+export interface ModelDistribution {
+  modelName: string
+  count: number
+  percentage: number
+  cost: number
+}
+
+/**
+ * 每日趋势数据
+ */
+export interface DailyTrendData {
+  date: string
+  mainPoolRequests: number
+  backupPoolRequests: number
+  mainPoolCost: number
+  backupPoolCost: number
+}
+
+/**
+ * 号池使用统计完整数据
+ */
+export interface PoolUsageStatsData {
+  queryTime: string
+  timeRange: string
+  summary: PoolUsageSummaryStats
+  modelDistribution: ModelDistribution[]
+  dailyTrend: DailyTrendData[]
+}
+
+/**
+ * 号池使用统计 API
+ * 对应后端 StatisticsController
+ */
+export const statisticsApi = {
+  /**
+   * 获取号池使用统计
+   * 对应后端接口: GET /api/statistics/usage?range=today
+   * @param range - 时间范围: today | yesterday | 7days | 30days
+   */
+  getPoolUsageStats: async (range: 'today' | 'yesterday' | '7days' | '30days' = 'today'): Promise<PoolUsageStatsData> => {
+    return request(`/api/statistics/usage?range=${range}`)
+  },
+
+  /**
+   * 刷新统计缓存
+   * 对应后端接口: POST /api/statistics/usage/refresh
+   */
+  refreshCache: async (): Promise<string> => {
+    return request('/api/statistics/usage/refresh', {
+      method: 'POST',
+    })
+  },
+}

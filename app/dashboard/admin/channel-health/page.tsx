@@ -23,10 +23,13 @@ import {
   type DomainHealthDashboardData,
   type DomainHealthSnapshot,
   type ChannelHealthData,
+  type MultiModelDashboardData,
+  type MultiModelChannelData,
   ApiError,
 } from "@/lib/api"
 import { RealtimeChart } from "./components/RealtimeChart"
-import { UptimeBar24h } from "./components/UptimeBar24h"
+import { MultiModelUptimeBar24h } from "./components/MultiModelUptimeBar24h"
+import { UsageStatistics } from "./components/UsageStatistics"
 
 /**
  * 渠道健康监控页面
@@ -43,6 +46,7 @@ export default function ChannelHealthPage() {
 
   // 数据状态
   const [dashboardData, setDashboardData] = useState<DomainHealthDashboardData | null>(null)
+  const [multiModelData, setMultiModelData] = useState<MultiModelDashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -55,8 +59,13 @@ export default function ChannelHealthPage() {
   const fetchDashboard = useCallback(async (showLoading = true) => {
     if (showLoading) setIsLoading(true)
     try {
-      const data = await domainHealthApi.getDashboard()
+      // 并行获取普通仪表盘数据和多模型数据
+      const [data, multiModel] = await Promise.all([
+        domainHealthApi.getDashboard(),
+        domainHealthApi.getMultiModelDashboard()
+      ])
       setDashboardData(data)
+      setMultiModelData(multiModel)
       setLastUpdated(new Date())
     } catch (error) {
       console.error("获取健康监控数据失败:", error)
@@ -446,36 +455,50 @@ export default function ChannelHealthPage() {
         </div>
       )}
 
-      {/* 24小时可用性监测 */}
-      {dashboardData && dashboardData.history24h && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-4 sm:p-6">
+      {/* 多模型24小时可用性监测 */}
+      {multiModelData && multiModelData.multiModelHistory && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="mb-4 sm:mb-6">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-              {t("24 小时可用性", "24-Hour Availability")}
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-              {t("每个时段的健康状态记录", "Health status for each time period")}
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                  {t("多模型 24 小时可用性", "Multi-Model 24-Hour Availability")}
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                  {t("分模型健康状态监测（Haiku/Sonnet 30秒，Opus 5分钟）", "Per-model health monitoring (Haiku/Sonnet 30s, Opus 5min)")}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  Haiku
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-violet-500" />
+                  Sonnet
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  Opus
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-4 sm:space-y-6">
-            {Object.entries(dashboardData.history24h).map(([alias, channelData]) => {
-              // 从 currentStatus 中获取该渠道的启用状态
-              const channelStatus = dashboardData.currentStatus?.find(c => c.alias === alias)
-              const isEnabled = channelStatus?.enabled !== false
-
-              return (
-                <UptimeBar24h
-                  key={alias}
-                  channelName={alias}
-                  channelData={channelData as ChannelHealthData}
-                  enabled={isEnabled}
-                />
-              )
-            })}
+          <div className="space-y-6 sm:space-y-8">
+            {Object.entries(multiModelData.multiModelHistory).map(([alias, channelData]) => (
+              <MultiModelUptimeBar24h
+                key={alias}
+                channelName={alias}
+                channelData={channelData}
+              />
+            ))}
           </div>
         </div>
       )}
+
+      {/* 使用统计 */}
+      <UsageStatistics />
 
       {/* 无数据状态 */}
       {!dashboardData?.enabled && (
