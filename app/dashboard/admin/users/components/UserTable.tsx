@@ -205,43 +205,43 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
           <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
               {/* 用户邮箱 - 始终显示，自适应宽度 */}
-              <th className="px-2 xl:px-3 2xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[18%] 2xl:w-[15%]">
+              <th className="px-2 xl:px-3 2xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[18%] 2xl:w-[15%]">
                 {t("用户邮箱", "Email")}
               </th>
               {/* 注册时间 - xl以上显示 */}
-              <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
+              <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
                 {t("注册时间", "Registered")}
               </th>
               {/* 套餐类型 - 始终显示 */}
-              <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[12%]">
+              <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[12%]">
                 {t("套餐", "Plan")}
               </th>
               {/* 状态 - 始终显示 */}
-              <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[8%]">
+              <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[8%]">
                 {t("状态", "Status")}
               </th>
               {/* 套餐开始时间 - 2xl以上显示 */}
-              <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
+              <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
                 {t("开始时间", "Start")}
               </th>
               {/* 套餐结束时间 - xl以上显示 */}
-              <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
+              <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
                 {t("结束时间", "End")}
               </th>
               {/* 每日限额 - 始终显示 */}
-              <th className="px-2 xl:px-3 py-3 text-right text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[11%]">
+              <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[11%]">
                 {t("限额", "Limit")}
               </th>
               {/* 今日剩余 - 始终显示 */}
-              <th className="px-2 xl:px-3 py-3 text-right text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[11%]">
+              <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[11%]">
                 {t("剩余", "Left")}
               </th>
               {/* 使用率 - 始终显示 */}
-              <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[14%] lg:w-[16%]">
+              <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[14%] lg:w-[16%]">
                 {t("使用率", "Usage")}
               </th>
               {/* 最后活跃 - 2xl以上显示 */}
-              <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
+              <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
                 {t("活跃", "Active")}
               </th>
               {/* 操作 - 始终显示 */}
@@ -262,7 +262,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
                 >
                   {/* 用户邮箱 - 可截断 + Tooltip */}
-                  <td className="px-2 xl:px-3 2xl:px-4 py-3 text-xs xl:text-sm text-gray-900 dark:text-gray-100">
+                  <td className="px-2 xl:px-3 2xl:px-4 py-3 text-center text-xs xl:text-sm text-gray-900 dark:text-gray-100">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{user.email}</span>
@@ -277,7 +277,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                     </Tooltip>
                   </td>
                   {/* 注册时间 - xl以上显示 + Tooltip */}
-                  <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                  <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{user.registrationDate}</span>
@@ -292,7 +292,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                     </Tooltip>
                   </td>
                   {/* 套餐类型 + Tooltip */}
-                  <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm text-gray-900 dark:text-gray-100">
+                  <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-900 dark:text-gray-100">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{translatePlanType(user.planType, t)}</span>
@@ -307,13 +307,13 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                     </Tooltip>
                   </td>
                   {/* 状态 */}
-                  <td className="px-2 xl:px-3 py-3">
+                  <td className="px-2 xl:px-3 py-3 text-center">
                     <span className={`inline-flex px-1.5 xl:px-2 py-0.5 text-[10px] xl:text-xs font-medium rounded ${getStatusColor(user.planStatus)}`}>
                       {translateStatus(user.planStatus, t)}
                     </span>
                   </td>
                   {/* 套餐开始时间 - 2xl以上显示 + Tooltip */}
-                  <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                  <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{user.planStartTime || "-"}</span>
@@ -328,7 +328,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                     </Tooltip>
                   </td>
                   {/* 套餐结束时间 - xl以上显示 + Tooltip */}
-                  <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                  <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{user.planExpiry || "-"}</span>
@@ -343,17 +343,17 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                     </Tooltip>
                   </td>
                   {/* 每日限额 */}
-                  <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm text-right text-gray-900 dark:text-gray-100">
+                  <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-900 dark:text-gray-100">
                     ${actualDailyBudget.toFixed(2)}
                   </td>
                   {/* 今日剩余 */}
-                  <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm text-right text-green-600 dark:text-green-400 font-medium">
+                  <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-green-600 dark:text-green-400 font-medium">
                     ${remaining.toFixed(2)}
                   </td>
                   {/* 使用率 - 响应式进度条 */}
                   <td className="px-2 xl:px-3 py-3">
                     <div
-                      className="flex items-center gap-1 xl:gap-2 cursor-pointer group"
+                      className="flex items-center justify-center gap-1 xl:gap-2 cursor-pointer group"
                       onClick={() => onUsageRateClick(user)}
                       title={t("点击查看详细统计", "Click to view detailed statistics")}
                     >
@@ -372,7 +372,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                     </div>
                   </td>
                   {/* 最后活跃 - 2xl以上显示 + Tooltip */}
-                  <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                  <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{user.lastActive}</span>

@@ -135,28 +135,28 @@ export function PackageTable({ packages, onEditPackage, onDeletePackage }: Packa
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 ID
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 {t("会员等级名称", "Membership Name")}
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 {t("会员等级代码", "Level Code")}
               </th>
-              <th className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 {t("每日用量 ($)", "Daily Usage ($)")}
               </th>
-              <th className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 {t("价格 (¥)", "Price (¥)")}
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 {t("状态", "Status")}
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 {t("创建时间", "Created At")}
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                 {t("更新时间", "Updated At")}
               </th>
               <th className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -170,28 +170,28 @@ export function PackageTable({ packages, onEditPackage, onDeletePackage }: Packa
                 key={pkg.id}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
               >
-                <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{pkg.id}</td>
-                <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
+                <td className="px-6 py-4 text-center text-sm text-gray-900 dark:text-gray-100">{pkg.id}</td>
+                <td className="px-6 py-4 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
                   {pkg.levelName}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{pkg.levelCode}</td>
-                <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">
+                <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">{pkg.levelCode}</td>
+                <td className="px-6 py-4 text-center text-sm text-gray-900 dark:text-gray-100">
                   ${pkg.dailyUsage.toFixed(2)}
                 </td>
-                <td className="px-6 py-4 text-sm text-right font-medium text-indigo-600 dark:text-indigo-400">
+                <td className="px-6 py-4 text-center text-sm font-medium text-indigo-600 dark:text-indigo-400">
                   ¥{pkg.price.toFixed(2)}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusColor(pkg.status)}`}
                   >
                     {translateStatus(pkg.status)}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
                   {formatDate(pkg.createdAt)}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
                   {formatDate(pkg.updatedAt)}
                 </td>
                 <td className="px-6 py-4">

@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
-import { Users, Key, Database, Package, Activity, Shield, DollarSign } from "lucide-react"
+import { Users, Key, Database, Package, Activity, Shield, DollarSign, Globe, Link2 } from "lucide-react"
 import Link from "next/link"
 
 /**
@@ -62,6 +62,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       href: "/dashboard/admin/backup-pool",
       icon: Shield,
       color: "bg-gradient-to-br from-orange-500 to-orange-600",
+    },
+    {
+      name: t("IP代理管理", "IP Proxy"),
+      href: "/dashboard/admin/ip-management",
+      icon: Globe,
+      color: "bg-gradient-to-br from-cyan-500 to-teal-600",
+    },
+    {
+      name: t("代理绑定", "Proxy Binding"),
+      href: "/dashboard/admin/proxy-binding",
+      icon: Link2,
+      color: "bg-gradient-to-br from-violet-500 to-purple-600",
     },
     {
       name: t("套餐管理", "Package Management"),
@@ -136,8 +148,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* 主内容区域 - 为左侧栏留出空间 */}
-      <main className="flex-1 ml-28">
-        {children}
+      <main className="flex-1 ml-28 flex justify-center">
+        <div className="w-full">
+          {children}
+        </div>
       </main>
     </div>
   )

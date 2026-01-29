@@ -263,27 +263,27 @@ export default function KeysPage() {
             <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 {/* 密钥名称 - 始终显示 */}
-                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[18%]">
+                <th className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[18%]">
                   {t("密钥名称", "Key Name")}
                 </th>
                 {/* 密钥 - 始终显示 */}
-                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[22%]">
+                <th className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[22%]">
                   {t("密钥", "Key")}
                 </th>
                 {/* 创建时间 - xl以上显示 */}
-                <th className="hidden xl:table-cell px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
+                <th className="hidden xl:table-cell px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
                   {t("创建时间", "Created At")}
                 </th>
                 {/* 最后使用 - 始终显示 */}
-                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[16%]">
+                <th className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[16%]">
                   {t("最后使用", "Last Used")}
                 </th>
                 {/* 状态 - 始终显示 */}
-                <th className="px-2 xl:px-4 py-3 text-left text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
+                <th className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%]">
                   {t("状态", "Status")}
                 </th>
                 {/* 调用次数 - 始终显示 */}
-                <th className="px-2 xl:px-4 py-3 text-right text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
+                <th className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[12%]">
                   {t("调用次数", "Total Calls")}
                 </th>
                 {/* 操作 - 始终显示 */}
@@ -299,7 +299,7 @@ export default function KeysPage() {
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
                 >
                   {/* 密钥名称 + Tooltip */}
-                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <td className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{translateKeyName(key.name)}</span>
@@ -314,7 +314,7 @@ export default function KeysPage() {
                     </Tooltip>
                   </td>
                   {/* 密钥 + Tooltip */}
-                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400 font-mono">
+                  <td className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400 font-mono">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{key.key}</span>
@@ -329,11 +329,11 @@ export default function KeysPage() {
                     </Tooltip>
                   </td>
                   {/* 创建时间 - xl以上显示 */}
-                  <td className="hidden xl:table-cell px-2 xl:px-4 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                  <td className="hidden xl:table-cell px-2 xl:px-4 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     {key.createdAt}
                   </td>
                   {/* 最后使用 + Tooltip */}
-                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm text-gray-600 dark:text-gray-400">
+                  <td className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">{key.lastUsed}</span>
@@ -348,13 +348,13 @@ export default function KeysPage() {
                     </Tooltip>
                   </td>
                   {/* 状态 */}
-                  <td className="px-2 xl:px-4 py-3">
+                  <td className="px-2 xl:px-4 py-3 text-center">
                     <span className={`inline-flex px-1.5 xl:px-2 py-0.5 text-[10px] xl:text-xs font-medium rounded ${getStatusColor(key.status)}`}>
                       {translateStatus(key.status)}
                     </span>
                   </td>
                   {/* 调用次数 */}
-                  <td className="px-2 xl:px-4 py-3 text-xs xl:text-sm text-right text-gray-900 dark:text-gray-100">
+                  <td className="px-2 xl:px-4 py-3 text-center text-xs xl:text-sm text-gray-900 dark:text-gray-100">
                     {key.totalCalls.toLocaleString()}
                   </td>
                   {/* 操作按钮 - 响应式间距 */}

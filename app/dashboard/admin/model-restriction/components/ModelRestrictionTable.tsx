@@ -101,19 +101,19 @@ export function ModelRestrictionTable({
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-700/50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">
                 {t("选择", "Select")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("模型标识符", "Model Key")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("模型名称", "Model Name")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("启用状态", "Active Status")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("允许状态", "Allowed Status")}
               </th>
             </tr>
@@ -126,28 +126,28 @@ export function ModelRestrictionTable({
                   key={model.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-center whitespace-nowrap">
                     <Checkbox
                       checked={isAllowed}
                       onCheckedChange={() => onToggleModel(model.modelKey)}
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {model.modelKey}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <div className="text-sm text-gray-600 dark:text-gray-400 max-w-md truncate">
                       {model.modelName}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-center whitespace-nowrap">
                     <Badge variant={model.isActive ? "default" : "secondary"}>
                       {model.isActive ? t("启用", "Active") : t("禁用", "Inactive")}
                     </Badge>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-center whitespace-nowrap">
                     <Badge variant={isAllowed ? "default" : "destructive"}>
                       {isAllowed ? t("允许使用", "Allowed") : t("禁止使用", "Denied")}
                     </Badge>

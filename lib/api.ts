@@ -1742,3 +1742,354 @@ export const statisticsApi = {
     })
   },
 }
+
+// ==================== Proxy Config API ====================
+
+/**
+ * 代理配置 VO
+ */
+export interface ProxyConfigVO {
+  id?: number
+  name: string
+  host: string
+  port: number
+  username?: string
+  password?: string
+  bindingType: number  // 1-哈希绑定, 2-手动绑定
+  maxAccounts: number
+  currentBindings?: number  // 当前绑定账号数
+  status: number  // 0-禁用, 1-启用
+  priority: number
+  totalRequests?: number
+  successRequests?: number
+  failedRequests?: number
+  lastUsedAt?: string
+  lastErrorAt?: string
+  lastErrorMsg?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+/**
+ * 代理配置 DTO (创建/更新)
+ */
+export interface ProxyConfigDTO {
+  name: string
+  host: string
+  port: number
+  username?: string
+  password?: string
+  bindingType?: number
+  maxAccounts?: number
+  status?: number
+  priority?: number
+}
+
+/**
+ * 账号-代理绑定 VO
+ */
+export interface AccountProxyBindingVO {
+  id: number
+  accountId: number
+  poolType: string  // main / backup
+  proxyConfigId: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+/**
+ * 代理统计信息
+ */
+export interface ProxyStatsVO {
+  totalCount: number
+  enabledCount: number
+  disabledCount: number
+  totalRequests: number
+  successRequests: number
+  failedRequests: number
+  successRate: number
+}
+
+/**
+ * 代理测试结果
+ */
+export interface ProxyTestResult {
+  success: boolean
+  duration?: number
+  proxyAddress?: string
+  error?: string
+}
+
+/**
+ * 代理绑定概览 VO
+ */
+export interface ProxyBindingOverviewVO {
+  id: number
+  name: string
+  host: string
+  port: number
+  status: number
+  maxAccounts: number
+  currentBindings: number
+  availableSlots: number
+  usageRate: number  // 百分比 0-100
+}
+
+/**
+ * 代理绑定统计 VO
+ */
+export interface ProxyBindingStatsVO {
+  proxyId: number
+  proxyName: string
+  host: string
+  port: number
+  maxAccounts: number
+  currentBindings: number
+  availableSlots: number
+  usageRate: number  // 百分比 0-100
+  bindings: AccountProxyBindingVO[]
+}
+
+/**
+ * 批量绑定请求
+ */
+export interface BatchBindRequest {
+  accountIds: number[]
+  poolType: string  // main / backup
+  proxyConfigId: number
+}
+
+/**
+ * 批量绑定结果
+ */
+export interface BatchBindResult {
+  success: number
+  failed: number
+  errors: string[]
+}
+
+/**
+ * 一键分配结果
+ */
+export interface AutoDistributeResult {
+  mainBound: number
+  backupBound: number
+  proxyCount: number
+  totalBound: number
+}
+
+/**
+ * 故障转移结果
+ */
+export interface FailoverResult {
+  transferred: number
+  targetProxyCount: number
+}
+
+/**
+ * 代理配置 API
+ * 对应后端 ProxyConfigController
+ */
+export const proxyConfigApi = {
+  /**
+   * 查询所有代理配置
+   * 对应后端接口: GET /api/proxy-config
+   */
+  listAll: async (): Promise<ProxyConfigVO[]> => {
+    return request('/api/proxy-config')
+  },
+
+  /**
+   * 查询启用的代理配置
+   * 对应后端接口: GET /api/proxy-config/enabled
+   */
+  listEnabled: async (): Promise<ProxyConfigVO[]> => {
+    return request('/api/proxy-config/enabled')
+  },
+
+  /**
+   * 查询单个代理配置
+   * 对应后端接口: GET /api/proxy-config/{id}
+   */
+  getById: async (id: number): Promise<ProxyConfigVO> => {
+    return request(`/api/proxy-config/${id}`)
+  },
+
+  /**
+   * 创建代理配置
+   * 对应后端接口: POST /api/proxy-config
+   */
+  create: async (data: ProxyConfigDTO): Promise<ProxyConfigVO> => {
+    return request('/api/proxy-config', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 更新代理配置
+   * 对应后端接口: PUT /api/proxy-config/{id}
+   */
+  update: async (id: number, data: ProxyConfigDTO): Promise<ProxyConfigVO> => {
+    return request(`/api/proxy-config/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 删除代理配置
+   * 对应后端接口: DELETE /api/proxy-config/{id}
+   */
+  delete: async (id: number): Promise<void> => {
+    await request(`/api/proxy-config/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * 绑定账号到代理
+   * 对应后端接口: POST /api/proxy-config/bind
+   */
+  bindAccount: async (accountId: number, poolType: string, proxyConfigId: number): Promise<void> => {
+    await request(`/api/proxy-config/bind?accountId=${accountId}&poolType=${poolType}&proxyConfigId=${proxyConfigId}`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 解除账号绑定
+   * 对应后端接口: DELETE /api/proxy-config/bind
+   */
+  unbindAccount: async (accountId: number, poolType: string): Promise<void> => {
+    await request(`/api/proxy-config/bind?accountId=${accountId}&poolType=${poolType}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * 查询代理绑定的账号列表
+   * 对应后端接口: GET /api/proxy-config/{id}/bindings
+   */
+  getBindings: async (id: number): Promise<AccountProxyBindingVO[]> => {
+    return request(`/api/proxy-config/${id}/bindings`)
+  },
+
+  /**
+   * 查询账号绑定的代理
+   * 对应后端接口: GET /api/proxy-config/account-binding
+   */
+  getAccountBinding: async (accountId: number, poolType: string): Promise<ProxyConfigVO | null> => {
+    return request(`/api/proxy-config/account-binding?accountId=${accountId}&poolType=${poolType}`)
+  },
+
+  /**
+   * 获取代理统计概览
+   * 对应后端接口: GET /api/proxy-config/stats
+   */
+  getStats: async (): Promise<ProxyStatsVO> => {
+    return request('/api/proxy-config/stats')
+  },
+
+  /**
+   * 重置代理统计
+   * 对应后端接口: POST /api/proxy-config/{id}/reset-stats
+   */
+  resetStats: async (id: number): Promise<void> => {
+    await request(`/api/proxy-config/${id}/reset-stats`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 刷新所有代理缓存
+   * 对应后端接口: POST /api/proxy-config/refresh-cache
+   */
+  refreshCache: async (): Promise<void> => {
+    await request('/api/proxy-config/refresh-cache', {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 刷新指定代理的缓存
+   * 对应后端接口: POST /api/proxy-config/{id}/refresh-cache
+   */
+  refreshProxyCache: async (id: number): Promise<void> => {
+    await request(`/api/proxy-config/${id}/refresh-cache`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 测试代理连接
+   * 对应后端接口: POST /api/proxy-config/{id}/test
+   */
+  testProxy: async (id: number): Promise<ProxyTestResult> => {
+    return request(`/api/proxy-config/${id}/test`, {
+      method: 'POST',
+    })
+  },
+
+  // ==================== 绑定管理接口 ====================
+
+  /**
+   * 获取代理绑定统计信息（包含绑定的账号列表）
+   * 对应后端接口: GET /api/proxy-config/{id}/binding-stats
+   */
+  getBindingStats: async (id: number): Promise<ProxyBindingStatsVO> => {
+    return request(`/api/proxy-config/${id}/binding-stats`)
+  },
+
+  /**
+   * 获取所有代理的绑定概览
+   * 对应后端接口: GET /api/proxy-config/binding-overview
+   */
+  getBindingOverview: async (): Promise<ProxyBindingOverviewVO[]> => {
+    return request('/api/proxy-config/binding-overview')
+  },
+
+  /**
+   * 批量绑定账号到代理
+   * 对应后端接口: POST /api/proxy-config/batch-bind
+   */
+  batchBind: async (data: BatchBindRequest): Promise<BatchBindResult> => {
+    return request('/api/proxy-config/batch-bind', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 同步所有代理的绑定计数（数据修复）
+   * 对应后端接口: POST /api/proxy-config/sync-binding-counts
+   */
+  syncBindingCounts: async (): Promise<void> => {
+    await request('/api/proxy-config/sync-binding-counts', {
+      method: 'POST',
+    })
+  },
+
+  // ==================== 一键分配与故障转移 ====================
+
+  /**
+   * 一键自动分配所有账号到代理
+   * 将所有号池账号平均分配到所有启用的代理（兜底：强制分配，不受max_accounts限制）
+   * 对应后端接口: POST /api/proxy-config/auto-distribute
+   */
+  autoDistribute: async (): Promise<AutoDistributeResult> => {
+    return request('/api/proxy-config/auto-distribute', {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 故障转移：将指定代理的账号转移到其他代理
+   * 对应后端接口: POST /api/proxy-config/{id}/failover
+   */
+  failoverProxy: async (id: number): Promise<FailoverResult> => {
+    return request(`/api/proxy-config/${id}/failover`, {
+      method: 'POST',
+    })
+  },
+}

@@ -143,28 +143,28 @@ export function ModelPricingTable({
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-700/50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("模型标识符", "Model Key")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("模型名称", "Model Name")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("输入价格", "Input Price")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("输出价格", "Output Price")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("缓存写入", "Cache Write")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("缓存读取", "Cache Read")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("状态", "Status")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("操作", "Actions")}
               </th>
             </tr>
@@ -175,43 +175,43 @@ export function ModelPricingTable({
                 key={pricing.id}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
                     {pricing.modelKey}
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <div className="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">
                     {pricing.modelName}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-gray-900 dark:text-white">
                     {formatPrice(pricing.inputPrice)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-gray-900 dark:text-white">
                     {formatPrice(pricing.outputPrice)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-gray-900 dark:text-white">
                     {formatPrice(pricing.cacheWritePrice)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-gray-900 dark:text-white">
                     {formatPrice(pricing.cacheReadPrice)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
                   <Badge variant={pricing.isActive ? "default" : "secondary"}>
                     {pricing.isActive ? t("启用", "Active") : t("禁用", "Inactive")}
                   </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-center">
                     <Button size="sm" variant="ghost" onClick={() => onView(pricing)}>
                       <Eye className="w-4 h-4" />
                     </Button>

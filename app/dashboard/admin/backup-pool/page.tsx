@@ -383,18 +383,18 @@ export default function BackupPoolPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">ID</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("名称", "Name")}</th>
-                <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("供应商", "Supplier")}</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("账号", "Account")}</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("额度", "Quota")}</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("剩余", "Remaining")}</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("使用率", "Usage Rate")}</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("月成本", "Monthly Cost")}</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("优先级", "Priority")}</th>
-                <th className="px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("状态", "Status")}</th>
-                <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-left text-xs xl:text-sm font-medium text-muted-foreground">{t("过期时间", "Expire Time")}</th>
-                <th className="px-2 xl:px-3 py-3 text-right text-xs xl:text-sm font-medium text-muted-foreground">{t("操作", "Actions")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">ID</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("名称", "Name")}</th>
+                <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("供应商", "Supplier")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("账号", "Account")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("额度", "Quota")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("剩余", "Remaining")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("使用率", "Usage Rate")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("月成本", "Monthly Cost")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("优先级", "Priority")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("状态", "Status")}</th>
+                <th className="hidden xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("过期时间", "Expire Time")}</th>
+                <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-muted-foreground">{t("操作", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -417,36 +417,36 @@ export default function BackupPoolPage() {
 
                   return (
                     <tr key={pool.id} className="border-b transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm">{pool.id}</td>
-                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm font-medium">{pool.name}</td>
-                      <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm">{pool.supplierWeb}</td>
-                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm font-mono">{pool.account}</td>
-                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm">${pool.accountDailyUsage.toFixed(2)}</td>
-                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm text-green-600">${pool.accountDailyRemainingUsage.toFixed(2)}</td>
+                      <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm">{pool.id}</td>
+                      <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium">{pool.name}</td>
+                      <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm">{pool.supplierWeb}</td>
+                      <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-mono">{pool.account}</td>
+                      <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm">${pool.accountDailyUsage.toFixed(2)}</td>
+                      <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-green-600">${pool.accountDailyRemainingUsage.toFixed(2)}</td>
                       <td className="px-2 xl:px-3 py-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center gap-2">
                           <Progress value={usageRate} className="h-2 w-20" />
                           <span className="text-xs text-muted-foreground">{usageRate.toFixed(1)}%</span>
                         </div>
                       </td>
-                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm">${pool.accountCost.toFixed(2)}</td>
-                      <td className="px-2 xl:px-3 py-3 text-xs xl:text-sm">
+                      <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm">${pool.accountCost.toFixed(2)}</td>
+                      <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm">
                         <Badge variant={pool.priority <= 3 ? "default" : "secondary"}>
                           {pool.priority}
                         </Badge>
                       </td>
-                      <td className="px-2 xl:px-3 py-3">
+                      <td className="px-2 xl:px-3 py-3 text-center">
                         <Badge variant={pool.status === 1 ? "default" : "secondary"}>
                           {pool.status === 1 ? t("启用", "Enabled") : t("禁用", "Disabled")}
                         </Badge>
                       </td>
-                      <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-xs xl:text-sm">
+                      <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm">
                         <div className={cn("text-xs", isExpiringSoon && "text-orange-500")}>
                           {new Date(pool.expireTime).toLocaleDateString()}
                         </div>
                       </td>
                       <td className="px-2 xl:px-3 py-3">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
