@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
-import { Globe, Sun, Moon, User, LogOut, ChevronDown, Menu, X } from "lucide-react"
+import { Globe, Sun, Moon, User, LogOut, ChevronDown, Menu, X, Gift } from "lucide-react"
 import { useState, useEffect } from "react"
 import { AuthModal } from "@/components/auth-modal"
 
@@ -15,6 +15,7 @@ export function Navigation() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState("")
   const [userRole, setUserRole] = useState<string>("")
+  const [isAgent, setIsAgent] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -34,9 +35,11 @@ export function Navigation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true"
     const email = localStorage.getItem("userEmail") || ""
     const role = localStorage.getItem("userRole") || "user"
+    const agentStatus = localStorage.getItem("isAgent") === "true"
     setIsLoggedIn(loggedIn)
     setUserEmail(email)
     setUserRole(role)
+    setIsAgent(agentStatus)
 
     // Scroll handler
     const handleScroll = () => {
@@ -51,9 +54,11 @@ export function Navigation() {
       const loggedIn = localStorage.getItem("isLoggedIn") === "true"
       const email = localStorage.getItem("userEmail") || ""
       const role = localStorage.getItem("userRole") || "user"
+      const agentStatus = localStorage.getItem("isAgent") === "true"
       setIsLoggedIn(loggedIn)
       setUserEmail(email)
       setUserRole(role)
+      setIsAgent(agentStatus)
     }
 
     window.addEventListener("storage", handleStorageChange)
@@ -76,9 +81,13 @@ export function Navigation() {
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userRole")
     localStorage.removeItem("userId")
+    localStorage.removeItem("isAgent")
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
     setIsLoggedIn(false)
     setUserEmail("")
     setUserRole("")
+    setIsAgent(false)
     router.push("/")
   }
 
@@ -152,6 +161,18 @@ export function Navigation() {
 
             {isLoggedIn ? (
               <>
+                {/* Agent Button - only for agents */}
+                {isAgent && (
+                  <Link
+                    href="/dashboard/agent/redeem"
+                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all"
+                    title={t("代理中心", "Agent Center")}
+                  >
+                    <Gift className="w-4 h-4" />
+                    <span>{t("代理", "Agent")}</span>
+                  </Link>
+                )}
+
                 {/* Dashboard Button */}
                 <button
                   onClick={handleDashboardClick}
@@ -226,6 +247,17 @@ export function Navigation() {
               <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
                 {isLoggedIn ? (
                   <div className="space-y-2">
+                    {/* Agent Link - only for agents */}
+                    {isAgent && (
+                      <Link
+                        href="/dashboard/agent/redeem"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all"
+                      >
+                        <Gift className="w-4 h-4" />
+                        <span>{t("代理中心", "Agent Center")}</span>
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         handleDashboardClick()

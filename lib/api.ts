@@ -390,6 +390,61 @@ export const membershipApi = {
   },
 }
 
+// Agent Pricing API (代理价格套餐管理)
+export const agentPricingApi = {
+  /**
+   * Get all agent pricing
+   * 对应后端接口: GET /admin/agent/pricing/list
+   */
+  getAllPricing: async (): Promise<AgentPricingData[]> => {
+    return request('/admin/agent/pricing/list')
+  },
+
+  /**
+   * Add agent pricing
+   * 对应后端接口: POST /admin/agent/pricing
+   */
+  addPricing: async (data: {
+    membershipId: number
+    agentPrice: number
+    originalPrice: number
+    description?: string
+    sortOrder?: number
+  }): Promise<void> => {
+    await request('/admin/agent/pricing', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Update agent pricing
+   * 对应后端接口: PUT /admin/agent/pricing/{id}
+   */
+  updatePricing: async (id: number, data: {
+    membershipId: number
+    agentPrice: number
+    originalPrice: number
+    description?: string
+    sortOrder?: number
+  }): Promise<void> => {
+    await request(`/admin/agent/pricing/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Delete agent pricing
+   * 对应后端接口: DELETE /admin/agent/pricing/{id}
+   */
+  deletePricing: async (id: number): Promise<void> => {
+    await request(`/admin/agent/pricing/${id}`, {
+      method: 'DELETE',
+    })
+  },
+}
+
 // Admin API
 export const adminApi = {
   /**
@@ -457,6 +512,19 @@ export interface MembershipData {
   status: number  // 状态: 0-禁用，1-启用
   createdAt: string
   updatedAt: string
+}
+
+// Agent Pricing Data Interface (代理价格套餐)
+export interface AgentPricingData {
+  id: number
+  membershipId: number  // 关联的会员套餐ID
+  levelName: string  // 会员等级名称
+  levelCode: string  // 会员等级代码
+  dailyUsage: number  // 每日使用额度（USD）
+  agentPrice: number  // 代理价格（积分/月）
+  originalPrice: number  // 原价/官方价
+  description?: string  // 描述
+  sortOrder?: number  // 排序顺序
 }
 
 // User Management Data Interface
@@ -1664,6 +1732,377 @@ export const modelRestrictionApi = {
    */
   testModel: async (modelName: string): Promise<{ allowed: boolean }> => {
     return request(`/api/model-restriction/test?modelName=${encodeURIComponent(modelName)}`)
+  },
+}
+
+// ==================== Agent (代理商) API ====================
+
+/**
+ * 代理商信息 VO
+ */
+export interface AgentInfoVO {
+  id: string           // 使用string类型避免精度丢失
+  userId: string       // 使用string类型避免精度丢失
+  email?: string       // 代理商邮箱（来自users表）
+  balance: number      // 积分余额
+  totalRecharged: number  // 累计充值
+  totalConsumed: number   // 累计消费
+  redemptionCount?: number  // 兑换次数
+  status: number       // 状态：0-禁用，1-正常
+  remark?: string      // 备注
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * 代理价格套餐 VO
+ */
+export interface AgentPricingVO {
+  id: string           // 使用string类型避免精度丢失
+  membershipId: string // 使用string类型避免精度丢失
+  membershipName?: string  // 会员名称
+  levelName?: string       // 会员等级名称
+  levelCode?: string       // 会员等级代码
+  dailyUsage?: number      // 每日额度（美元）
+  agentPrice: number       // 代理价格（积分）
+  originalPrice: number    // 原价（展示用）
+  description?: string     // 描述
+  sortOrder: number
+  status: number
+}
+
+/**
+ * 代理兑换记录 VO
+ */
+export interface AgentRedemptionLogVO {
+  id: string           // 使用string类型避免精度丢失
+  userId: string
+  membershipId: string // 使用string类型避免精度丢失
+  membershipName: string
+  months: number
+  targetUserEmail: string
+  targetUserId?: string
+  unitPrice: number
+  totalPrice: number
+  balanceBefore: number
+  balanceAfter: number
+  status: number
+  remark?: string
+  createdAt: string
+}
+
+/**
+ * 代理充值记录 VO
+ */
+export interface AgentRechargeLogVO {
+  id: string           // 使用string类型避免精度丢失
+  userId: string
+  amount: number
+  balanceBefore: number
+  balanceAfter: number
+  remark?: string
+  createdAt: string
+}
+
+/**
+ * 代理兑换请求 DTO
+ */
+export interface AgentRedemptionDTO {
+  membershipId: string // 使用string类型避免精度丢失
+  months: number        // 开通月数（1-12）
+  userEmail: string     // 目标用户邮箱
+}
+
+/**
+ * 代理商 API
+ * 对应后端 AgentController
+ */
+/**
+ * 管理员添加代理商请求 DTO
+ */
+export interface AgentAddDTO {
+  userId: string       // 使用string类型避免JavaScript大整数精度丢失
+  remark?: string
+}
+
+/**
+ * 管理员充值请求 DTO
+ */
+export interface AgentRechargeDTO {
+  userId: string       // 使用string类型避免精度丢失
+  amount: number
+  remark?: string
+}
+
+/**
+ * 代理商定价 DTO（添加/更新）
+ */
+export interface AgentPricingDTO {
+  membershipId: string // 使用string类型避免精度丢失
+  agentPrice: number
+  originalPrice: number
+  description?: string
+  sortOrder?: number
+}
+
+/**
+ * 代理商统计数据
+ */
+export interface AgentStatisticsVO {
+  totalAgents: number           // 代理商总数
+  activeAgents: number          // 活跃代理商数
+  totalBalance: number          // 总余额
+  totalRecharged: number        // 总充值金额
+  totalConsumed: number         // 总消费金额
+  totalRedemptions: number      // 总兑换次数
+}
+
+/**
+ * 管理员代理商 API
+ * 对应后端 AgentAdminController
+ */
+export const agentAdminApi = {
+  /**
+   * 获取代理商列表
+   * 对应后端接口: GET /admin/agent/list
+   */
+  listAgents: async (
+    pageNum: number = 1,
+    pageSize: number = 10,
+    keyword?: string,
+    status?: number
+  ): Promise<{
+    list: AgentInfoVO[]
+    total: number
+    pageNum: number
+    pageSize: number
+  }> => {
+    let url = `/admin/agent/list?pageNum=${pageNum}&pageSize=${pageSize}`
+    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`
+    if (status !== undefined) url += `&status=${status}`
+    return request(url)
+  },
+
+  /**
+   * 获取代理商详情
+   * 对应后端接口: GET /admin/agent/{userId}
+   */
+  getAgent: async (userId: string): Promise<AgentInfoVO> => {
+    return request(`/admin/agent/${userId}`)
+  },
+
+  /**
+   * 添加代理商（将用户设为代理商）
+   * 对应后端接口: POST /admin/agent/add
+   */
+  addAgent: async (data: AgentAddDTO): Promise<AgentInfoVO> => {
+    return request('/admin/agent/add', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 移除代理商身份
+   * 对应后端接口: DELETE /admin/agent/{userId}
+   */
+  removeAgent: async (userId: string): Promise<void> => {
+    await request(`/admin/agent/${userId}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * 修改代理商状态（启用/禁用）
+   * 对应后端接口: PUT /admin/agent/{userId}/status
+   */
+  updateStatus: async (userId: string, status: number): Promise<void> => {
+    await request(`/admin/agent/${userId}/status?status=${status}`, {
+      method: 'PUT',
+    })
+  },
+
+  /**
+   * 获取代理商统计数据
+   * 对应后端接口: GET /admin/agent/statistics
+   */
+  getStatistics: async (): Promise<AgentStatisticsVO> => {
+    return request('/admin/agent/statistics')
+  },
+
+  /**
+   * 给代理商充值
+   * 对应后端接口: POST /admin/agent/recharge
+   */
+  recharge: async (data: AgentRechargeDTO): Promise<{
+    rechargeId: string
+    userId: string
+    amount: number
+    balanceAfter: number
+  }> => {
+    return request('/admin/agent/recharge', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 获取代理商充值记录
+   * 对应后端接口: GET /admin/agent/{userId}/recharge/list
+   */
+  getRechargeList: async (
+    userId: string,
+    pageNum: number = 1,
+    pageSize: number = 10
+  ): Promise<{
+    list: AgentRechargeLogVO[]
+    total: number
+    pageNum: number
+    pageSize: number
+  }> => {
+    return request(`/admin/agent/${userId}/recharge/list?pageNum=${pageNum}&pageSize=${pageSize}`)
+  },
+
+  /**
+   * 获取代理商兑换记录
+   * 对应后端接口: GET /admin/agent/{userId}/redemption/list
+   */
+  getRedemptionList: async (
+    userId: string,
+    pageNum: number = 1,
+    pageSize: number = 10
+  ): Promise<{
+    list: AgentRedemptionLogVO[]
+    total: number
+    pageNum: number
+    pageSize: number
+  }> => {
+    return request(`/admin/agent/${userId}/redemption/list?pageNum=${pageNum}&pageSize=${pageSize}`)
+  },
+
+  // =================== 代理价格管理 ===================
+
+  /**
+   * 获取所有代理价格列表（包含禁用的）
+   * 对应后端接口: GET /admin/agent/pricing/list
+   */
+  listAllPricing: async (): Promise<AgentPricingVO[]> => {
+    return request('/admin/agent/pricing/list')
+  },
+
+  /**
+   * 添加代理价格
+   * 对应后端接口: POST /admin/agent/pricing
+   */
+  addPricing: async (data: AgentPricingDTO): Promise<AgentPricingVO> => {
+    return request('/admin/agent/pricing', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 更新代理价格
+   * 对应后端接口: PUT /admin/agent/pricing/{id}
+   */
+  updatePricing: async (id: string, data: AgentPricingDTO): Promise<AgentPricingVO> => {
+    return request(`/admin/agent/pricing/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 删除代理价格
+   * 对应后端接口: DELETE /admin/agent/pricing/{id}
+   */
+  deletePricing: async (id: string): Promise<void> => {
+    await request(`/admin/agent/pricing/${id}`, {
+      method: 'DELETE',
+    })
+  },
+}
+
+export const agentApi = {
+  /**
+   * 获取当前代理商信息（包括余额）
+   * 对应后端接口: GET /agent/info
+   */
+  getInfo: async (): Promise<AgentInfoVO> => {
+    return request('/agent/info')
+  },
+
+  /**
+   * 获取代理价格套餐列表
+   * 对应后端接口: GET /agent/pricing/list
+   */
+  getPricingList: async (): Promise<AgentPricingVO[]> => {
+    return request('/agent/pricing/list')
+  },
+
+  /**
+   * 兑换会员（为用户开通会员）
+   * 对应后端接口: POST /agent/redeem
+   */
+  redeem: async (data: AgentRedemptionDTO): Promise<{
+    redemptionId: number
+    membershipName: string
+    months: number
+    targetUserEmail: string
+    targetUserId: string
+    totalPrice: number
+    balanceAfter: number
+    expireTime: string
+  }> => {
+    return request('/agent/redeem', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 获取兑换记录
+   * 对应后端接口: GET /agent/redemption/list
+   */
+  getRedemptionList: async (
+    pageNum: number = 1,
+    pageSize: number = 20
+  ): Promise<{
+    list: AgentRedemptionLogVO[]
+    total: number
+    pageNum: number
+    pageSize: number
+  }> => {
+    return request(`/agent/redemption/list?pageNum=${pageNum}&pageSize=${pageSize}`)
+  },
+
+  /**
+   * 获取充值记录
+   * 对应后端接口: GET /agent/recharge/list
+   */
+  getRechargeList: async (
+    pageNum: number = 1,
+    pageSize: number = 20
+  ): Promise<{
+    list: AgentRechargeLogVO[]
+    total: number
+    pageNum: number
+    pageSize: number
+  }> => {
+    return request(`/agent/recharge/list?pageNum=${pageNum}&pageSize=${pageSize}`)
+  },
+
+  /**
+   * 检查当前用户是否是代理商
+   * 通过调用 getInfo 来判断
+   */
+  checkIsAgent: async (): Promise<boolean> => {
+    try {
+      await request('/agent/info')
+      return true
+    } catch {
+      return false
+    }
   },
 }
 
