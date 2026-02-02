@@ -106,6 +106,15 @@ export function ViewProxyDialog({ open, onOpenChange, proxy }: ViewProxyDialogPr
                   </div>
                 </div>
 
+                {proxy.exitIp && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t("出口IP", "Exit IP")}</span>
+                    <code className="text-sm font-mono text-cyan-600 dark:text-cyan-400">
+                      {proxy.exitIp}
+                    </code>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t("状态", "Status")}</span>
                   <Badge variant={proxy.status === 1 ? "default" : "secondary"} className={proxy.status === 1 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : ""}>

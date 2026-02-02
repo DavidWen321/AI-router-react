@@ -2194,6 +2194,7 @@ export interface ProxyConfigVO {
   port: number
   username?: string
   password?: string
+  exitIp?: string  // 代理出口IP（可选）- 用于X-Forwarded-For头伪装
   bindingType: number  // 1-哈希绑定, 2-手动绑定
   maxAccounts: number
   currentBindings?: number  // 当前绑定账号数
@@ -2218,6 +2219,7 @@ export interface ProxyConfigDTO {
   port: number
   username?: string
   password?: string
+  exitIp?: string  // 代理出口IP（可选）
   bindingType?: number
   maxAccounts?: number
   status?: number

@@ -14,7 +14,7 @@ import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { AddAgentDialog } from "./components/AddAgentDialog"
 import { RechargeDialog } from "./components/RechargeDialog"
-import { AgentDetailDialog } from "./components/AgentDetailDialog"
+import { AgentDetailView } from "./components/AgentDetailView"
 
 export default function AgentManagementPage() {
   const { t } = useLanguage()
@@ -27,10 +27,12 @@ export default function AgentManagementPage() {
   const [total, setTotal] = useState(0)
   const pageSize = 10
 
+  // 视图状态：'list' 或 'detail'
+  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list')
+
   // 对话框状态
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [rechargeDialogOpen, setRechargeDialogOpen] = useState(false)
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<AgentInfoVO | null>(null)
 
   // 加载代理商列表
@@ -81,10 +83,16 @@ export default function AgentManagementPage() {
     setRechargeDialogOpen(true)
   }
 
-  // 打开详情对话框
+  // 查看详情（切换到详情视图）
   const handleViewDetail = (agent: AgentInfoVO) => {
     setSelectedAgent(agent)
-    setDetailDialogOpen(true)
+    setViewMode('detail')
+  }
+
+  // 返回列表视图
+  const handleBackToList = () => {
+    setViewMode('list')
+    setSelectedAgent(null)
   }
 
   // 切换状态
@@ -134,6 +142,14 @@ export default function AgentManagementPage() {
 
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
+      {/* 详情视图 */}
+      {viewMode === 'detail' && selectedAgent && (
+        <AgentDetailView agent={selectedAgent} onBack={handleBackToList} />
+      )}
+
+      {/* 列表视图 */}
+      {viewMode === 'list' && (
+        <>
       {/* 页面标题 */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-2">
@@ -531,6 +547,8 @@ export default function AgentManagementPage() {
           )}
         </div>
       )}
+        </>
+      )}
 
       {/* 对话框 */}
       <AddAgentDialog
@@ -550,12 +568,6 @@ export default function AgentManagementPage() {
           loadAgents()
           loadStatistics()
         }}
-      />
-
-      <AgentDetailDialog
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        agent={selectedAgent}
       />
     </div>
   )

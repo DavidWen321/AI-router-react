@@ -33,6 +33,7 @@ export function EditProxyDialog({ open, onOpenChange, proxy, onSuccess }: EditPr
     port: 0,
     username: "",
     password: "",
+    exitIp: "",      // 代理出口IP（可选）
     bindingType: 1,
     maxAccounts: 5,
     status: 1,
@@ -48,6 +49,7 @@ export function EditProxyDialog({ open, onOpenChange, proxy, onSuccess }: EditPr
         port: proxy.port || 0,
         username: proxy.username || "",
         password: proxy.password || "",
+        exitIp: proxy.exitIp || "",
         bindingType: proxy.bindingType ?? 1,
         maxAccounts: proxy.maxAccounts ?? 5,
         status: proxy.status ?? 1,
@@ -208,6 +210,23 @@ export function EditProxyDialog({ open, onOpenChange, proxy, onSuccess }: EditPr
                 className="dark:bg-gray-700 dark:border-gray-600"
               />
             </div>
+          </div>
+
+          {/* 出口IP */}
+          <div className="space-y-2">
+            <label htmlFor="edit-exitIp" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {t("出口IP", "Exit IP")}
+            </label>
+            <Input
+              id="edit-exitIp"
+              placeholder={t("例如: 1.2.3.4（可选，用于X-Forwarded-For伪装）", "e.g., 1.2.3.4 (optional, for X-Forwarded-For spoofing)")}
+              value={formData.exitIp}
+              onChange={(e) => setFormData({ ...formData, exitIp: e.target.value })}
+              className="dark:bg-gray-700 dark:border-gray-600"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {t("IPS代理的出口IP地址，用于X-Forwarded-For头伪装。如不填写则使用代理地址。", "Exit IP address of IPS proxy for X-Forwarded-For header spoofing. If not filled, proxy host will be used.")}
+            </p>
           </div>
 
           {/* 绑定类型和最大账号数 */}
