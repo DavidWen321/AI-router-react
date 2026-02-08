@@ -2534,3 +2534,60 @@ export const proxyConfigApi = {
     })
   },
 }
+
+// ==================== 探测模型配置 API ====================
+
+export interface ProbeModelConfig {
+  id?: number
+  modelId: string
+  displayName: string
+  probeFrequency: 'high' | 'low'
+  enabled: boolean
+  sortOrder: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export const probeConfigApi = {
+  /** 获取所有探测模型配置 */
+  list: async (): Promise<ProbeModelConfig[]> => {
+    return request('/admin/probe-config/list')
+  },
+
+  /** 新增探测模型 */
+  create: async (data: Omit<ProbeModelConfig, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> => {
+    return request('/admin/probe-config', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /** 更新探测模型 */
+  update: async (id: number, data: Partial<ProbeModelConfig>): Promise<boolean> => {
+    return request(`/admin/probe-config/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /** 删除探测模型 */
+  delete: async (id: number): Promise<boolean> => {
+    return request(`/admin/probe-config/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /** 切换启用状态 */
+  toggle: async (id: number): Promise<boolean> => {
+    return request(`/admin/probe-config/${id}/toggle`, {
+      method: 'PUT',
+    })
+  },
+
+  /** 刷新缓存 */
+  refresh: async (): Promise<boolean> => {
+    return request('/admin/probe-config/refresh', {
+      method: 'POST',
+    })
+  },
+}

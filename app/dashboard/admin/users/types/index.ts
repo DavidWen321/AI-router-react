@@ -7,10 +7,11 @@ export interface UserData {
   email: string
   registrationDate: string
   planType: string
-  planStatus: "活跃" | "已过期" | "已取消"
+  planStatus: "活跃" | "已过期" | "已取消" | "临时" | "无套餐"
   planExpiry: string
   planStartTime?: string
   dailyBudget: number
+  hasTempLimit?: boolean
   todayUsage: number
   totalUsage: number
   totalCalls: number

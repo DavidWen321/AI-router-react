@@ -9,6 +9,8 @@ export function getStatusColor(status: string): string {
   switch (status) {
     case "活跃":
       return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+    case "临时":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
     case "已过期":
       return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
     case "已取消":
@@ -29,6 +31,8 @@ export function translatePlanType(planType: string, t: (zh: string, en: string) 
       return t("专业套餐", "Professional Plan")
     case "企业套餐":
       return t("企业套餐", "Enterprise Plan")
+    case "临时额度":
+      return t("临时额度", "Temporary Quota")
     default:
       return planType
   }
@@ -43,6 +47,8 @@ export function translateStatus(status: string, t: (zh: string, en: string) => s
       return t("活跃", "Active")
     case "已过期":
       return t("已过期", "Expired")
+    case "临时":
+      return t("临时", "Temporary")
     case "已取消":
       return t("已取消", "Cancelled")
     default:

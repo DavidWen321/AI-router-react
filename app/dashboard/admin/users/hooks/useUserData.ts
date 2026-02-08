@@ -48,10 +48,11 @@ export function useUserData() {
         email: user.email,
         registrationDate: formatDateTime(user.registrationDate),
         planType: user.planType || "无套餐",
-        planStatus: user.planStatus as "活跃" | "已过期" | "已取消",
+        planStatus: user.planStatus as "活跃" | "已过期" | "已取消" | "临时" | "无套餐",
         planExpiry: formatDateTime(user.planExpiry),
         planStartTime: formatDateTime(user.planStartTime),
         dailyBudget: user.dailyBudget,
+        hasTempLimit: user.hasTempLimit,
         todayUsage: user.todayUsage,
         totalUsage: 0, // 后端暂无此字段，保留为0
         totalCalls: 0, // 后端暂无此字段，保留为0（按需求不需要了）
@@ -65,8 +66,8 @@ export function useUserData() {
       // 2. 会员用户之间按每日限额降序
       // 3. 非会员用户排在最后
       const sortedUsers = formattedUsers.sort((a, b) => {
-        const aIsActive = a.planStatus === "活跃"
-        const bIsActive = b.planStatus === "活跃"
+        const aIsActive = a.planStatus === "活跃" || a.planStatus === "临时"
+        const bIsActive = b.planStatus === "活跃" || b.planStatus === "临时"
 
         // 如果一个是活跃会员，另一个不是，活跃会员排前面
         if (aIsActive && !bIsActive) return -1

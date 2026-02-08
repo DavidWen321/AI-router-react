@@ -41,7 +41,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
             </div>
           ) : (
             users.map((user) => {
-              const actualDailyBudget = user.planStatus === "活跃" ? user.dailyBudget : 0
+              const actualDailyBudget = (user.planStatus === "活跃" || user.planStatus === "临时") ? user.dailyBudget : 0
               const remaining = actualDailyBudget - user.todayUsage
               const usageRate = actualDailyBudget > 0 ? (user.todayUsage / actualDailyBudget) * 100 : 0
 
@@ -86,6 +86,9 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("每日限额", "Daily Limit")}</span>
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         ${actualDailyBudget.toFixed(2)}
+                        {user.hasTempLimit && (
+                          <span className="text-[9px] text-blue-600 dark:text-blue-400 font-medium ml-0.5">({t("临时", "Temp")})</span>
+                        )}
                       </span>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
@@ -252,7 +255,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {users.map((user) => {
-              const actualDailyBudget = user.planStatus === "活跃" ? user.dailyBudget : 0
+              const actualDailyBudget = (user.planStatus === "活跃" || user.planStatus === "临时") ? user.dailyBudget : 0
               const remaining = actualDailyBudget - user.todayUsage
               const usageRate = actualDailyBudget > 0 ? (user.todayUsage / actualDailyBudget) * 100 : 0
 
@@ -295,7 +298,12 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                   <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-900 dark:text-gray-100">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="block truncate cursor-default">{translatePlanType(user.planType, t)}</span>
+                        <span className="block truncate cursor-default">
+                          {translatePlanType(user.planType, t)}
+                          {user.hasTempLimit && user.planStatus === "活跃" && (
+                            <span className="text-[10px] text-blue-600 dark:text-blue-400"> ({t("临时额度", "Temp")})</span>
+                          )}
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent
                         side="bottom"
@@ -303,6 +311,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                         className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium"
                       >
                         {t("套餐类型", "Plan Type")}: {translatePlanType(user.planType, t)}
+                        {user.hasTempLimit && ` (${t("临时额度生效中", "Temporary quota active")})`}
                       </TooltipContent>
                     </Tooltip>
                   </td>
@@ -344,7 +353,12 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                   </td>
                   {/* 每日限额 */}
                   <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-900 dark:text-gray-100">
-                    ${actualDailyBudget.toFixed(2)}
+                    <span>${actualDailyBudget.toFixed(2)}</span>
+                    {user.hasTempLimit && (
+                      <span className="ml-1 text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        ({t("临时", "Temp")})
+                      </span>
+                    )}
                   </td>
                   {/* 今日剩余 */}
                   <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-green-600 dark:text-green-400 font-medium">

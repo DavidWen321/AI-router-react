@@ -30,6 +30,7 @@ import {
 import { RealtimeChart } from "./components/RealtimeChart"
 import { MultiModelUptimeBar24h } from "./components/MultiModelUptimeBar24h"
 import { UsageStatistics } from "./components/UsageStatistics"
+import { ProbeConfigPanel } from "./components/ProbeConfigPanel"
 
 /**
  * 渠道健康监控页面
@@ -499,6 +500,11 @@ export default function ChannelHealthPage() {
 
       {/* 使用统计 */}
       <UsageStatistics />
+
+      {/* 探测模型配置 */}
+      <div className="mt-6 sm:mt-8">
+        <ProbeConfigPanel />
+      </div>
 
       {/* 无数据状态 */}
       {!dashboardData?.enabled && (
