@@ -4,7 +4,7 @@
  * 智能 Tooltip：鼠标悬停显示完整内容
  */
 
-import { Eye, Trash2, BarChart3, UserPlus, TrendingUp, RefreshCw, DollarSign, Zap, Mail, Calendar, CreditCard } from "lucide-react"
+import { Eye, Trash2, BarChart3, UserPlus, TrendingUp, RefreshCw, DollarSign, Zap, WalletCards, Mail, Calendar, CreditCard } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
@@ -25,9 +25,10 @@ interface UserTableProps {
   onDeleteUser: (user: UserData) => void
   onUsageRateClick: (user: UserData) => void
   onAdjustTempLimit: (user: UserData) => void
+  onManageBilling: (user: UserData) => void
 }
 
-export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMembership, onRenewMembership, onDeleteUser, onUsageRateClick, onAdjustTempLimit }: UserTableProps) {
+export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMembership, onRenewMembership, onDeleteUser, onUsageRateClick, onAdjustTempLimit, onManageBilling }: UserTableProps) {
   const { t } = useLanguage()
 
   return (
@@ -41,9 +42,13 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
             </div>
           ) : (
             users.map((user) => {
+              const isPaygUser = user.billingMode === "PAYG" || user.planType === "按量充值"
               const actualDailyBudget = (user.planStatus === "活跃" || user.planStatus === "临时") ? user.dailyBudget : 0
-              const remaining = actualDailyBudget - user.todayUsage
-              const usageRate = actualDailyBudget > 0 ? (user.todayUsage / actualDailyBudget) * 100 : 0
+              const consumed = Math.max(0, user.todayUsage)
+              const remaining = isPaygUser
+                ? Math.max(0, user.walletBalance ?? 0)
+                : Math.max(0, actualDailyBudget - user.todayUsage)
+              const usageRate = !isPaygUser && actualDailyBudget > 0 ? (user.todayUsage / actualDailyBudget) * 100 : 0
 
               return (
                 <div
@@ -69,7 +74,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                     <span className="text-xs text-gray-600 dark:text-gray-400">
                       {translatePlanType(user.planType, t)}
                     </span>
-                    {user.planExpiry && (
+                    {!isPaygUser && user.planExpiry && (
                       <>
                         <span className="text-gray-300 dark:text-gray-600">|</span>
                         <Calendar className="w-3.5 h-3.5 text-gray-400" />
@@ -81,48 +86,56 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                   </div>
 
                   {/* 额度信息网格 */}
-                  <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className={`grid ${isPaygUser ? "grid-cols-2" : "grid-cols-3"} gap-3 mb-3`}>
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("每日限额", "Daily Limit")}</span>
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block">
+                        {isPaygUser ? t("剩余额度", "Remaining") : t("每日限额", "Daily Limit")}
+                      </span>
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        ${actualDailyBudget.toFixed(2)}
-                        {user.hasTempLimit && (
+                        ${isPaygUser ? remaining.toFixed(2) : actualDailyBudget.toFixed(2)}
+                        {!isPaygUser && user.hasTempLimit && (
                           <span className="text-[9px] text-blue-600 dark:text-blue-400 font-medium ml-0.5">({t("临时", "Temp")})</span>
                         )}
                       </span>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("今日剩余", "Remaining")}</span>
-                      <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                        ${remaining.toFixed(2)}
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block">
+                        {isPaygUser ? t("消费额度", "Consumed") : t("今日剩余", "Remaining")}
+                      </span>
+                      <span className={`text-sm font-semibold ${isPaygUser ? "text-amber-600 dark:text-amber-400" : "text-green-600 dark:text-green-400"}`}>
+                        ${isPaygUser ? consumed.toFixed(2) : remaining.toFixed(2)}
                       </span>
                     </div>
-                    <div
-                      className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600/50 transition-colors"
-                      onClick={() => onUsageRateClick(user)}
-                    >
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("使用率", "Usage")}</span>
-                      <div className="flex items-center gap-1">
-                        <span className={`text-sm font-semibold ${getUsageRateColor(usageRate)}`}>
-                          {usageRate.toFixed(1)}%
-                        </span>
-                        <BarChart3 className="w-3 h-3 text-cyan-500" />
+                    {!isPaygUser && (
+                      <div
+                        className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600/50 transition-colors"
+                        onClick={() => onUsageRateClick(user)}
+                      >
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{t("使用率/模式", "Usage/Mode")}</span>
+                        <div className="flex items-center gap-1">
+                          <span className={`text-sm font-semibold ${getUsageRateColor(usageRate)}`}>
+                            {usageRate.toFixed(1)}%
+                          </span>
+                          <BarChart3 className="w-3 h-3 text-cyan-500" />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* 使用率进度条 */}
-                  <div
-                    className="mb-3 cursor-pointer"
-                    onClick={() => onUsageRateClick(user)}
-                  >
-                    <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${getUsageRateBarColor(usageRate)}`}
-                        style={{ width: `${Math.min(usageRate, 100)}%` }}
-                      />
+                  {!isPaygUser && (
+                    <div
+                      className="mb-3 cursor-pointer"
+                      onClick={() => onUsageRateClick(user)}
+                    >
+                      <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${getUsageRateBarColor(usageRate)}`}
+                          style={{ width: `${Math.min(usageRate, 100)}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* 操作按钮 */}
                   <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
@@ -140,7 +153,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       </button>
 
                       {/* 开通会员 */}
-                      {user.planStatus !== "活跃" && (
+                      {!isPaygUser && user.planStatus !== "活跃" && (
                         <button
                           onClick={() => onActivateMembership(user)}
                           className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
@@ -151,7 +164,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       )}
 
                       {/* 会员升级 */}
-                      {user.planStatus === "活跃" && (
+                      {!isPaygUser && user.planStatus === "活跃" && (
                         <button
                           onClick={() => onUpgradeMembership(user)}
                           className="p-1.5 text-gray-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
@@ -162,7 +175,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       )}
 
                       {/* 会员续费 */}
-                      {user.planStatus === "活跃" && (
+                      {!isPaygUser && user.planStatus === "活跃" && (
                         <button
                           onClick={() => onRenewMembership(user)}
                           className="p-1.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
@@ -173,18 +186,28 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       )}
 
                       {/* 调整额度 */}
-                      <button
-                        onClick={() => onAdjustTempLimit(user)}
-                        className={`p-1.5 text-gray-500 rounded-lg transition-colors ${
-                          user.planStatus === "活跃"
-                            ? "hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-                            : "hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                        }`}
-                        title={user.planStatus === "活跃" ? t("调整额度", "Adjust") : t("临时体验", "Trial")}
-                      >
-                        {user.planStatus === "活跃" ? <DollarSign className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-                      </button>
+                      {!isPaygUser && (
+                        <button
+                          onClick={() => onAdjustTempLimit(user)}
+                          className={`p-1.5 text-gray-500 rounded-lg transition-colors ${
+                            user.planStatus === "活跃"
+                              ? "hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                              : "hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                          }`}
+                          title={user.planStatus === "活跃" ? t("调整额度", "Adjust") : t("临时体验", "Trial")}
+                        >
+                          {user.planStatus === "活跃" ? <DollarSign className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                        </button>
+                      )}
 
+                      {/* 按量管理 */}
+                      <button
+                        onClick={() => onManageBilling(user)}
+                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                        title={t("按量管理", "Billing")}
+                      >
+                        <WalletCards className="w-4 h-4" />
+                      </button>
                       {/* 删除用户 */}
                       <button
                         onClick={() => onDeleteUser(user)}
@@ -233,15 +256,15 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
               </th>
               {/* 每日限额 - 始终显示 */}
               <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[11%]">
-                {t("限额", "Limit")}
+                {t("额度/限额", "Quota/Limit")}
               </th>
               {/* 今日剩余 - 始终显示 */}
               <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[10%] lg:w-[11%]">
-                {t("剩余", "Left")}
+                {t("消费/剩余", "Consumed/Remaining")}
               </th>
               {/* 使用率 - 始终显示 */}
               <th className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[14%] lg:w-[16%]">
-                {t("使用率", "Usage")}
+                {t("使用率/模式", "Usage/Mode")}
               </th>
               {/* 最后活跃 - 2xl以上显示 */}
               <th className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium text-gray-900 dark:text-gray-100 w-[9%]">
@@ -255,9 +278,13 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {users.map((user) => {
+              const isPaygUser = user.billingMode === "PAYG" || user.planType === "按量充值"
               const actualDailyBudget = (user.planStatus === "活跃" || user.planStatus === "临时") ? user.dailyBudget : 0
-              const remaining = actualDailyBudget - user.todayUsage
-              const usageRate = actualDailyBudget > 0 ? (user.todayUsage / actualDailyBudget) * 100 : 0
+              const consumed = Math.max(0, user.todayUsage)
+              const remaining = isPaygUser
+                ? Math.max(0, user.walletBalance ?? 0)
+                : Math.max(0, actualDailyBudget - user.todayUsage)
+              const usageRate = !isPaygUser && actualDailyBudget > 0 ? (user.todayUsage / actualDailyBudget) * 100 : 0
 
               return (
                 <tr
@@ -300,7 +327,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       <TooltipTrigger asChild>
                         <span className="block truncate cursor-default">
                           {translatePlanType(user.planType, t)}
-                          {user.hasTempLimit && user.planStatus === "活跃" && (
+                          {!isPaygUser && user.hasTempLimit && user.planStatus === "活跃" && (
                             <span className="text-[10px] text-blue-600 dark:text-blue-400"> ({t("临时额度", "Temp")})</span>
                           )}
                         </span>
@@ -311,7 +338,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                         className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium"
                       >
                         {t("套餐类型", "Plan Type")}: {translatePlanType(user.planType, t)}
-                        {user.hasTempLimit && ` (${t("临时额度生效中", "Temporary quota active")})`}
+                        {!isPaygUser && user.hasTempLimit && ` (${t("临时额度生效中", "Temporary quota active")})`}
                       </TooltipContent>
                     </Tooltip>
                   </td>
@@ -325,14 +352,14 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                   <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="block truncate cursor-default">{user.planStartTime || "-"}</span>
+                        <span className="block truncate cursor-default">{!isPaygUser ? (user.planStartTime || "-") : "-"}</span>
                       </TooltipTrigger>
                       <TooltipContent
                         side="bottom"
                         sideOffset={4}
                         className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium"
                       >
-                        {t("开始时间", "Start Time")}: {user.planStartTime || "-"}
+                        {t("开始时间", "Start Time")}: {!isPaygUser ? (user.planStartTime || "-") : "-"}
                       </TooltipContent>
                     </Tooltip>
                   </td>
@@ -340,50 +367,59 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                   <td className="hidden xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="block truncate cursor-default">{user.planExpiry || "-"}</span>
+                        <span className="block truncate cursor-default">{!isPaygUser ? (user.planExpiry || "-") : "-"}</span>
                       </TooltipTrigger>
                       <TooltipContent
                         side="bottom"
                         sideOffset={4}
                         className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-xl text-sm font-medium"
                       >
-                        {t("结束时间", "End Time")}: {user.planExpiry || "-"}
+                        {t("结束时间", "End Time")}: {!isPaygUser ? (user.planExpiry || "-") : "-"}
                       </TooltipContent>
                     </Tooltip>
                   </td>
-                  {/* 每日限额 */}
+                  {/* 额度/剩余额度 */}
                   <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-900 dark:text-gray-100">
-                    <span>${actualDailyBudget.toFixed(2)}</span>
-                    {user.hasTempLimit && (
+                    <span>${isPaygUser ? remaining.toFixed(2) : actualDailyBudget.toFixed(2)}</span>
+                    {!isPaygUser && user.hasTempLimit && (
                       <span className="ml-1 text-[10px] text-blue-600 dark:text-blue-400 font-medium">
                         ({t("临时", "Temp")})
                       </span>
                     )}
                   </td>
-                  {/* 今日剩余 */}
-                  <td className="px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-green-600 dark:text-green-400 font-medium">
-                    ${remaining.toFixed(2)}
+                  {/* 剩余/消费额度 */}
+                  <td className={`px-2 xl:px-3 py-3 text-center text-xs xl:text-sm font-medium ${isPaygUser ? "text-amber-600 dark:text-amber-400" : "text-green-600 dark:text-green-400"}`}>
+                    ${isPaygUser ? consumed.toFixed(2) : remaining.toFixed(2)}
                   </td>
-                  {/* 使用率 - 响应式进度条 */}
+                  {/* 使用率/按量 */}
                   <td className="px-2 xl:px-3 py-3">
-                    <div
-                      className="flex items-center justify-center gap-1 xl:gap-2 cursor-pointer group"
-                      onClick={() => onUsageRateClick(user)}
-                      title={t("点击查看详细统计", "Click to view detailed statistics")}
-                    >
-                      <div className="relative flex-1 h-1.5 xl:h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden group-hover:h-2 xl:group-hover:h-2.5 transition-all">
-                        <div
-                          className={`h-full rounded-full transition-all duration-300 ${getUsageRateBarColor(usageRate)}`}
-                          style={{ width: `${Math.min(usageRate, 100)}%` }}
-                        />
+                    {isPaygUser ? (
+                      <div className="flex items-center justify-center gap-1 xl:gap-2">
+                        <span className="text-[10px] xl:text-xs font-semibold text-blue-600 dark:text-blue-400">
+                          {t("按量充值", "PAYG")}
+                        </span>
+                        <WalletCards className="hidden xl:block w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                       </div>
-                      <span
-                        className={`text-[10px] xl:text-xs font-semibold group-hover:scale-110 transition-transform ${getUsageRateColor(usageRate)}`}
+                    ) : (
+                      <div
+                        className="flex items-center justify-center gap-1 xl:gap-2 cursor-pointer group"
+                        onClick={() => onUsageRateClick(user)}
+                        title={t("点击查看详细统计", "Click to view detailed statistics")}
                       >
-                        {usageRate.toFixed(0)}%
-                      </span>
-                      <BarChart3 className="hidden xl:block w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 opacity-60 group-hover:opacity-100 transition-all" />
-                    </div>
+                        <div className="relative flex-1 h-1.5 xl:h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden group-hover:h-2 xl:group-hover:h-2.5 transition-all">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${getUsageRateBarColor(usageRate)}`}
+                            style={{ width: `${Math.min(usageRate, 100)}%` }}
+                          />
+                        </div>
+                        <span
+                          className={`text-[10px] xl:text-xs font-semibold group-hover:scale-110 transition-transform ${getUsageRateColor(usageRate)}`}
+                        >
+                          {usageRate.toFixed(0)}%
+                        </span>
+                        <BarChart3 className="hidden xl:block w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 opacity-60 group-hover:opacity-100 transition-all" />
+                      </div>
+                    )}
                   </td>
                   {/* 最后活跃 - 2xl以上显示 + Tooltip */}
                   <td className="hidden 2xl:table-cell px-2 xl:px-3 py-3 text-center text-xs xl:text-sm text-gray-600 dark:text-gray-400">
@@ -416,7 +452,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       </button>
 
                       {/* 开通会员 - 仅当用户无活跃会员时显示 */}
-                      {user.planStatus !== "活跃" && (
+                      {!isPaygUser && user.planStatus !== "活跃" && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -430,7 +466,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       )}
 
                       {/* 会员升级 - 仅当用户有活跃会员时显示 */}
-                      {user.planStatus === "活跃" && (
+                      {!isPaygUser && user.planStatus === "活跃" && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -444,7 +480,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       )}
 
                       {/* 会员续费 - 仅当用户有活跃会员时显示 */}
-                      {user.planStatus === "活跃" && (
+                      {!isPaygUser && user.planStatus === "活跃" && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -458,7 +494,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       )}
 
                       {/* 临时调整额度 - 仅当用户有活跃会员时显示 */}
-                      {user.planStatus === "活跃" && (
+                      {!isPaygUser && user.planStatus === "活跃" && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -472,7 +508,7 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                       )}
 
                       {/* 临时体验 - 仅当用户无活跃会员时显示 */}
-                      {user.planStatus !== "活跃" && (
+                      {!isPaygUser && user.planStatus !== "活跃" && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -485,6 +521,17 @@ export function UserTable({ users, onViewUser, onActivateMembership, onUpgradeMe
                         </button>
                       )}
 
+                      {/* 按量管理 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onManageBilling(user)
+                        }}
+                        className="p-1 xl:p-1.5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+                        title={t("按量管理", "Billing")}
+                      >
+                        <WalletCards className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
+                      </button>
                       {/* 删除用户 */}
                       <button
                         onClick={(e) => {

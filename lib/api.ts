@@ -456,6 +456,38 @@ export const adminApi = {
   },
 
   /**
+   * Get revenue stats for admin users page
+   * 对应后端接口: GET /admin/users/revenue-stats
+   */
+  getRevenueStats: async (): Promise<UserRevenueStatsData> => {
+    return request('/admin/users/revenue-stats')
+  },
+
+  /**
+   * Get operation monthly stats for admin dashboard
+   * 对应后端接口: GET /admin/users/operation-stats
+   */
+  getOperationStats: async (): Promise<UserOperationStatsData> => {
+    return request('/admin/users/operation-stats')
+  },
+
+  /**
+   * Get monthly operation details by month
+   * 对应后端接口: GET /admin/users/operation-monthly-details?month=yyyy-MM
+   */
+  getOperationMonthlyDetails: async (month: string): Promise<OperationMonthlyDetailStatsData> => {
+    return request(`/admin/users/operation-monthly-details?month=${encodeURIComponent(month)}`)
+  },
+
+  /**
+   * Get consumption stats for user management
+   * 对应后端接口: GET /admin/users/consumption-stats
+   */
+  getConsumptionStats: async (): Promise<UserConsumptionStatsData> => {
+    return request('/admin/users/consumption-stats')
+  },
+
+  /**
    * Update user membership
    * 对应后端接口: PUT /admin/users/membership
    * @param data.userId - 字符串类型的userId,避免JavaScript大整数精度丢失
@@ -500,6 +532,65 @@ export const adminApi = {
       method: 'DELETE',
     })
   },
+  // ===== 按量计费管理 =====
+  getBillingProfile: async (userId: string): Promise<BillingProfileData> => {
+    return request(`/admin/billing/users/${userId}/profile`)
+  },
+
+  updateBillingProfile: async (userId: string, data: {
+    billingMode: "MEMBERSHIP" | "PAYG"
+    unlimitedConcurrency: number
+    remark?: string
+  }): Promise<void> => {
+    await request(`/admin/billing/users/${userId}/profile`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  getWallet: async (userId: string): Promise<WalletData> => {
+    return request(`/admin/billing/users/${userId}/wallet`)
+  },
+
+  rechargeWallet: async (userId: string, data: {
+    amount: number
+    paymentChannel: string
+    paymentRef?: string
+    remark?: string
+    idempotencyKey?: string
+  }): Promise<void> => {
+    await request(`/admin/billing/users/${userId}/wallet/recharge`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  adjustWallet: async (userId: string, data: {
+    amount: number
+    remark?: string
+    idempotencyKey?: string
+  }): Promise<void> => {
+    await request(`/admin/billing/users/${userId}/wallet/adjust`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  getWalletLedger: async (
+    userId: string,
+    pageNum: number = 1,
+    pageSize: number = 20,
+  ): Promise<{ list: WalletLedgerRecord[]; total: number; pageNum: number; pageSize: number }> => {
+    return request(`/admin/billing/users/${userId}/ledger?pageNum=${pageNum}&pageSize=${pageSize}`)
+  },
+
+  getBillingJournal: async (
+    userId: string,
+    pageNum: number = 1,
+    pageSize: number = 20,
+  ): Promise<{ list: BillingJournalRecord[]; total: number; pageNum: number; pageSize: number }> => {
+    return request(`/admin/billing/users/${userId}/journal?pageNum=${pageNum}&pageSize=${pageSize}`)
+  },
 }
 
 // Membership Data Interface
@@ -541,6 +632,115 @@ export interface UserManagementData {
   lastActive: string  // 后端返回 LocalDateTime，前端接收为 string
   userMembershipId?: string  // ✅ 使用string类型避免精度丢失
   membershipId?: number
+  billingMode?: "MEMBERSHIP" | "PAYG"
+  walletBalance?: number
+  walletTotalConsumed?: number
+  unlimitedConcurrency?: boolean
+  hasTempLimit?: boolean
+}
+
+export interface BillingProfileData {
+  userId: string
+  billingMode: "MEMBERSHIP" | "PAYG"
+  status: number
+  unlimitedConcurrency: number
+  remark?: string
+}
+
+export interface WalletData {
+  userId: string
+  currency: string
+  availableBalance: number
+  frozenBalance: number
+  totalRecharged: number
+  totalConsumed: number
+  status: number
+}
+
+export interface BillingJournalRecord {
+  id: string
+  requestId: string
+  billingMode: string
+  estimatedAmount: number
+  actualAmount: number
+  settlementAmount: number
+  modelName?: string
+  status: number
+  createdAt: string
+}
+
+export interface WalletLedgerRecord {
+  id: string
+  ledgerNo: string
+  changeType: string
+  amount: number
+  balanceBefore: number
+  balanceAfter: number
+  bizType: string
+  requestId?: string
+  remark?: string
+  createdAt: string
+}
+
+export interface UserRevenueStatsData {
+  totalRevenue: number
+  adminRevenue: number
+  agentRevenue: number
+}
+
+export interface MonthlyOperationRevenueData {
+  month: string
+  totalRevenue: number
+  adminRevenue: number
+  agentRevenue: number
+  growthRate: number
+}
+
+export interface UserOperationStatsData {
+  totalRevenue: number
+  totalAdminRevenue: number
+  totalAgentRevenue: number
+  monthlyStats: MonthlyOperationRevenueData[]
+}
+
+export interface MonthlyConsumptionStatsData {
+  month: string
+  totalConsumption: number
+  growthRate: number
+}
+
+export interface UserConsumptionStatsData {
+  totalConsumption: number
+  monthlyStats: MonthlyConsumptionStatsData[]
+}
+
+export interface BackupConsumptionStatsData {
+  totalConsumption: number
+  monthlyStats: MonthlyConsumptionStatsData[]
+}
+
+export interface OperationMonthlyDetailData {
+  userMembershipId: string
+  userId: string
+  userEmail: string
+  membershipId: number
+  membershipName: string
+  startTime: string
+  expireTime: string
+  saleType: "admin" | "agent"
+  sellerUserId: string
+  sellerAccount: string
+  unitPrice: number
+  months: number
+  revenue: number
+}
+
+export interface OperationMonthlyDetailStatsData {
+  month: string
+  totalRevenue: number
+  adminRevenue: number
+  agentRevenue: number
+  details: OperationMonthlyDetailData[]
 }
 
 // Usage Statistics API
@@ -710,10 +910,13 @@ export interface DailyUsageData {
 
 // Remaining Quota Data Interface
 export interface RemainingQuotaData {
+  billingMode?: "MEMBERSHIP" | "PAYG"
   todayCost: number
-  dailyLimit: number
+  dailyLimit?: number | null
   remaining: number
   usagePercentage: number
+  walletBalance?: number | null
+  walletTotalConsumed?: number | null
 }
 
 // Month Usage Data Interface
@@ -1561,6 +1764,14 @@ export const backupPoolApi = {
    */
   checkAvailable: async (): Promise<boolean> => {
     return request('/backup-pools/available')
+  },
+
+  /**
+   * 获取备用号池额度消耗统计
+   * 对应后端接口: GET /backup-pools/consumption-stats
+   */
+  getConsumptionStats: async (): Promise<BackupConsumptionStatsData> => {
+    return request('/backup-pools/consumption-stats')
   },
 }
 

@@ -33,6 +33,8 @@ export function translatePlanType(planType: string, t: (zh: string, en: string) 
       return t("企业套餐", "Enterprise Plan")
     case "临时额度":
       return t("临时额度", "Temporary Quota")
+    case "按量充值":
+      return t("按量充值", "Pay-as-you-go")
     default:
       return planType
   }

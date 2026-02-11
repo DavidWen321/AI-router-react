@@ -91,7 +91,8 @@ export function ActivateMembershipDialog({ open, onOpenChange, user, onSuccess }
 
   const calculateEndDate = (start: Date, monthCount: number) => {
     const end = new Date(start)
-    end.setMonth(end.getMonth() + monthCount)
+    // 业务约定：1个月固定按30天计算（不是自然月）
+    end.setDate(end.getDate() + monthCount * 30)
     end.setHours(23, 59, 59)
     setEndDate(end.toISOString().slice(0, 10))
   }

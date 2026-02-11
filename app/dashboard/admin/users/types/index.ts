@@ -18,6 +18,10 @@ export interface UserData {
   lastActive: string
   userMembershipId?: number
   membershipId?: number
+  billingMode?: "MEMBERSHIP" | "PAYG"
+  walletBalance?: number
+  walletTotalConsumed?: number
+  unlimitedConcurrency?: boolean
 }
 
 export interface SearchFilters {
@@ -46,4 +50,15 @@ export interface ChartStats {
   minRate: number
   currentRate: number
   highestUsageUser: UserData
+}
+
+export interface MonthlyConsumptionData {
+  month: string
+  totalConsumption: number
+  growthRate: number
+}
+
+export interface UserConsumptionStatsData {
+  totalConsumption: number
+  monthlyStats: MonthlyConsumptionData[]
 }

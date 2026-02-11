@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
-import { Users, Key, Database, Package, Activity, Shield, DollarSign, Globe, Link2, Gift, History, UserPlus } from "lucide-react"
+import { Users, Key, Database, Package, Activity, Shield, DollarSign, Globe, Link2, Gift, History, UserPlus, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { agentApi, authApi } from "@/lib/api"
 import { DashboardHeader } from "@/components/dashboard-header"
@@ -138,6 +138,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       href: "/dashboard/admin/agents",
       icon: UserPlus,
       color: "bg-gradient-to-br from-amber-500 to-orange-500",
+    },
+    {
+      name: t("运营情况", "Operations"),
+      href: "/dashboard/admin/operations",
+      icon: BarChart3,
+      color: "bg-gradient-to-br from-teal-500 to-green-600",
     },
   ]
 

@@ -22,9 +22,7 @@ interface RealtimeChartProps {
 // 行业标准调色板 - Datadog/Grafana 风格
 const CHANNEL_COLORS: Record<string, { line: string; fill: string }> = {
   AnyRouter: { line: "#22c55e", fill: "rgba(34, 197, 94, 0.15)" },
-  CSPOK: { line: "#8b5cf6", fill: "rgba(139, 92, 246, 0.15)" },
   FCApp: { line: "#06b6d4", fill: "rgba(6, 182, 212, 0.15)" },
-  RainApp: { line: "#f97316", fill: "rgba(249, 115, 22, 0.15)" },
 }
 
 const DEFAULT_COLORS = [

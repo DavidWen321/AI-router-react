@@ -10,11 +10,12 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { backupPoolApi, type BackupPoolVO, ApiError } from "@/lib/api"
+import { backupPoolApi, type BackupPoolVO, type MonthlyConsumptionStatsData, ApiError } from "@/lib/api"
 import { CreateBackupPoolDialog } from "./components/CreateBackupPoolDialog"
 import { EditBackupPoolDialog } from "./components/EditBackupPoolDialog"
 import { DeleteBackupPoolDialog } from "./components/DeleteBackupPoolDialog"
 import { ViewBackupPoolDialog } from "./components/ViewBackupPoolDialog"
+import { BackupConsumptionChart } from "./components/BackupConsumptionChart"
 
 export default function BackupPoolPage() {
   const { t } = useLanguage()
@@ -29,6 +30,8 @@ export default function BackupPoolPage() {
 
   // 备用号池数据状态
   const [backupPools, setBackupPools] = useState<BackupPoolVO[]>([])
+  const [consumptionTotal, setConsumptionTotal] = useState(0)
+  const [consumptionMonthlyStats, setConsumptionMonthlyStats] = useState<MonthlyConsumptionStatsData[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // 对话框状态
@@ -42,8 +45,17 @@ export default function BackupPoolPage() {
   const fetchBackupPools = async () => {
     setIsLoading(true)
     try {
-      const pools = await backupPoolApi.listAll()
+      const [pools, consumption] = await Promise.all([
+        backupPoolApi.listAll(),
+        backupPoolApi.getConsumptionStats(),
+      ])
       setBackupPools(pools)
+      setConsumptionTotal(consumption?.totalConsumption || 0)
+      setConsumptionMonthlyStats((consumption?.monthlyStats || []).map((item) => ({
+        month: item.month,
+        totalConsumption: Number(item.totalConsumption || 0),
+        growthRate: Number(item.growthRate || 0),
+      })))
     } catch (error) {
       console.error("获取备用号池列表失败:", error)
       toast({
@@ -147,41 +159,52 @@ export default function BackupPoolPage() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-        <div className="rounded-lg border bg-card p-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="rounded-lg border bg-card p-3 sm:p-4 min-h-[96px] sm:min-h-[108px]">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Database className="h-4 w-4" />
             {t("总数", "Total")}
           </div>
-          <div className="mt-2 text-2xl font-bold">{stats.total}</div>
+          <div className="mt-2 text-lg sm:text-2xl font-bold">{stats.total}</div>
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border bg-card p-3 sm:p-4 min-h-[96px] sm:min-h-[108px]">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Shield className="h-4 w-4 text-green-500" />
             {t("启用", "Enabled")}
           </div>
-          <div className="mt-2 text-2xl font-bold text-green-500">{stats.enabled}</div>
+          <div className="mt-2 text-lg sm:text-2xl font-bold text-green-500">{stats.enabled}</div>
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border bg-card p-3 sm:p-4 min-h-[96px] sm:min-h-[108px]">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <AlertCircle className="h-4 w-4 text-gray-500" />
             {t("禁用", "Disabled")}
           </div>
-          <div className="mt-2 text-2xl font-bold text-gray-500">{stats.disabled}</div>
+          <div className="mt-2 text-lg sm:text-2xl font-bold text-gray-500">{stats.disabled}</div>
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border bg-card p-3 sm:p-4 min-h-[96px] sm:min-h-[108px]">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {t("总额度", "Total Quota")}
           </div>
-          <div className="mt-2 text-2xl font-bold">${stats.totalQuota.toFixed(2)}</div>
+          <div className="mt-2 text-lg sm:text-2xl font-bold">${stats.totalQuota.toFixed(2)}</div>
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border bg-card p-3 sm:p-4 min-h-[96px] sm:min-h-[108px]">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {t("剩余额度", "Remaining")}
           </div>
-          <div className="mt-2 text-2xl font-bold">${stats.totalRemaining.toFixed(2)}</div>
+          <div className="mt-2 text-lg sm:text-2xl font-bold">${stats.totalRemaining.toFixed(2)}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-3 sm:p-4 min-h-[96px] sm:min-h-[108px]">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {t("额度总消耗", "Total Consumption")}
+          </div>
+          <div className="mt-2 text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">${(consumptionTotal || 0).toFixed(2)}</div>
         </div>
       </div>
+
+      {/* 额度消耗统计图 */}
+      <BackupConsumptionChart
+        data={consumptionMonthlyStats}
+      />
 
       {/* 搜索和筛选 */}
       <div className="rounded-lg border bg-card p-4 sm:p-6 space-y-4 mb-6">

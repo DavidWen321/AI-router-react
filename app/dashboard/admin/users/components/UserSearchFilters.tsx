@@ -47,17 +47,18 @@ export function UserSearchFilters({
 
         <div className="md:w-[200px]">
           <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t("套餐类型", "Plan Type")}
+            {t("套餐/计费", "Plan/Billing")}
           </Label>
           <Select value={filters.planType} onValueChange={(value) => onFiltersChange({ ...filters, planType: value })}>
             <SelectTrigger className="transition-all hover:border-cyan-400">
-              <SelectValue placeholder={t("全部套餐", "All Plans")} />
+              <SelectValue placeholder={t("全部", "All")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("全部套餐", "All Plans")}</SelectItem>
               <SelectItem value="标准套餐">{t("标准套餐", "Standard Plan")}</SelectItem>
               <SelectItem value="专业套餐">{t("专业套餐", "Professional Plan")}</SelectItem>
               <SelectItem value="企业套餐">{t("企业套餐", "Enterprise Plan")}</SelectItem>
+              <SelectItem value="按量充值">{t("按量充值", "Pay-as-you-go")}</SelectItem>
             </SelectContent>
           </Select>
         </div>

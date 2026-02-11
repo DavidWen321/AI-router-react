@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from "react"
-import type { UserData, EditFormData } from "../types"
+import type { UserData, EditFormData, UserConsumptionStatsData } from "../types"
 import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/lib/language-context"
 import { adminApi, membershipApi, ApiError } from "@/lib/api"
@@ -33,6 +33,11 @@ export function useUserData() {
 
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
+  const [totalRevenue, setTotalRevenue] = useState(0)
+  const [consumptionStats, setConsumptionStats] = useState<UserConsumptionStatsData>({
+    totalConsumption: 0,
+    monthlyStats: [],
+  })
 
   /**
    * 从后端加载用户列表
@@ -40,7 +45,11 @@ export function useUserData() {
   const loadUsers = async () => {
     try {
       setLoading(true)
-      const data = await adminApi.getAllUsers()
+      const [data, revenueStats, consumption] = await Promise.all([
+        adminApi.getAllUsers(),
+        adminApi.getRevenueStats(),
+        adminApi.getConsumptionStats(),
+      ])
 
       // 转换后端数据格式为前端格式
       const formattedUsers: UserData[] = data.map((user) => ({
@@ -57,8 +66,12 @@ export function useUserData() {
         totalUsage: 0, // 后端暂无此字段，保留为0
         totalCalls: 0, // 后端暂无此字段，保留为0（按需求不需要了）
         lastActive: formatDateTime(user.lastActive),
-        userMembershipId: user.userMembershipId,
+        userMembershipId: user.userMembershipId ? Number(user.userMembershipId) : undefined,
         membershipId: user.membershipId,
+        billingMode: user.billingMode,
+        walletBalance: user.walletBalance ?? 0,
+        walletTotalConsumed: user.walletTotalConsumed ?? 0,
+        unlimitedConcurrency: user.unlimitedConcurrency,
       }))
 
       // 排序逻辑：
@@ -83,6 +96,15 @@ export function useUserData() {
       })
 
       setUsers(sortedUsers)
+      setTotalRevenue(revenueStats.totalRevenue || 0)
+      setConsumptionStats({
+        totalConsumption: consumption?.totalConsumption || 0,
+        monthlyStats: (consumption?.monthlyStats || []).map((item) => ({
+          month: item.month,
+          totalConsumption: Number(item.totalConsumption || 0),
+          growthRate: Number(item.growthRate || 0),
+        })),
+      })
     } catch (error) {
       console.error("Failed to load users:", error)
       toast({
@@ -214,6 +236,8 @@ export function useUserData() {
   return {
     users,
     loading,
+    totalRevenue,
+    consumptionStats,
     deleteUser,
     updateUser,
     refreshUsers: loadUsers,

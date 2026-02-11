@@ -126,23 +126,66 @@ export default function DashboardPage() {
   // 计算本月总消费 - 从monthUsageData数组中累加totalCost
   const monthTotalCost = monthUsageData.reduce((sum, day) => sum + (day.totalCost || 0), 0)
 
+  const isPaygUser =
+    remainingQuota?.billingMode === "PAYG" ||
+    userData?.billingMode === "PAYG" ||
+    remainingQuota?.walletBalance != null ||
+    remainingQuota?.walletTotalConsumed != null
+  const paygRemainingBalance = Math.max(0, remainingQuota?.walletBalance ?? remainingQuota?.remaining ?? 0)
+  const paygTotalConsumed = Math.max(0, remainingQuota?.walletTotalConsumed ?? monthTotalCost)
+  const paygTodayCost = Math.max(0, remainingQuota?.todayCost ?? 0)
+
   const stats = [
     {
-      title: t("今日使用额度", "Today's Usage Quota"),
-      value: loading ? "..." : (remainingQuota && remainingQuota.todayCost !== undefined) ? `$${remainingQuota.todayCost.toFixed(4)}` : "$0.00",
-      subtitle: loading ? "..." : (remainingQuota && remainingQuota.remaining !== undefined) ? t("剩余", "Remaining") + ` $${remainingQuota.remaining.toFixed(2)}` : t("暂无数据", "No data"),
+      title: isPaygUser ? t("可用余额", "Available Balance") : t("今日使用额度", "Today's Usage Quota"),
+      value: loading
+        ? "..."
+        : isPaygUser
+          ? `$${paygRemainingBalance.toFixed(4)}`
+          : (remainingQuota && remainingQuota.todayCost !== undefined)
+            ? `$${remainingQuota.todayCost.toFixed(4)}`
+            : "$0.00",
+      subtitle: loading
+        ? "..."
+        : isPaygUser
+          ? t("按量余额实时扣减", "PAYG balance deducted in real-time")
+          : (remainingQuota && remainingQuota.remaining !== undefined)
+            ? t("剩余", "Remaining") + ` $${remainingQuota.remaining.toFixed(2)}`
+            : t("暂无数据", "No data"),
       icon: TrendingUp,
     },
     {
-      title: t("本月消费", "This Month's Cost"),
-      value: loading ? "..." : `$${monthTotalCost.toFixed(4)}`,
-      subtitle: loading ? "..." : (remainingQuota && remainingQuota.dailyLimit !== undefined) ? t("每日限额", "Daily Limit") + ` $${remainingQuota.dailyLimit.toFixed(2)}` : t("暂无数据", "No data"),
+      title: isPaygUser ? t("累计消费", "Total Consumed") : t("本月消费", "This Month's Cost"),
+      value: loading
+        ? "..."
+        : isPaygUser
+          ? `$${paygTotalConsumed.toFixed(4)}`
+          : `$${monthTotalCost.toFixed(4)}`,
+      subtitle: loading
+        ? "..."
+        : isPaygUser
+          ? t("今日消费", "Today's Cost") + ` $${paygTodayCost.toFixed(4)}`
+          : (remainingQuota && remainingQuota.dailyLimit !== undefined && remainingQuota.dailyLimit !== null)
+            ? t("每日限额", "Daily Limit") + ` $${remainingQuota.dailyLimit.toFixed(2)}`
+            : t("暂无数据", "No data"),
       icon: DollarSign,
     },
     {
-      title: t("套餐类型", "Plan Type"),
-      value: loading ? "..." : currentMembership ? (currentMembership.levelName || currentMembership.membershipName) : t("目前暂无套餐", "No active plan"),
-      subtitle: loading ? "..." : currentMembership ? t("到期", "Expires") + " " + new Date(currentMembership.expireTime).toLocaleDateString() : "",
+      title: isPaygUser ? t("计费模式", "Billing Mode") : t("套餐类型", "Plan Type"),
+      value: loading
+        ? "..."
+        : isPaygUser
+          ? t("按量充值", "Pay-as-you-go")
+          : currentMembership
+            ? (currentMembership.levelName || currentMembership.membershipName)
+            : t("目前暂无套餐", "No active plan"),
+      subtitle: loading
+        ? "..."
+        : isPaygUser
+          ? t("由管理员充值/调账", "Managed by admin recharge/adjust")
+          : currentMembership
+            ? t("到期", "Expires") + " " + new Date(currentMembership.expireTime).toLocaleDateString()
+            : "",
       icon: Users,
     },
   ]
@@ -409,49 +452,82 @@ export default function DashboardPage() {
                 </span>
               </div>
               <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <span className="text-sm text-gray-600">{t("日度预算", "Daily Budget")}</span>
+                <span className="text-sm text-gray-600">{isPaygUser ? t("可用余额", "Available Balance") : t("日度预算", "Daily Budget")}</span>
                 <span className="text-sm font-medium text-gray-900">
                   {loading
                     ? "..."
-                    : currentMembership && currentMembership.dailyUsage !== undefined
-                      ? `$${currentMembership.dailyUsage.toFixed(2)}`
-                      : remainingQuota && remainingQuota.dailyLimit !== undefined
-                        ? `$${remainingQuota.dailyLimit.toFixed(2)}`
-                        : "$0.00"}
+                    : isPaygUser
+                      ? `$${paygRemainingBalance.toFixed(4)}`
+                      : currentMembership && currentMembership.dailyUsage !== undefined
+                        ? `$${currentMembership.dailyUsage.toFixed(2)}`
+                        : remainingQuota && remainingQuota.dailyLimit !== undefined && remainingQuota.dailyLimit !== null
+                          ? `$${remainingQuota.dailyLimit.toFixed(2)}`
+                          : "$0.00"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <span className="text-sm text-gray-600">{t("今日已用", "Today's Usage")}</span>
+                <span className="text-sm text-gray-600">{isPaygUser ? t("消费额度", "Consumed") : t("今日已用", "Today's Usage")}</span>
                 <span className="text-sm font-medium text-cyan-600">
-                  {loading ? "..." : (remainingQuota && remainingQuota.todayCost !== undefined) ? `$${remainingQuota.todayCost.toFixed(4)}` : "$0.00"}
+                  {loading
+                    ? "..."
+                    : isPaygUser
+                      ? `$${paygTotalConsumed.toFixed(4)}`
+                      : (remainingQuota && remainingQuota.todayCost !== undefined)
+                        ? `$${remainingQuota.todayCost.toFixed(4)}`
+                        : "$0.00"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-4">
-                <span className="text-sm text-gray-600">{t("本月已用", "This Month Used")}</span>
+                <span className="text-sm text-gray-600">{isPaygUser ? t("今日消费", "Today's Cost") : t("本月已用", "This Month Used")}</span>
                 <span className="text-sm font-medium text-cyan-600">
-                  {loading ? "..." : `$${monthTotalCost.toFixed(4)}`}
+                  {loading
+                    ? "..."
+                    : isPaygUser
+                      ? `$${paygTodayCost.toFixed(4)}`
+                      : `$${monthTotalCost.toFixed(4)}`}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Plan Management */}
+          {/* Plan / Billing Management */}
           <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/50 p-5 sm:p-6 md:p-8 hover:shadow-lg transition-all">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">{t("套餐管理", "Plan Management")}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">
+              {isPaygUser ? t("按量信息", "PAYG Info") : t("套餐管理", "Plan Management")}
+            </h2>
             <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
-              {t("管理您的订阅和激活码", "Manage your subscriptions and activation codes")}
+              {isPaygUser
+                ? t("当前为按量计费，由管理员统一充值和调账", "PAYG billing managed by admin recharge and adjustment")
+                : t("管理您的订阅和激活码", "Manage your subscriptions and activation codes")}
             </p>
 
-            <button
-              onClick={handleViewMyPlans}
-              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium py-4 rounded-xl mb-6 transition-all shadow-lg shadow-cyan-500/20 hover:shadow-xl hover:shadow-cyan-500/30 flex items-center justify-center gap-2"
-            >
-              <Package className="w-5 h-5" />
-              {t("我的套餐", "My Plans")}
-            </button>
+            {!isPaygUser && (
+              <button
+                onClick={handleViewMyPlans}
+                className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium py-4 rounded-xl mb-6 transition-all shadow-lg shadow-cyan-500/20 hover:shadow-xl hover:shadow-cyan-500/30 flex items-center justify-center gap-2"
+              >
+                <Package className="w-5 h-5" />
+                {t("我的套餐", "My Plans")}
+              </button>
+            )}
 
             <div className="space-y-4">
-              {!loading && currentMembership ? (
+              {isPaygUser ? (
+                <>
+                  <div className="flex items-center justify-between py-4 border-b border-gray-100">
+                    <span className="text-sm text-gray-600">{t("计费模式", "Billing Mode")}</span>
+                    <span className="text-sm font-medium text-blue-600">{t("按量充值", "Pay-as-you-go")}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-4 border-b border-gray-100">
+                    <span className="text-sm text-gray-600">{t("可用余额", "Available Balance")}</span>
+                    <span className="text-sm font-medium text-gray-900">{loading ? "..." : `$${paygRemainingBalance.toFixed(4)}`}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-4">
+                    <span className="text-sm text-gray-600">{t("累计消费", "Total Consumed")}</span>
+                    <span className="text-sm font-medium text-cyan-600">{loading ? "..." : `$${paygTotalConsumed.toFixed(4)}`}</span>
+                  </div>
+                </>
+              ) : !loading && currentMembership ? (
                 <>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -494,12 +570,14 @@ export default function DashboardPage() {
                 </>
               )}
 
-              <button
-                onClick={handleGetNewPlan}
-                className="w-full text-center text-sm text-cyan-600 hover:text-cyan-700 font-medium py-3 rounded-xl hover:bg-cyan-50 transition-all"
-              >
-                {t("获取新套餐", "Get New Plan")}
-              </button>
+              {!isPaygUser && (
+                <button
+                  onClick={handleGetNewPlan}
+                  className="w-full text-center text-sm text-cyan-600 hover:text-cyan-700 font-medium py-3 rounded-xl hover:bg-cyan-50 transition-all"
+                >
+                  {t("获取新套餐", "Get New Plan")}
+                </button>
+              )}
             </div>
           </div>
         </div>

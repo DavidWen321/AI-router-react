@@ -27,6 +27,8 @@ import { UpgradeMembershipDialog } from "./components/dialogs/UpgradeMembershipD
 import { RenewMembershipDialog } from "./components/dialogs/RenewMembershipDialog"
 import { BatchCompensateDialog } from "./components/dialogs/BatchCompensateDialog"
 import { AdjustTempLimitDialog } from "./components/dialogs/AdjustTempLimitDialog"
+import { BillingManageDialog } from "./components/dialogs/BillingManageDialog"
+import { UserConsumptionChart } from "./components/UserConsumptionChart"
 
 // 导入图表视图组件
 import { UserChartView } from "./components/UserChartView"
@@ -35,7 +37,7 @@ export default function UsersPage() {
   const { t } = useLanguage()
 
   // 使用自定义 Hooks
-  const { users, loading, deleteUser } = useUserData()
+  const { users, loading, totalRevenue, consumptionStats, deleteUser } = useUserData()
   const { searchFilters, setSearchFilters, filteredUsers, clearFilters } = useUserFilters(users)
 
   // 图表视图状态
@@ -63,6 +65,9 @@ export default function UsersPage() {
   const [userToAdjustLimit, setUserToAdjustLimit] = useState<UserData | null>(null)
 
   const [batchCompensateDialogOpen, setBatchCompensateDialogOpen] = useState(false)
+
+  const [billingManageDialogOpen, setBillingManageDialogOpen] = useState(false)
+  const [userToManageBilling, setUserToManageBilling] = useState<UserData | null>(null)
 
   // 事件处理函数
   const handleViewUser = (user: UserData) => {
@@ -101,6 +106,11 @@ export default function UsersPage() {
   const handleAdjustTempLimit = (user: UserData) => {
     setUserToAdjustLimit(user)
     setAdjustTempLimitDialogOpen(true)
+  }
+
+  const handleManageBilling = (user: UserData) => {
+    setUserToManageBilling(user)
+    setBillingManageDialogOpen(true)
   }
 
   const handleBatchCompensate = () => {
@@ -177,7 +187,16 @@ export default function UsersPage() {
       />
 
       {/* 统计卡片 */}
-      <UserStatsCards users={users} />
+      <UserStatsCards
+        users={users}
+        totalRevenue={totalRevenue}
+        totalConsumption={consumptionStats.totalConsumption}
+      />
+
+      {/* 额度消耗统计图（用户列表上方） */}
+      <UserConsumptionChart
+        data={consumptionStats.monthlyStats}
+      />
 
       {/* 用户表格 */}
       <UserTable
@@ -189,6 +208,7 @@ export default function UsersPage() {
         onDeleteUser={handleDeleteUser}
         onUsageRateClick={handleUsageRateClick}
         onAdjustTempLimit={handleAdjustTempLimit}
+        onManageBilling={handleManageBilling}
       />
 
       {/* 查看用户对话框 */}
@@ -234,6 +254,13 @@ export default function UsersPage() {
         onSuccess={handleDialogSuccess}
       />
 
+      {/* 按量计费管理对话框 */}
+      <BillingManageDialog
+        open={billingManageDialogOpen}
+        onOpenChange={setBillingManageDialogOpen}
+        user={userToManageBilling}
+        onSuccess={handleDialogSuccess}
+      />
       {/* 一键批量补偿对话框 */}
       <BatchCompensateDialog
         open={batchCompensateDialogOpen}
