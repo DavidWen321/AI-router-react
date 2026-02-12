@@ -730,6 +730,67 @@
     }
   }
 
+  /* ==========================================
+     Docs 页面 - 小手引导动效
+     ========================================== */
+
+  /* 小手左右轻摆 + 微旋转（模拟自然摆动） */
+  .hand-sway {
+    animation: handSway 2s ease-in-out infinite;
+  }
+
+  @keyframes handSway {
+    0%, 100% {
+      transform: translateX(0px) rotate(0deg);
+    }
+    20% {
+      transform: translateX(-6px) rotate(-4deg);
+    }
+    40% {
+      transform: translateX(4px) rotate(2deg);
+    }
+    60% {
+      transform: translateX(-3px) rotate(-1deg);
+    }
+    80% {
+      transform: translateX(2px) rotate(1deg);
+    }
+  }
+
+  /* 点击涟漪扩散光圈 */
+  .hand-ripple {
+    animation: handRipple 2.5s ease-out infinite;
+  }
+
+  @keyframes handRipple {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+  }
+
+  /* 提示文字呼吸闪烁 */
+  .text-breath {
+    animation: textBreath 3s ease-in-out infinite;
+  }
+
+  @keyframes textBreath {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
   /* Reduce motion */
   @media (prefers-reduced-motion: reduce) {
     *,

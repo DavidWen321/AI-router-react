@@ -80,14 +80,19 @@ export default function DocsPage() {
           <CodeBlock
             code={`{
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "your-api-key-here",
-    "ANTHROPIC_BASE_URL": "https://aiclaude.online",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": 1
+    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "DISABLE_INSTALLATION_CHECKS": "1",
+    "ANTHROPIC_AUTH_TOKEN": "你自己的密钥",
+    "ANTHROPIC_BASE_URL": "https://aiclaude.online"
   },
   "permissions": {
     "allow": [],
     "deny": []
-  }
+  },
+  "alwaysThinkingEnabled": true,
+  "hasCompletedOnboarding": true
 }`}
             index={1}
             copiedIndex={copiedIndex}
@@ -253,28 +258,44 @@ export default function DocsPage() {
               )}
             </p>
 
-            {/* 特色文档链接按钮 */}
-            <a
-              href="https://ccnvdus6wtxb.feishu.cn/wiki/SRN8wJ6AUis6UKk1rv2c1TSMnih?from=from_copylink"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative inline-flex items-center gap-2 sm:gap-3 px-5 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 text-white font-semibold shadow-xl shadow-violet-500/25 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
-            >
-              {/* 光效动画 */}
-              <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500 -z-10" />
+            {/* 特色文档链接按钮 + 小手引导 */}
+            <div className="relative inline-flex items-center">
+              <a
+                href="https://ccnvdus6wtxb.feishu.cn/wiki/SRN8wJ6AUis6UKk1rv2c1TSMnih?from=from_copylink"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative inline-flex items-center gap-2 sm:gap-3 px-5 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 text-white font-semibold shadow-xl shadow-violet-500/25 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
+              >
+                {/* 光效动画 */}
+                <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-500 to-rose-500 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500 -z-10" />
 
-              <div className="relative flex items-center gap-2 sm:gap-3">
-                <div className="relative">
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <div className="absolute inset-0 animate-ping">
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 opacity-50" />
+                <div className="relative flex items-center gap-2 sm:gap-3">
+                  <div className="relative">
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <div className="absolute inset-0 animate-ping">
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 opacity-50" />
+                    </div>
                   </div>
+                  <span className="hidden sm:inline">{t("查看详细配置文档", "View Detailed Configuration Docs")}</span>
+                  <span className="sm:hidden">{t("查看配置文档", "View Config Docs")}</span>
+                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </div>
-                <span className="hidden sm:inline">{t("查看详细配置文档", "View Detailed Configuration Docs")}</span>
-                <span className="sm:hidden">{t("查看配置文档", "View Config Docs")}</span>
-                <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </a>
+
+              {/* 小手引导动效 */}
+              <div className="hidden sm:flex absolute -right-52 top-1/2 -translate-y-1/2 items-center gap-2 pointer-events-none">
+                {/* 小手图标 — 左右轻摆 + 轻微弹跳 */}
+                <span className="relative text-2xl hand-sway drop-shadow-md">
+                  👈
+                  {/* 点击涟漪光圈 */}
+                  <span className="absolute -inset-1.5 rounded-full bg-violet-400/20 hand-ripple" />
+                </span>
+                {/* 提示文字 — 淡入淡出呼吸效果 */}
+                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap text-breath font-medium">
+                  {t("点击该按钮查看最新配置文档", "Click to view latest config docs")}
+                </span>
               </div>
-            </a>
+            </div>
 
             {/* 特性标签 */}
             <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-6 sm:mt-10">

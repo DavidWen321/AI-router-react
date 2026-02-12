@@ -698,27 +698,27 @@ export default function PricingPage() {
 
       {/* 订阅弹窗 */}
       <Dialog open={isPurchaseModalOpen} onOpenChange={setIsPurchaseModalOpen}>
-        <DialogContent className="sm:max-w-[440px] p-0 gap-0 overflow-hidden border border-gray-200 shadow-2xl rounded-2xl bg-white" hideCloseButton animation="fade">
+        <DialogContent className="sm:max-w-[520px] p-0 gap-0 overflow-hidden border border-gray-200 shadow-2xl rounded-2xl bg-white" hideCloseButton animation="fade">
           <DialogTitle className="sr-only">{t("订阅套餐", "Subscribe Plan")}</DialogTitle>
           <DialogDescription className="sr-only">{t("扫码添加微信订阅", "Scan QR to subscribe")}</DialogDescription>
 
-          <div className="px-8 pt-8 pb-5 text-center border-b border-gray-100">
-            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
-              <Crown className="w-7 h-7 text-white" />
+          <div className="px-10 pt-9 pb-6 text-center border-b border-gray-100">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+              <Crown className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedPlan}</h3>
             <p className="text-sm text-gray-500">{t("扫码联系客服开通", "Scan to contact service")}</p>
           </div>
 
-          <div className="px-8 py-6">
+          <div className="px-10 py-7">
             <div className="flex justify-center">
-              <div className="p-3 rounded-xl bg-white border border-gray-200 shadow-sm">
+              <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
                 <img
                   src="/wechat-qr.jpg"
                   alt="QR Code"
-                  className="w-48 h-48 rounded-lg object-contain"
+                  className="w-60 h-60 rounded-lg object-contain"
                   onError={(e) => {
-                    e.currentTarget.parentElement!.innerHTML = '<div class="w-48 h-48 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-xs">QR Code</div>'
+                    e.currentTarget.parentElement!.innerHTML = '<div class="w-60 h-60 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-xs">QR Code</div>'
                   }}
                 />
               </div>
@@ -726,7 +726,7 @@ export default function PricingPage() {
             <p className="text-center text-sm text-gray-400 mt-4">{t("微信扫一扫", "Scan with WeChat")}</p>
           </div>
 
-          <div className="px-8 pb-8">
+          <div className="px-10 pb-9">
             <button
               onClick={() => setIsPurchaseModalOpen(false)}
               className="w-full py-3 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
