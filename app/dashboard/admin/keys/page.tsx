@@ -139,7 +139,7 @@ export default function KeysPage() {
   }
 
   return (
-    <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
+    <div className="dash-page-stagger max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
       <div className="mb-4 sm:mb-6">
         <div className="flex items-center gap-2 sm:gap-3 mb-2">
           <Key className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 dark:text-purple-400" />

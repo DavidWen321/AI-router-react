@@ -185,7 +185,7 @@ export default function ChannelHealthPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
+      <div className="dash-page-stagger max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin" />
@@ -197,7 +197,7 @@ export default function ChannelHealthPage() {
   }
 
   return (
-    <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-6 sm:pb-8">
+    <div className="dash-page-stagger max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-6 sm:pb-8">
       {/* 页面标题 */}
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">

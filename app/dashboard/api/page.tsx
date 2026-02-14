@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import { Inter, JetBrains_Mono } from "next/font/google"
 import { useLanguage } from "@/lib/language-context"
 import { apiKeyApi, userApi, type ApiKeyData, type ApiKeyUsageStats, ApiError } from "@/lib/api"
 import {
@@ -17,8 +18,11 @@ import {
   ChevronUp,
   Calendar,
   Clock,
+  Shield,
+  Plus,
 } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard-header"
+import { BackgroundParticles, SparklineCanvas } from "@/components/dashboard-canvas"
 import {
   Dialog,
   DialogContent,
@@ -49,6 +53,18 @@ interface APIKey {
   expires: string
 }
 
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+})
+
 export default function APIManagementPage() {
   const { t } = useLanguage()
   const router = useRouter()
@@ -62,6 +78,7 @@ export default function APIManagementPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("7")
   const [isTimeRangeDropdownOpen, setIsTimeRangeDropdownOpen] = useState(false)
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false)
+  const [animReady, setAnimReady] = useState(false)
 
   const [selectedKey, setSelectedKey] = useState<APIKey | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
@@ -73,12 +90,16 @@ export default function APIManagementPage() {
   const [usageStatsData, setUsageStatsData] = useState<ApiKeyUsageStats[]>([])
   const [isLoadingStats, setIsLoadingStats] = useState(true)
 
-  // Helper function to convert backend API key data to frontend format
+  const truncateTo4 = (value: number) => Math.trunc(value * 10000) / 10000
+  const formatCurrency = (value: number) => {
+    const truncated = truncateTo4(value)
+    return `$${truncated.toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+  }
+
   const convertApiKeyData = (backendKey: ApiKeyData): APIKey => {
     const keyPreview = backendKey.apiKey
       ? `${backendKey.apiKey.substring(0, 9)}...${backendKey.apiKey.substring(backendKey.apiKey.length - 3)}`
       : ""
-
     return {
       id: backendKey.id,
       key: keyPreview,
@@ -89,56 +110,27 @@ export default function APIManagementPage() {
     }
   }
 
-  // Fetch API keys from backend
   const fetchApiKeys = async () => {
-    if (!userId) {
-      console.log("fetchApiKeys: userId is empty, skipping")
-      return
-    }
-
-    console.log("fetchApiKeys: fetching keys for userId:", userId)
+    if (!userId) return
     setIsLoadingKeys(true)
     try {
       const keys = await apiKeyApi.getUserApiKeys(userId)
-      console.log("fetchApiKeys: received keys from backend:", keys)
-      const convertedKeys = keys.map(convertApiKeyData)
-      console.log("fetchApiKeys: converted keys:", convertedKeys)
-      setApiKeys(convertedKeys)
+      setApiKeys(keys.map(convertApiKeyData))
     } catch (error) {
-      console.error("Failed to fetch API keys:", error)
-      toast({
-        title: t("加载失败", "Loading Failed"),
-        description: error instanceof ApiError
-          ? error.message
-          : t("无法加载API密钥列表", "Failed to load API key list"),
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoadingKeys(false)
-    }
+      toast({ title: t("加载失败", "Loading Failed"), description: error instanceof ApiError ? error.message : t("无法加载API密钥列表", "Failed to load API key list"), variant: "destructive" })
+    } finally { setIsLoadingKeys(false) }
   }
 
-  // Fetch usage statistics from backend
   const fetchUsageStats = async () => {
     if (!userId) return
-
     setIsLoadingStats(true)
     try {
       const days = Number.parseInt(selectedTimeRange)
       const stats = await apiKeyApi.getUserApiKeyUsageStats(userId, days)
       setUsageStatsData(stats)
     } catch (error) {
-      console.error("Failed to fetch usage stats:", error)
-      toast({
-        title: t("加载失败", "Loading Failed"),
-        description: error instanceof ApiError
-          ? error.message
-          : t("无法加载使用统计", "Failed to load usage statistics"),
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoadingStats(false)
-    }
+      toast({ title: t("加载失败", "Loading Failed"), description: error instanceof ApiError ? error.message : t("无法加载使用统计", "Failed to load usage statistics"), variant: "destructive" })
+    } finally { setIsLoadingStats(false) }
   }
 
   const timeRangeOptions = [
@@ -153,90 +145,41 @@ export default function APIManagementPage() {
     { value: "365", label: t("最近 1 年", "Last 1 year") },
   ]
 
-  // Simplified create key function - directly calls backend, no modal
   const handleCreateKey = async () => {
-    if (!userId) {
-      toast({
-        title: t("创建失败", "Creation Failed"),
-        description: t("用户信息缺失", "User information is missing"),
-        variant: "destructive",
-      })
-      return
-    }
-
+    if (!userId) { toast({ title: t("创建失败", "Creation Failed"), description: t("用户信息缺失", "User information is missing"), variant: "destructive" }); return }
     setIsCreatingKey(true)
     try {
-      // Call backend API to create key (no name needed)
       await apiKeyApi.createApiKey(userId)
-
-      // Show success toast
-      toast({
-        title: t("创建成功", "Created Successfully"),
-        description: t("密钥已创建,请在列表中查看", "API key created successfully, check the list below"),
-      })
-
-      // Refresh the lists
+      toast({ title: t("创建成功", "Created Successfully"), description: t("密钥已创建,请在列表中查看", "API key created, check list below") })
       await fetchApiKeys()
       await fetchUsageStats()
     } catch (error) {
-      console.error("Failed to create API key:", error)
-      toast({
-        title: t("创建失败", "Creation Failed"),
-        description: error instanceof ApiError
-          ? error.message
-          : t("无法创建API密钥", "Failed to create API key"),
-        variant: "destructive",
-      })
-    } finally {
-      setIsCreatingKey(false)
-    }
+      toast({ title: t("创建失败", "Creation Failed"), description: error instanceof ApiError ? error.message : t("无法创建API密钥", "Failed to create API key"), variant: "destructive" })
+    } finally { setIsCreatingKey(false) }
   }
 
-  // Handle copying the newly created key
   const handleCopyNewKey = async () => {
     if (!newCreatedKey) return
-
     try {
       await navigator.clipboard.writeText(newCreatedKey.apiKey)
-      toast({
-        title: t("复制成功", "Copied Successfully"),
-        description: t("密钥已复制到剪贴板", "API key copied to clipboard"),
-      })
+      toast({ title: t("复制成功", "Copied Successfully"), description: t("密钥已复制到剪贴板", "API key copied to clipboard") })
     } catch (error) {
-      toast({
-        title: t("复制失败", "Copy Failed"),
-        description: t("无法复制到剪贴板", "Failed to copy to clipboard"),
-        variant: "destructive",
-      })
+      toast({ title: t("复制失败", "Copy Failed"), description: t("无法复制到剪贴板", "Failed to copy to clipboard"), variant: "destructive" })
     }
   }
 
-  // Close the key display modal
-  const handleCloseKeyDisplayModal = () => {
-    setIsKeyDisplayModalOpen(false)
-    setNewCreatedKey(null)
-  }
-
-  const handleTimeRangeSelect = (value: string) => {
-    setSelectedTimeRange(value)
-    setIsTimeRangeDropdownOpen(false)
-  }
-
-  const currentTimeRangeLabel =
-    timeRangeOptions.find((option) => option.value === selectedTimeRange)?.label || t("最近 7 天", "Last 7 days")
+  const handleCloseKeyDisplayModal = () => { setIsKeyDisplayModalOpen(false); setNewCreatedKey(null) }
+  const handleTimeRangeSelect = (value: string) => { setSelectedTimeRange(value); setIsTimeRangeDropdownOpen(false) }
+  const currentTimeRangeLabel = timeRangeOptions.find((o) => o.value === selectedTimeRange)?.label || t("最近 7 天", "Last 7 days")
 
   const usageStats = useMemo(() => {
     return usageStatsData.map((stat) => {
-      // Mask the API key for display
-      const maskedKey = stat.apiKey
-        ? `${stat.apiKey.substring(0, 9)}...${stat.apiKey.substring(stat.apiKey.length - 3)}`
-        : t("未命名", "Unnamed")
-
+      const maskedKey = stat.apiKey ? `${stat.apiKey.substring(0, 9)}...${stat.apiKey.substring(stat.apiKey.length - 3)}` : t("未命名", "Unnamed")
       return {
         maskedKey,
         fullKey: stat.apiKey || "",
         tokens: (stat.totalTokens ?? 0).toLocaleString(),
-        cost: `$${(stat.totalCost ?? 0).toFixed(6)}`,
+        cost: formatCurrency(stat.totalCost ?? 0),
         firstUsed: stat.firstUsed || t("未使用", "Not used"),
         lastUsed: stat.lastUsed || t("未使用", "Not used"),
       }
@@ -246,18 +189,13 @@ export default function APIManagementPage() {
   const totals = useMemo(() => {
     const totalTokens = usageStatsData.reduce((sum, stat) => sum + (stat.totalTokens ?? 0), 0)
     const totalCost = usageStatsData.reduce((sum, stat) => sum + (stat.totalCost ?? 0), 0)
-
-    // Calculate first and last used times across all keys
     const allFirstUsed = usageStatsData.filter(s => s.firstUsed).map(s => new Date(s.firstUsed!).getTime())
     const allLastUsed = usageStatsData.filter(s => s.lastUsed).map(s => new Date(s.lastUsed!).getTime())
-    const firstUsedTime = allFirstUsed.length > 0 ? new Date(Math.min(...allFirstUsed)).toLocaleString() : t("未使用", "Not used")
-    const lastUsedTime = allLastUsed.length > 0 ? new Date(Math.max(...allLastUsed)).toLocaleString() : t("未使用", "Not used")
-
     return {
       tokens: totalTokens.toLocaleString(),
-      cost: `$${totalCost.toFixed(6)}`,
-      firstUsed: firstUsedTime,
-      lastUsed: lastUsedTime,
+      cost: formatCurrency(totalCost),
+      firstUsed: allFirstUsed.length > 0 ? new Date(Math.min(...allFirstUsed)).toLocaleString() : t("未使用", "Not used"),
+      lastUsed: allLastUsed.length > 0 ? new Date(Math.max(...allLastUsed)).toLocaleString() : t("未使用", "Not used"),
     }
   }, [usageStatsData, t])
 
@@ -265,188 +203,90 @@ export default function APIManagementPage() {
     setMounted(true)
     const isLoggedIn = localStorage.getItem("isLoggedIn")
     const email = localStorage.getItem("userEmail")
-
-    if (!isLoggedIn) {
-      router.push("/")
-      return
-    }
-
+    if (!isLoggedIn) { router.push("/"); return }
     if (email) {
       setUserEmail(email)
-      // Fetch user ID from backend using email
-      userApi.getUserByEmail(email).then((user) => {
-        setUserId(user.id)
-      }).catch((error) => {
-        console.error("Failed to fetch user info:", error)
-        toast({
-          title: t("加载失败", "Loading Failed"),
-          description: t("无法获取用户信息", "Failed to get user information"),
-          variant: "destructive",
-        })
+      userApi.getUserByEmail(email).then((user) => setUserId(user.id)).catch(() => {
+        toast({ title: t("加载失败", "Loading Failed"), description: t("无法获取用户信息", "Failed to get user information"), variant: "destructive" })
       })
     }
+    setTimeout(() => setAnimReady(true), 100)
   }, [router, toast, t])
 
-  // Fetch API keys when userId is available
-  useEffect(() => {
-    if (userId) {
-      fetchApiKeys()
-    }
-  }, [userId])
+  useEffect(() => { if (userId) fetchApiKeys() }, [userId])
+  useEffect(() => { if (userId) fetchUsageStats() }, [userId, selectedTimeRange])
 
-  // Fetch usage stats when userId or time range changes
-  useEffect(() => {
-    if (userId) {
-      fetchUsageStats()
-    }
-  }, [userId, selectedTimeRange])
-
-  const handleViewKey = (key: APIKey) => {
-    setSelectedKey(key)
-    setIsViewDialogOpen(true)
-  }
-
+  const handleViewKey = (key: APIKey) => { setSelectedKey(key); setIsViewDialogOpen(true) }
   const handleCopyKey = async (key: APIKey) => {
     try {
       await navigator.clipboard.writeText(key.fullKey)
-      toast({
-        title: t("复制成功", "Copied Successfully"),
-        description: t("密钥已复制到剪贴板", "API key copied to clipboard"),
-      })
-    } catch (error) {
-      toast({
-        title: t("复制失败", "Copy Failed"),
-        description: t("无法复制到剪贴板", "Failed to copy to clipboard"),
-        variant: "destructive",
-      })
-    }
+      toast({ title: t("复制成功", "Copied Successfully"), description: t("密钥已复制到剪贴板", "API key copied to clipboard") })
+    } catch (error) { toast({ title: t("复制失败", "Copy Failed"), description: t("无法复制到剪贴板", "Failed to copy to clipboard"), variant: "destructive" }) }
   }
-
-  const handleDeleteKey = (key: APIKey) => {
-    setSelectedKey(key)
-    setIsDeleteDialogOpen(true)
-  }
-
+  const handleDeleteKey = (key: APIKey) => { setSelectedKey(key); setIsDeleteDialogOpen(true) }
   const confirmDeleteKey = async () => {
     if (!selectedKey) return
-
     try {
-      // Call backend API to delete key
       await apiKeyApi.deleteApiKey(selectedKey.fullKey)
-
-      // Remove from local state
-      setApiKeys((prevKeys) => prevKeys.filter((key) => key.id !== selectedKey.id))
-
-      toast({
-        title: t("删除成功", "Deleted Successfully"),
-        description: t("密钥已被删除", "API key has been deleted"),
-      })
-
-      // Refresh the list from backend
+      setApiKeys((prev) => prev.filter((k) => k.id !== selectedKey.id))
+      toast({ title: t("删除成功", "Deleted Successfully"), description: t("密钥已被删除", "API key has been deleted") })
       await fetchApiKeys()
       await fetchUsageStats()
     } catch (error) {
-      console.error("Failed to delete API key:", error)
-      toast({
-        title: t("删除失败", "Deletion Failed"),
-        description: error instanceof ApiError
-          ? error.message
-          : t("无法删除API密钥", "Failed to delete API key"),
-        variant: "destructive",
-      })
-    } finally {
-      setIsDeleteDialogOpen(false)
-      setSelectedKey(null)
-    }
+      toast({ title: t("删除失败", "Deletion Failed"), description: error instanceof ApiError ? error.message : t("无法删除API密钥", "Failed to delete API key"), variant: "destructive" })
+    } finally { setIsDeleteDialogOpen(false); setSelectedKey(null) }
   }
-
   const toggleKeyVisibility = (keyName: string) => {
-    setRevealedKeys((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(keyName)) {
-        newSet.delete(keyName)
-      } else {
-        newSet.add(keyName)
-      }
-      return newSet
-    })
+    setRevealedKeys((prev) => { const n = new Set(prev); n.has(keyName) ? n.delete(keyName) : n.add(keyName); return n })
   }
-
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn")
-    localStorage.removeItem("userEmail")
-    toast({
-      title: t("已退出登录", "Logged Out"),
-      description: t("您已成功退出登录", "You have been successfully logged out"),
-    })
+    localStorage.removeItem("isLoggedIn"); localStorage.removeItem("userEmail")
+    toast({ title: t("已退出登录", "Logged Out"), description: t("您已成功退出登录", "You have been successfully logged out") })
     router.push("/")
   }
 
+  const animCls = `dash-anim ${animReady ? "dash-visible" : ""}`
+  const ac = (delay: number, extra = "") => `${extra} ${animCls}`.trim()
+  const as_ = (delay: number) => ({ transitionDelay: `${delay}ms` })
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Header */}
+    <div className="min-h-screen dash-bg">
+      <BackgroundParticles />
       <DashboardHeader userEmail={userEmail} onLogout={handleLogout} />
 
-      {/* Main Content */}
-      <main className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 pt-[88px] sm:pt-[96px] pb-6 sm:pb-8 page-transition">
+      <main className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-[96px] pb-8">
         {/* Page Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">{t("API管理", "API Management")}</h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            {t("管理您的API密钥、权限设置和访问控制", "Manage your API keys, permission settings and access control")}
-          </p>
+        <div className={ac(80)} style={{ marginBottom: 28, ...as_(80) }}>
+          <h1 style={{ fontSize: "clamp(22px,2.5vw,32px)", fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>{t("API管理", "API Management")}</h1>
+          <p style={{ fontSize: 14, color: "#64748b" }}>{t("管理您的API密钥、权限设置和访问控制", "Manage your API keys, permission settings and access control")}</p>
         </div>
 
-        {/* API Key Usage Statistics */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        {/* Usage Statistics Section */}
+        <div className={`${ac(200, "glass-card")} ${inter.className}`} style={{ marginBottom: 20, ...as_(200) }}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
             <div>
-              <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-300" />
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{t("API Key 使用统计", "API Key Usage Statistics")}</h2>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="dash-icon-cyan w-8 h-8 rounded-lg flex items-center justify-center"><TrendingUp style={{ width: 15, height: 15 }} /></div>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{t("API Key 使用统计", "API Key Usage Statistics")}</h2>
               </div>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                {t("查看各个 API Key 的使用情况和费用", "View usage and costs for each API Key")}
-              </p>
+              <p style={{ fontSize: 12, color: "#94a3b8" }}>{t("查看各个 API Key 的使用情况和费用", "View usage and costs for each API Key")}</p>
             </div>
 
             <div className="flex items-center gap-2 relative">
-              <button
-                onClick={() => setIsTimeRangeDropdownOpen(!isTimeRangeDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                <Calendar className="w-4 h-4" />
-                {currentTimeRangeLabel}
+              <button onClick={() => setIsTimeRangeDropdownOpen(!isTimeRangeDropdownOpen)} className="dash-ghost-btn" style={{ border: "1px solid rgba(6,182,212,0.08)", borderRadius: 10, padding: "7px 14px" }}>
+                <Calendar style={{ width: 14, height: 14 }} /> {currentTimeRangeLabel}
               </button>
-              <button
-                onClick={() => setIsTimeRangeDropdownOpen(!isTimeRangeDropdownOpen)}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                <ChevronDown className="w-4 h-4 text-gray-700" />
+              <button onClick={() => setIsStatsCollapsed(!isStatsCollapsed)} className="dash-ib" style={{ border: "1px solid rgba(6,182,212,0.08)" }}>
+                {isStatsCollapsed ? <ChevronDown style={{ width: 14, height: 14 }} /> : <ChevronUp style={{ width: 14, height: 14 }} />}
               </button>
-              <button
-                onClick={() => setIsStatsCollapsed(!isStatsCollapsed)}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                {isStatsCollapsed ? (
-                  <ChevronDown className="w-4 h-4 text-gray-700" />
-                ) : (
-                  <ChevronUp className="w-4 h-4 text-gray-700" />
-                )}
-              </button>
-
               {isTimeRangeDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full right-0 mt-2 w-48 z-10 glass-card" style={{ padding: 4 }}>
                   {timeRangeOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => handleTimeRangeSelect(option.value)}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg ${
-                        selectedTimeRange === option.value ? "bg-cyan-50 text-cyan-700 font-medium" : "text-gray-700"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
+                    <button key={option.value} onClick={() => handleTimeRangeSelect(option.value)}
+                      style={{ width: "100%", textAlign: "left", padding: "8px 12px", fontSize: 13, borderRadius: 8, border: "none", background: selectedTimeRange === option.value ? "rgba(6,182,212,0.06)" : "transparent", color: selectedTimeRange === option.value ? "#06b6d4" : "#334155", fontWeight: selectedTimeRange === option.value ? 600 : 400, cursor: "pointer", fontFamily: "inherit", transition: "background 0.15s" }}
+                      onMouseEnter={(e) => { if (selectedTimeRange !== option.value) (e.target as HTMLElement).style.background = "rgba(0,0,0,0.02)" }}
+                      onMouseLeave={(e) => { if (selectedTimeRange !== option.value) (e.target as HTMLElement).style.background = "transparent" }}
+                    >{option.label}</button>
                   ))}
                 </div>
               )}
@@ -456,106 +296,67 @@ export default function APIManagementPage() {
           {!isStatsCollapsed && (
             <div>
               {isLoadingStats ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-gray-500">{t("加载中...", "Loading...")}</div>
-                </div>
+                <div style={{ textAlign: "center", padding: "40px 0", color: "#94a3b8", fontSize: 13 }}>{t("加载中...", "Loading...")}</div>
               ) : usageStats.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                  <TrendingUp className="w-12 h-12 mb-4 text-gray-300" />
-                  <p>{t("暂无使用统计数据", "No usage statistics available")}</p>
+                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                  <TrendingUp style={{ width: 40, height: 40, color: "#e2e8f0", margin: "0 auto 12px" }} />
+                  <p style={{ color: "#94a3b8", fontSize: 13 }}>{t("暂无使用统计数据", "No usage statistics available")}</p>
                 </div>
               ) : (
                 <>
                   {/* Mobile Card View */}
-                  <div className="md:hidden space-y-4">
+                  <div className="md:hidden flex flex-col gap-3">
                     {usageStats.map((stat, index) => (
-                      <div key={index} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                      <div key={index} style={{ background: "rgba(6,182,212,0.02)", borderRadius: 14, padding: 16, border: "1px solid rgba(6,182,212,0.06)" }}>
                         <div className="flex items-center gap-2 mb-3">
-                          <Key className="w-4 h-4 text-cyan-500" />
-                          <code className="text-xs font-mono text-gray-700 dark:text-gray-300">{stat.maskedKey}</code>
+                          <span className="dash-dot-breathe" style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
+                          <code className={`${jetbrainsMono.className} inline-flex rounded bg-gray-50 px-2 py-0.5 text-xs text-gray-700`}>{stat.maskedKey}</code>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                          <div>
-                            <span className="text-gray-500 dark:text-gray-400">{t("总 Tokens", "Total Tokens")}</span>
-                            <p className="text-gray-900 dark:text-white font-medium mt-0.5">{stat.tokens}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-500 dark:text-gray-400">{t("总费用", "Total Cost")}</span>
-                            <p className="text-cyan-600 dark:text-cyan-400 font-semibold mt-0.5">{stat.cost}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-500 dark:text-gray-400">{t("首次使用", "First Used")}</span>
-                            <p className="text-gray-700 dark:text-gray-300 mt-0.5">{stat.firstUsed}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-500 dark:text-gray-400">{t("最后使用", "Last Used")}</span>
-                            <p className="text-gray-700 dark:text-gray-300 mt-0.5">{stat.lastUsed}</p>
-                          </div>
+                        <div className="grid grid-cols-2 gap-3" style={{ fontSize: 12 }}>
+                          <div><span style={{ color: "#94a3b8" }}>{t("总 Tokens", "Total Tokens")}</span><p className="tabular-nums font-semibold" style={{ color: "#0f172a", marginTop: 2 }}>{stat.tokens}</p></div>
+                          <div><span style={{ color: "#94a3b8" }}>{t("总费用", "Total Cost")}</span><p className="tabular-nums font-semibold" style={{ color: "#06b6d4", marginTop: 2 }}>{stat.cost}</p></div>
+                          <div><span style={{ color: "#94a3b8" }}>{t("首次使用", "First Used")}</span><p className="tabular-nums font-medium" style={{ color: "#334155", marginTop: 2 }}>{stat.firstUsed}</p></div>
+                          <div><span style={{ color: "#94a3b8" }}>{t("最后使用", "Last Used")}</span><p className="tabular-nums font-medium" style={{ color: "#334155", marginTop: 2 }}>{stat.lastUsed}</p></div>
                         </div>
                       </div>
                     ))}
-                    {/* Mobile Totals Card */}
-                    <div className="bg-cyan-50 dark:bg-cyan-900/20 rounded-xl p-4 border border-cyan-200 dark:border-cyan-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <TrendingUp className="w-4 h-4 text-cyan-600" />
-                        <span className="text-sm font-semibold text-cyan-900 dark:text-cyan-100">{t("总计", "Total")}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 text-xs">
-                        <div>
-                          <span className="text-cyan-700 dark:text-cyan-300">{t("总 Tokens", "Total Tokens")}</span>
-                          <p className="text-cyan-900 dark:text-cyan-100 font-bold mt-0.5">{totals.tokens}</p>
-                        </div>
-                        <div>
-                          <span className="text-cyan-700 dark:text-cyan-300">{t("总费用", "Total Cost")}</span>
-                          <p className="text-cyan-900 dark:text-cyan-100 font-bold mt-0.5">{totals.cost}</p>
-                        </div>
+                    <div style={{ background: "rgba(6,182,212,0.04)", borderRadius: 14, padding: 16, border: "1px solid rgba(6,182,212,0.1)" }}>
+                      <div className="flex items-center gap-2 mb-3"><TrendingUp style={{ width: 14, height: 14, color: "#06b6d4" }} /><span style={{ fontSize: 13, fontWeight: 600, color: "#06b6d4" }}>{t("总计", "Total")}</span></div>
+                      <div className="grid grid-cols-2 gap-3" style={{ fontSize: 12 }}>
+                        <div><span style={{ color: "#06b6d4" }}>{t("总 Tokens", "Total Tokens")}</span><p className="tabular-nums font-semibold" style={{ color: "#0f172a", marginTop: 2 }}>{totals.tokens}</p></div>
+                        <div><span style={{ color: "#06b6d4" }}>{t("总费用", "Total Cost")}</span><p className="tabular-nums font-semibold" style={{ color: "#0f172a", marginTop: 2 }}>{totals.cost}</p></div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Desktop Table View */}
+                  {/* Desktop Table */}
                   <div className="hidden md:block">
-                    <table className="w-full">
+                    <table className="dash-table">
                       <thead>
-                        <tr className="border-b border-gray-200 dark:border-gray-700">
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Key className="w-4 h-4" />
-                              {t("密钥", "API Key")}
-                            </div>
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                            {t("总 Tokens", "Total Tokens")}
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                            💰 {t("总费用", "Total Cost")}
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                            {t("首次使用", "First Used")}
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                            {t("最后使用", "Last Used")}
-                          </th>
+                        <tr>
+                          <th className="uppercase tracking-wider text-xs font-semibold text-gray-500"><div className="flex items-center gap-1"><Key style={{ width: 12, height: 12 }} />{t("密钥", "API Key")}</div></th>
+                          <th className="uppercase tracking-wider text-xs font-semibold text-gray-500">{t("总 Tokens", "Total Tokens")}</th>
+                          <th className="uppercase tracking-wider text-xs font-semibold text-gray-500">{t("总费用", "Total Cost")}</th>
+                          <th className="uppercase tracking-wider text-xs font-semibold text-gray-500">{t("首次使用", "First Used")}</th>
+                          <th className="uppercase tracking-wider text-xs font-semibold text-gray-500">{t("最后使用", "Last Used")}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {usageStats.map((stat, index) => (
-                          <tr key={index} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                            <td className="py-4 px-4">
-                              <code className="text-sm font-mono text-gray-700 dark:text-gray-300">{stat.maskedKey}</code>
-                            </td>
-                            <td className="py-4 px-4 text-sm text-gray-700 dark:text-gray-300">{stat.tokens}</td>
-                            <td className="py-4 px-4 text-sm font-medium text-gray-900 dark:text-white">{stat.cost}</td>
-                            <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{stat.firstUsed}</td>
-                            <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{stat.lastUsed}</td>
+                          <tr key={index} className="dash-row-anim" style={{ ["--row-delay" as any]: `${index * 0.06}s` }}>
+                            <td><div className="flex items-center gap-2"><span className="dash-dot-breathe" style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", flexShrink: 0 }} /><code className={`${jetbrainsMono.className} inline-flex rounded bg-gray-50 px-2 py-0.5 text-xs text-gray-700`}>{stat.maskedKey}</code></div></td>
+                            <td className="tabular-nums font-medium">{stat.tokens}</td>
+                            <td className="tabular-nums font-semibold" style={{ color: "#06b6d4" }}>{stat.cost}</td>
+                            <td className="tabular-nums font-medium" style={{ fontSize: 12, color: "#64748b" }}>{stat.firstUsed}</td>
+                            <td className="tabular-nums font-medium" style={{ fontSize: 12, color: "#64748b" }}>{stat.lastUsed}</td>
                           </tr>
                         ))}
-                        <tr className="bg-gray-50 dark:bg-gray-700/50 font-semibold">
-                          <td className="py-4 px-4 text-sm text-gray-900 dark:text-white">{t("总计", "Total")}</td>
-                          <td className="py-4 px-4 text-sm text-gray-900 dark:text-white">{totals.tokens}</td>
-                          <td className="py-4 px-4 text-sm text-gray-900 dark:text-white">{totals.cost}</td>
-                          <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{totals.firstUsed}</td>
-                          <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{totals.lastUsed}</td>
+                        <tr style={{ background: "rgba(6,182,212,0.03)" }}>
+                          <td style={{ fontWeight: 700 }}>{t("总计", "Total")}</td>
+                          <td className="tabular-nums font-semibold">{totals.tokens}</td>
+                          <td className="tabular-nums font-semibold" style={{ color: "#06b6d4" }}>{totals.cost}</td>
+                          <td className="tabular-nums font-medium" style={{ fontSize: 12, color: "#64748b" }}>{totals.firstUsed}</td>
+                          <td className="tabular-nums font-medium" style={{ fontSize: 12, color: "#64748b" }}>{totals.lastUsed}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -567,344 +368,182 @@ export default function APIManagementPage() {
         </div>
 
         {/* API Key List */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className={`${ac(550, "glass-card")} ${inter.className}`} style={as_(550)}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">{t("API密钥列表", "API Key List")}</h2>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                {t(`当前共有 ${apiKeys.length} 个活跃的API密钥`, `Currently ${apiKeys.length} active API keys`)}
-              </p>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="dash-icon-blue w-8 h-8 rounded-lg flex items-center justify-center"><Key style={{ width: 15, height: 15 }} /></div>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{t("API密钥列表", "API Key List")}</h2>
+              </div>
+              <p style={{ fontSize: 12, color: "#94a3b8" }}>{t(`当前共有 ${apiKeys.length} 个活跃的API密钥`, `Currently ${apiKeys.length} active API keys`)}</p>
             </div>
-
-            <button
-              onClick={handleCreateKey}
-              disabled={isCreatingKey}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-            >
-              {isCreatingKey ? (
-                <>
-                  <span className="animate-spin">⏳</span>
-                  {t("创建中...", "Creating...")}
-                </>
-              ) : (
-                <>
-                  <span className="text-lg">+</span>
-                  {t("创建新密钥", "Create New Key")}
-                </>
-              )}
+            <button onClick={handleCreateKey} disabled={isCreatingKey} className="dash-primary-btn" style={{ opacity: isCreatingKey ? 0.6 : 1 }}>
+              {isCreatingKey ? <span style={{ animation: "spin 1s linear infinite" }}>&#8987;</span> : <Plus style={{ width: 14, height: 14 }} />}
+              {isCreatingKey ? t("创建中...", "Creating...") : t("创建新密钥", "Create New Key")}
             </button>
           </div>
 
-          {/* API Key List - Card view on mobile, Table on desktop */}
-          <div>
-            {isLoadingKeys ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-gray-500">{t("加载中...", "Loading...")}</div>
+          {isLoadingKeys ? (
+            <div style={{ textAlign: "center", padding: "40px 0", color: "#94a3b8", fontSize: 13 }}>{t("加载中...", "Loading...")}</div>
+          ) : apiKeys.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 0" }}>
+              <Key style={{ width: 40, height: 40, color: "#e2e8f0", margin: "0 auto 12px" }} />
+              <p style={{ color: "#94a3b8", fontSize: 13 }}>{t("暂无API密钥", "No API keys available")}</p>
+              <p style={{ color: "#cbd5e1", fontSize: 12, marginTop: 4 }}>{t("点击上方按钮创建新密钥", "Click the button above to create a new key")}</p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card View */}
+              <div className="md:hidden flex flex-col gap-2.5">
+                {apiKeys.map((key, i) => (
+                  <div key={key.id} className="dash-slide-in" style={{ ["--slide-delay" as any]: `${i * 0.08}s`, position: "relative", background: "rgba(6,182,212,0.02)", borderRadius: 14, padding: 16, border: "1px solid rgba(6,182,212,0.06)", overflow: "hidden" }}>
+                    <div className="dash-key-glow" />
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="dash-dot-breathe" style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", flexShrink: 0 }} />
+                        <code className={`${jetbrainsMono.className} inline-flex max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded bg-gray-50 px-2 py-0.5 text-xs text-gray-700`}>{revealedKeys.has(String(key.id)) ? key.fullKey : key.key}</code>
+                      </div>
+                      <button onClick={() => toggleKeyVisibility(String(key.id))} className="dash-ib">
+                        {revealedKeys.has(String(key.id)) ? <EyeOff style={{ width: 14, height: 14 }} /> : <Eye style={{ width: 14, height: 14 }} />}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2" style={{ fontSize: 11, marginBottom: 12 }}>
+                      <div><span style={{ color: "#94a3b8" }}>{t("创建时间", "Created")}</span><p className="tabular-nums font-medium" style={{ color: "#334155", marginTop: 2 }}>{key.created}</p></div>
+                      <div><span style={{ color: "#94a3b8" }}>{t("最后使用", "Last Used")}</span><p className="tabular-nums font-medium" style={{ color: "#334155", marginTop: 2 }}>{key.lastUsed}</p></div>
+                      <div className="col-span-2"><span style={{ color: "#94a3b8" }}>{t("过期时间", "Expires")}</span><p className="tabular-nums font-medium" style={{ color: "#334155", marginTop: 2 }}>{key.expires}</p></div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2" style={{ paddingTop: 10, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                      <button onClick={() => handleViewKey(key)} className="dash-ghost-btn"><Eye style={{ width: 12, height: 12 }} />{t("详细", "Details")}</button>
+                      <button onClick={() => handleCopyKey(key)} className="dash-ghost-btn" style={{ color: "#06b6d4" }}><Copy style={{ width: 12, height: 12 }} />{t("复制", "Copy")}</button>
+                      <button onClick={() => handleDeleteKey(key)} className="dash-ghost-btn" style={{ color: "#ef4444" }}><Trash2 style={{ width: 12, height: 12 }} />{t("删除", "Delete")}</button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : apiKeys.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                <Key className="w-12 h-12 mb-4 text-gray-300" />
-                <p>{t("暂无API密钥", "No API keys available")}</p>
-                <p className="text-sm mt-2">{t("点击上方按钮创建新密钥", "Click the button above to create a new key")}</p>
-              </div>
-            ) : (
-              <>
-                {/* Mobile Card View */}
-                <div className="md:hidden space-y-4">
-                  {apiKeys.map((key) => (
-                    <div key={key.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-3">
-                      {/* Key Preview */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <Key className="w-4 h-4 text-cyan-500 flex-shrink-0" />
-                          <code className="text-xs font-mono text-gray-700 dark:text-gray-300 truncate">
-                            {revealedKeys.has(String(key.id)) ? key.fullKey : key.key}
-                          </code>
-                        </div>
-                        <button onClick={() => toggleKeyVisibility(String(key.id))} className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded flex-shrink-0">
-                          {revealedKeys.has(String(key.id)) ? (
-                            <EyeOff className="w-4 h-4 text-gray-500" />
-                          ) : (
-                            <Eye className="w-4 h-4 text-gray-500" />
-                          )}
+
+              {/* Desktop: Rich Key List */}
+              <div className="hidden md:flex md:flex-col md:gap-1">
+                {apiKeys.map((key, i) => (
+                  <div key={key.id} className="dash-kr-item dash-row-anim" style={{ ["--row-delay" as any]: `${i * 0.06}s`, position: "relative", overflow: "hidden" }}>
+                    <div className="dash-key-glow" />
+                    <span className="dash-dot-breathe" style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="flex items-center gap-2">
+                        <code className={`${jetbrainsMono.className} inline-flex rounded bg-gray-50 px-2 py-0.5 text-sm text-gray-700`}>{revealedKeys.has(String(key.id)) ? key.fullKey : key.key}</code>
+                        <button onClick={() => toggleKeyVisibility(String(key.id))} className="dash-ib" style={{ width: 28, height: 28 }}>
+                          {revealedKeys.has(String(key.id)) ? <EyeOff style={{ width: 13, height: 13 }} /> : <Eye style={{ width: 13, height: 13 }} />}
                         </button>
                       </div>
-
-                      {/* Info Grid */}
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">{t("创建时间", "Created")}</span>
-                          <p className="text-gray-700 dark:text-gray-300 mt-0.5">{key.created}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">{t("最后使用", "Last Used")}</span>
-                          <p className="text-gray-700 dark:text-gray-300 mt-0.5">{key.lastUsed}</p>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="text-gray-500 dark:text-gray-400">{t("过期时间", "Expires")}</span>
-                          <p className="text-gray-700 dark:text-gray-300 mt-0.5">{key.expires}</p>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                        <button
-                          onClick={() => handleViewKey(key)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          {t("详细", "Details")}
-                        </button>
-                        <button
-                          onClick={() => handleCopyKey(key)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                          {t("复制", "Copy")}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteKey(key)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          {t("删除", "Delete")}
-                        </button>
+                      <div className="tabular-nums font-medium" style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
+                        {t("创建", "Created")}: {key.created} &middot; {t("最后使用", "Last used")}: {key.lastUsed}
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex items-center gap-1 dash-kr-actions" style={{ opacity: 0, transition: "opacity 0.2s" }}>
+                      <button onClick={() => handleViewKey(key)} className="dash-ghost-btn"><Eye style={{ width: 13, height: 13 }} />{t("详细", "Details")}</button>
+                      <button onClick={() => handleCopyKey(key)} className="dash-ghost-btn"><Copy style={{ width: 13, height: 13 }} />{t("复制", "Copy")}</button>
+                      <button onClick={() => handleDeleteKey(key)} className="dash-ghost-btn" style={{ color: "#ef4444" }}><Trash2 style={{ width: 13, height: 13 }} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
-                {/* Desktop Table View */}
-                <div className="hidden md:block">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                          {t("密钥预览", "Key Preview")}
-                        </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                          {t("创建时间", "Created Time")}
-                        </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                          {t("最后使用", "Last Used")}
-                        </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-                          {t("过期时间", "Expiration Time")}
-                        </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400">{t("操作", "Actions")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {apiKeys.map((key) => (
-                        <tr key={key.id} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-2">
-                              <code className="text-sm font-mono text-gray-700 dark:text-gray-300">
-                                {revealedKeys.has(String(key.id)) ? key.fullKey : key.key}
-                              </code>
-                              <button onClick={() => toggleKeyVisibility(String(key.id))} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-                                {revealedKeys.has(String(key.id)) ? (
-                                  <EyeOff className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                ) : (
-                                  <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                )}
-                              </button>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{key.created}</td>
-                          <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{key.lastUsed}</td>
-                          <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">{key.expires}</td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleViewKey(key)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                              >
-                                <Eye className="w-3 h-3" />
-                                {t("详细", "Details")}
-                              </button>
-                              <button
-                                onClick={() => handleCopyKey(key)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                              >
-                                <Copy className="w-3 h-3" />
-                                {t("复制", "Copy")}
-                              </button>
-                              <button
-                                onClick={() => handleDeleteKey(key)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                                {t("删除", "Delete")}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+        {/* Security Tips */}
+        <div className={ac(700, "glass-card")} style={{ marginTop: 20, ...as_(700) }}>
+          <div className="flex items-center gap-2 mb-4">
+            <Shield style={{ width: 16, height: 16, color: "#06b6d4" }} />
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}>{t("安全提示", "Security Tips")}</h3>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="dash-tip-item">
+              <div className="dash-tip-icon"><Key style={{ width: 13, height: 13 }} /></div>
+              <span>{t("密钥仅在创建时显示一次，请及时保存到安全位置", "Keys are only shown once during creation, save them securely")}</span>
+            </div>
+            <div className="dash-tip-item">
+              <div className="dash-tip-icon"><Shield style={{ width: 13, height: 13 }} /></div>
+              <span>{t("定期更换密钥可以提高账户安全性", "Regularly rotating keys improves account security")}</span>
+            </div>
+            <div className="dash-tip-item">
+              <div className="dash-tip-icon"><Eye style={{ width: 13, height: 13 }} /></div>
+              <span>{t("不要在公开场合或代码仓库中暴露密钥", "Never expose keys in public or code repositories")}</span>
+            </div>
           </div>
         </div>
       </main>
 
+      {/* View Key Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className={`${inter.className} sm:max-w-[600px]`}>
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">{t("密钥详情", "Key Details")}</DialogTitle>
-            <DialogDescription className="text-gray-600">
-              {t("查看API密钥的详细信息", "View detailed information about the API key")}
-            </DialogDescription>
+            <DialogTitle style={{ fontSize: 18, fontWeight: 700 }}>{t("密钥详情", "Key Details")}</DialogTitle>
+            <DialogDescription>{t("查看API密钥的详细信息", "View detailed information about the API key")}</DialogDescription>
           </DialogHeader>
-
           {selectedKey && (
             <div className="space-y-6 py-4">
-              {/* API Key */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                  <Copy className="w-4 h-4" />
-                  {t("API密钥", "API Key")}
-                </h3>
-                <div className="p-4 bg-gray-50 rounded-lg">
+              <div>
+                <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", marginBottom: 10 }} className="flex items-center gap-2"><Copy style={{ width: 14, height: 14 }} />{t("API密钥", "API Key")}</h3>
+                <div style={{ background: "rgba(6,182,212,0.03)", borderRadius: 12, padding: 16, border: "1px solid rgba(6,182,212,0.06)" }}>
                   <div className="flex items-center justify-between gap-2">
-                    <code className="text-sm font-mono text-gray-900 break-all">{selectedKey.fullKey}</code>
-                    <button
-                      onClick={() => handleCopyKey(selectedKey)}
-                      className="p-2 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
-                    >
-                      <Copy className="w-4 h-4 text-gray-600" />
-                    </button>
+                    <code className={`${jetbrainsMono.className} rounded bg-gray-50 px-2 py-0.5 text-xs text-gray-700`} style={{ wordBreak: "break-all" }}>
+                      {selectedKey.fullKey}
+                    </code>
+                    <button onClick={() => handleCopyKey(selectedKey)} className="dash-ib"><Copy style={{ width: 14, height: 14 }} /></button>
                   </div>
                 </div>
               </div>
-
-              {/* Time Information */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  {t("时间信息", "Time Information")}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t("创建时间", "Created")}</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedKey.created}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t("最后使用", "Last Used")}</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedKey.lastUsed}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t("过期时间", "Expires")}</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedKey.expires}</p>
-                  </div>
+              <div>
+                <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", marginBottom: 10 }} className="flex items-center gap-2"><Clock style={{ width: 14, height: 14 }} />{t("时间信息", "Time Information")}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ background: "rgba(6,182,212,0.03)", borderRadius: 12, padding: 16, border: "1px solid rgba(6,182,212,0.06)" }}>
+                  <div><p style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>{t("创建时间", "Created")}</p><p className="tabular-nums font-medium" style={{ fontSize: 13, color: "#0f172a" }}>{selectedKey.created}</p></div>
+                  <div><p style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>{t("最后使用", "Last Used")}</p><p className="tabular-nums font-medium" style={{ fontSize: 13, color: "#0f172a" }}>{selectedKey.lastUsed}</p></div>
+                  <div><p style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>{t("过期时间", "Expires")}</p><p className="tabular-nums font-medium" style={{ fontSize: 13, color: "#0f172a" }}>{selectedKey.expires}</p></div>
                 </div>
               </div>
             </div>
           )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
-              {t("关闭", "Close")}
-            </Button>
-          </DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>{t("关闭", "Close")}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* New Key Display Modal */}
       <Dialog open={isKeyDisplayModalOpen} onOpenChange={setIsKeyDisplayModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className={`${inter.className} sm:max-w-[600px]`}>
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-center">{t("密钥创建成功!", "API Key Created Successfully!")}</DialogTitle>
-            <DialogDescription className="text-gray-600 text-center">
-              {t("请妥善保存您的API密钥,关闭后将无法再次查看完整密钥", "Please save your API key securely. You won't be able to view the full key again after closing this dialog")}
-            </DialogDescription>
+            <DialogTitle style={{ textAlign: "center", fontSize: 18, fontWeight: 700 }}>{t("密钥创建成功!", "API Key Created!")}</DialogTitle>
+            <DialogDescription style={{ textAlign: "center" }}>{t("请妥善保存您的API密钥", "Please save your API key securely")}</DialogDescription>
           </DialogHeader>
-
           {newCreatedKey && (
             <div className="space-y-6 py-4">
-              {/* API Key Display */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                  <Key className="w-4 h-4" />
-                  {t("API密钥", "API Key")}
-                </h3>
-                <div className="p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
-                  <code className="text-sm font-mono text-gray-900 break-all block mb-3">
-                    {newCreatedKey.apiKey}
-                  </code>
-                  <Button
-                    onClick={handleCopyNewKey}
-                    className="w-full bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center gap-2"
-                  >
-                    <Copy className="w-4 h-4" />
-                    {t("复制密钥", "Copy API Key")}
-                  </Button>
-                </div>
+              <div style={{ background: "rgba(245,158,11,0.06)", borderRadius: 12, padding: 16, border: "2px solid rgba(245,158,11,0.15)" }}>
+                <code className={`${jetbrainsMono.className} mb-3 block rounded bg-gray-50 px-2 py-1 text-xs text-gray-700`} style={{ wordBreak: "break-all" }}>
+                  {newCreatedKey.apiKey}
+                </code>
+                <button onClick={handleCopyNewKey} className="dash-primary-btn" style={{ width: "100%", justifyContent: "center" }}>
+                  <Copy style={{ width: 14, height: 14 }} />{t("复制密钥", "Copy API Key")}
+                </button>
               </div>
-
-              {/* Key Information */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  {t("密钥信息", "Key Information")}
-                </h3>
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">{t("密钥ID", "Key ID")}</p>
-                    <p className="text-sm font-medium text-gray-900">{newCreatedKey.id}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">{t("创建时间", "Created")}</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {newCreatedKey.createdAt ? new Date(newCreatedKey.createdAt).toLocaleString() : t("刚刚", "Just now")}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs text-gray-600 mb-1">{t("过期时间", "Expiration")}</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {newCreatedKey.expirationTime
-                        ? new Date(newCreatedKey.expirationTime).toLocaleString()
-                        : t("永不过期", "Never expires")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Warning Message */}
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-800 flex items-start gap-2">
-                  <span className="text-lg">⚠️</span>
-                  <span>
-                    {t(
-                      "请立即复制并保存此密钥。关闭此对话框后,您将无法再次查看完整的密钥内容。",
-                      "Please copy and save this key immediately. After closing this dialog, you will not be able to view the complete key again."
-                    )}
-                  </span>
+              <div style={{ background: "rgba(239,68,68,0.04)", borderRadius: 10, padding: 14, border: "1px solid rgba(239,68,68,0.08)" }}>
+                <p style={{ fontSize: 12, color: "#dc2626", display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>&#9888;</span>
+                  {t("请立即复制并保存此密钥。关闭后将无法再次查看。", "Copy and save this key now. It cannot be viewed again.")}
                 </p>
               </div>
             </div>
           )}
-
           <DialogFooter>
-            <Button onClick={handleCloseKeyDisplayModal} className="w-full bg-gray-600 hover:bg-gray-700 text-white">
-              {t("我已保存,关闭", "I've Saved It, Close")}
-            </Button>
+            <button onClick={handleCloseKeyDisplayModal} className="dash-outline-btn">{t("我已保存,关闭", "I've Saved It, Close")}</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("确认删除密钥", "Confirm Delete Key")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t(
-                "您确定要删除此密钥吗？此操作无法撤销,使用此密钥的应用将无法继续访问API。",
-                "Are you sure you want to delete this key? This action cannot be undone and applications using this key will no longer be able to access the API.",
-              )}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("您确定要删除此密钥吗？此操作无法撤销,使用此密钥的应用将无法继续访问API。", "Are you sure? This action cannot be undone.")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("取消", "Cancel")}</AlertDialogCancel>

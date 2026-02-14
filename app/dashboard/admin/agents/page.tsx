@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { UserPlus, Search, Wallet, Users, RefreshCw, Eye, Power, Trash2, TrendingUp, Gift, Mail, Calendar } from "lucide-react"
+import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/language-context"
 import { agentAdminApi, type AgentInfoVO, type AgentStatisticsVO } from "@/lib/api"
 import { toast } from "sonner"
@@ -19,6 +20,7 @@ import { AgentDetailView } from "./components/AgentDetailView"
 export default function AgentManagementPage() {
   const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
+  const [isStatsLoading, setIsStatsLoading] = useState(true)
   const [agents, setAgents] = useState<AgentInfoVO[]>([])
   const [statistics, setStatistics] = useState<AgentStatisticsVO | null>(null)
   const [keyword, setKeyword] = useState("")
@@ -52,11 +54,14 @@ export default function AgentManagementPage() {
 
   // 加载统计数据
   const loadStatistics = useCallback(async () => {
+    setIsStatsLoading(true)
     try {
       const stats = await agentAdminApi.getStatistics()
       setStatistics(stats)
     } catch (error) {
       console.error("加载统计数据失败:", error)
+    } finally {
+      setIsStatsLoading(false)
     }
   }, [])
 
@@ -140,6 +145,45 @@ export default function AgentManagementPage() {
 
   const totalPages = Math.ceil(total / pageSize)
 
+  const pageVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 14 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 260,
+        damping: 26,
+      },
+    },
+  }
+
+  const statsSkeletonCards = (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg animate-pulse bg-gray-200 dark:bg-gray-700" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-20 rounded animate-pulse bg-gray-200 dark:bg-gray-700" />
+              <div className="h-5 w-16 rounded animate-pulse bg-gray-200 dark:bg-gray-700" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-4">
       {/* 详情视图 */}
@@ -149,7 +193,7 @@ export default function AgentManagementPage() {
 
       {/* 列表视图 */}
       {viewMode === 'list' && (
-        <>
+        <motion.div variants={pageVariants} initial="hidden" animate="visible">
       {/* 页面标题 */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-2">
@@ -181,56 +225,63 @@ export default function AgentManagementPage() {
         </p>
       </div>
 
-      {/* 统计卡片 - 响应式网格 */}
-      {statistics && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      <motion.div variants={sectionVariants}>
+        {/* 统计卡片 - 响应式网格 */}
+        {isStatsLoading ? (
+          statsSkeletonCards
+        ) : statistics ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("代理商总数", "Total Agents")}</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalAgents}</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("代理商总数", "Total Agents")}</p>
-                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalAgents}</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("总余额", "Total Balance")}</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalBalance?.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("总充值", "Total Recharged")}</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalRecharged?.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("总兑换次数", "Total Redemptions")}</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalRedemptions}</p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("总余额", "Total Balance")}</p>
-                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalBalance?.toFixed(2)}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("总充值", "Total Recharged")}</p>
-                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalRecharged?.toFixed(2)}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{t("总兑换次数", "Total Redemptions")}</p>
-                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{statistics.totalRedemptions}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+        ) : (
+          statsSkeletonCards
+        )}
+      </motion.div>
 
+      <motion.div variants={sectionVariants}>
       {/* 搜索和筛选 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -547,7 +598,8 @@ export default function AgentManagementPage() {
           )}
         </div>
       )}
-        </>
+      </motion.div>
+        </motion.div>
       )}
 
       {/* 对话框 */}

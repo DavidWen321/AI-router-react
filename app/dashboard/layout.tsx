@@ -4,10 +4,11 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
-import { Users, Key, Database, Package, Activity, Shield, DollarSign, Globe, Link2, Gift, History, UserPlus, BarChart3 } from "lucide-react"
-import Link from "next/link"
+import { Users, Key, Database, Package, Activity, Shield, DollarSign, Globe, Link2, Gift, History, UserPlus, BarChart3, Menu, X } from "lucide-react"
 import { agentApi, authApi } from "@/lib/api"
 import { DashboardHeader } from "@/components/dashboard-header"
+import { BackgroundParticles } from "@/components/dashboard-canvas"
+import Sidebar, { type SidebarItem } from "@/components/liquid-morphing-sidebar"
 
 /**
  * Dashboard 统一布局
@@ -23,6 +24,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isAgent, setIsAgent] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [userEmail, setUserEmail] = useState("")
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [isTabletLandscapeExpanded, setIsTabletLandscapeExpanded] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -63,6 +66,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     checkAgentStatus()
+  }, [])
+
+  useEffect(() => {
+    setMobileNavOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    const updateTabletSidebarMode = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      const shortestEdge = Math.min(width, height)
+      const longestEdge = Math.max(width, height)
+
+      // iPad/平板常见视口范围：744~1366
+      const isTabletViewport = shortestEdge >= 744 && longestEdge <= 1366
+      const isLandscape = width > height
+      const isTouchPrimary = window.matchMedia("(pointer: coarse)").matches
+
+      // 仅在“触控平板 + 横屏”时使用完整版侧栏
+      setIsTabletLandscapeExpanded(isTabletViewport && isLandscape && isTouchPrimary)
+    }
+
+    updateTabletSidebarMode()
+    window.addEventListener("resize", updateTabletSidebarMode)
+    window.addEventListener("orientationchange", updateTabletSidebarMode)
+
+    return () => {
+      window.removeEventListener("resize", updateTabletSidebarMode)
+      window.removeEventListener("orientationchange", updateTabletSidebarMode)
+    }
   }, [])
 
   // 管理员导航项
@@ -211,49 +244,123 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return <>{children}</>
   }
 
+  const sidebarItems: SidebarItem[] = navItems.map((item) => ({
+    id: item.href,
+    label: item.name,
+    icon: item.icon,
+  }))
+
+  const activeSidebarId =
+    navItems.find((item) => pathname === item.href || pathname?.startsWith(`${item.href}/`))?.href ??
+    navItems[0]?.href ??
+    ""
+
   // 渲染带侧边栏的布局
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <div className="relative min-h-screen dash-bg dark:bg-gray-900">
+      <BackgroundParticles />
+
       {/* 顶部导航 */}
       <DashboardHeader userEmail={userEmail} onLogout={handleLogout} />
 
-      <div className="flex">
-        {/* 左侧栏 */}
-        <aside className="fixed left-0 top-[72px] h-[calc(100vh-72px)] w-28 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto z-40">
-          <div className="flex flex-col items-center py-8 gap-8">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href
-              const Icon = item.icon
-              return (
-                <Link key={item.href} href={item.href} className="flex flex-col items-center gap-2 group">
-                  <div
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isActive
-                        ? `${item.color} shadow-lg scale-110`
-                        : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 hover:shadow-md"
-                    }`}
-                  >
-                    <Icon
-                      className={`w-6 h-6 ${isActive ? "text-white" : "text-gray-600 dark:text-gray-300 group-hover:text-gray-800 dark:group-hover:text-white"}`}
-                    />
-                  </div>
-                  <span
-                    className={`text-xs font-medium text-center transition-colors duration-200 ${
-                      isActive
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100"
-                    }`}
-                  >
-                    {item.name}
-                  </span>
-                </Link>
-              )
-            })}
+      {/* 手机端菜单按钮 */}
+      <button
+        type="button"
+        aria-label={mobileNavOpen ? t("关闭侧边栏", "Close Sidebar") : t("打开侧边栏", "Open Sidebar")}
+        onClick={() => setMobileNavOpen((prev) => !prev)}
+        className="md:hidden fixed left-3 top-[82px] z-[60] h-10 w-10 rounded-xl border border-slate-200 bg-white/95 shadow-sm backdrop-blur flex items-center justify-center text-slate-600"
+      >
+        {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+      </button>
+
+      {/* 手机端抽屉侧栏 */}
+      <div className={`md:hidden fixed inset-0 z-50 transition ${mobileNavOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
+        <div
+          className={`absolute inset-0 bg-slate-900/40 transition-opacity duration-300 ${mobileNavOpen ? "opacity-100" : "opacity-0"}`}
+          onClick={() => setMobileNavOpen(false)}
+        />
+        <aside
+          className={`absolute left-0 top-0 h-full w-[86vw] max-w-[280px] bg-white shadow-2xl transition-transform duration-300 ${
+            mobileNavOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="h-[72px] border-b border-gray-100 px-4 flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-700">{t("管理菜单", "Navigation")}</span>
+            <button
+              type="button"
+              className="h-8 w-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label={t("关闭", "Close")}
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
+          <div className="h-[calc(100%-72px)]">
+            <Sidebar
+              className="h-full w-full"
+              items={sidebarItems}
+              activeId={activeSidebarId}
+              onActiveChange={(nextActiveId) => {
+                if (nextActiveId && nextActiveId !== activeSidebarId) {
+                  router.push(nextActiveId)
+                }
+                setMobileNavOpen(false)
+              }}
+            />
+          </div>
+        </aside>
+      </div>
+
+      <div className="relative z-10 flex">
+        {/* iPad/中屏：默认紧凑侧栏（平板横屏会自动切换到完整版） */}
+        {!isTabletLandscapeExpanded && (
+          <aside className="hidden md:block xl:hidden fixed left-0 top-[72px] h-[calc(100vh-72px)] w-[84px] z-40">
+            <Sidebar
+              compact
+              className="h-full w-full"
+              items={sidebarItems}
+              activeId={activeSidebarId}
+              onActiveChange={(nextActiveId) => {
+                if (nextActiveId && nextActiveId !== activeSidebarId) {
+                  router.push(nextActiveId)
+                }
+              }}
+            />
+          </aside>
+        )}
+
+        {/* iPad横屏：在中屏断点也使用完整版侧栏 */}
+        {isTabletLandscapeExpanded && (
+        <aside className="hidden md:block xl:hidden fixed left-0 top-[72px] h-[calc(100vh-72px)] w-[220px] z-40">
+            <Sidebar
+              className="h-full w-full"
+              items={sidebarItems}
+              activeId={activeSidebarId}
+              onActiveChange={(nextActiveId) => {
+                if (nextActiveId && nextActiveId !== activeSidebarId) {
+                  router.push(nextActiveId)
+                }
+              }}
+            />
+          </aside>
+        )}
+
+        {/* 大屏：完整侧栏 */}
+        <aside className="hidden xl:block fixed left-0 top-[72px] h-[calc(100vh-72px)] w-[220px] z-40">
+          <Sidebar
+            className="h-full w-full"
+            items={sidebarItems}
+            activeId={activeSidebarId}
+            onActiveChange={(nextActiveId) => {
+              if (nextActiveId && nextActiveId !== activeSidebarId) {
+                router.push(nextActiveId)
+              }
+            }}
+          />
         </aside>
 
         {/* 主内容区域 - 为左侧栏留出空间，为顶部导航留出空间 */}
-        <main className="flex-1 ml-28 pt-[72px] flex justify-center">
+        <main className={`relative z-10 flex-1 pt-[72px] ${isTabletLandscapeExpanded ? "md:ml-[220px]" : "md:ml-[84px]"} xl:ml-[220px] flex justify-center`}>
           <div className="w-full">
             {children}
           </div>

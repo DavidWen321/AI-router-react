@@ -808,6 +808,12 @@
      断点: xs(<475) sm(640) md(768) lg(1024) xl(1280) 2xl(1536)
      ======================================== */
 
+  /* Fix: prevent generic transition from interfering with dashboard animations */
+  .dash-anim a, .dash-anim button,
+  .glass-card a, .glass-card button {
+    transition: none;
+  }
+
   /* 响应式容器 - 自适应内边距 */
   .container-responsive {
     width: 100%;
@@ -1021,4 +1027,644 @@
       gap: 0.5rem !important;
     }
   }
+}
+
+/* ==============================================
+   Dashboard Premium UI System
+   Glass-morphism + CG Animations + Orchestration
+   Color: Cyan/Blue theme
+   ============================================== */
+
+/* ===== Dashboard Background Pattern ===== */
+.dash-bg {
+  background-color: #f0f4f8;
+  background-image:
+    linear-gradient(rgba(6,182,212,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6,182,212,.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ===== Glass Card System ===== */
+.glass-card {
+  background: rgba(255,255,255,0.65);
+  border: 1px solid rgba(6,182,212,0.08);
+  border-radius: 18px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(.4,0,.2,1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+}
+.glass-card:hover {
+  background: rgba(255,255,255,0.8);
+  border-color: rgba(6,182,212,0.14);
+  box-shadow: 0 4px 16px rgba(6,182,212,0.06), 0 2px 6px rgba(0,0,0,0.04);
+  transform: translateY(-2px);
+}
+
+/* Stat card hover enhancement */
+.dash-stat-card {
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(.34,1.56,.64,1), box-shadow 0.4s;
+}
+.dash-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(6,182,212,0.1), 0 4px 12px rgba(0,0,0,0.05);
+}
+.dash-stat-card:hover .dash-sc-icon {
+  transform: scale(1.12) rotate(-5deg);
+}
+
+/* Summary card hover */
+.dash-summary-card {
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(.34,1.56,.64,1), box-shadow 0.4s;
+}
+.dash-summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(6,182,212,0.1), 0 4px 12px rgba(0,0,0,0.05);
+}
+.dash-summary-card:hover .dash-smc-icon {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+/* ===== Orchestrated Animation System ===== */
+.dash-anim {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.55s cubic-bezier(.4,0,.2,1), transform 0.55s cubic-bezier(.4,0,.2,1);
+}
+.dash-anim.dash-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Admin Page Staggered Fade ===== */
+.dash-page-stagger > * {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: dashPageFadeIn 0.55s cubic-bezier(.4,0,.2,1) forwards;
+}
+.dash-page-stagger > *:nth-child(1) { animation-delay: 80ms }
+.dash-page-stagger > *:nth-child(2) { animation-delay: 160ms }
+.dash-page-stagger > *:nth-child(3) { animation-delay: 240ms }
+.dash-page-stagger > *:nth-child(4) { animation-delay: 320ms }
+.dash-page-stagger > *:nth-child(5) { animation-delay: 400ms }
+.dash-page-stagger > *:nth-child(6) { animation-delay: 480ms }
+.dash-page-stagger > *:nth-child(7) { animation-delay: 560ms }
+.dash-page-stagger > *:nth-child(8) { animation-delay: 640ms }
+.dash-page-stagger > *:nth-child(9) { animation-delay: 720ms }
+
+@keyframes dashPageFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-page-stagger > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===== Hero Banner ===== */
+.dash-hero {
+  position: relative;
+  width: 100%;
+  padding: 100px clamp(16px,3vw,48px) 40px;
+  overflow: hidden;
+  background: transparent;
+}
+.dash-hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* ===== Glow Text ===== */
+.dash-glow-text {
+  background: linear-gradient(90deg, #06b6d4, #0ea5e9, #14b8a6, #06b6d4);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: dashTextShift 6s linear infinite;
+}
+@keyframes dashTextShift {
+  0% { background-position: 0% 50% }
+  100% { background-position: 300% 50% }
+}
+
+/* ===== Dashboard Brand ===== */
+.dash-brand-link {
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+.dash-brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 55%, #14b8a6 100%);
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow: 0 8px 24px rgba(6,182,212,.28);
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s;
+}
+.dash-brand-link:hover .dash-brand-mark {
+  transform: rotate(-8deg) scale(1.06);
+  box-shadow: 0 12px 30px rgba(6,182,212,.34);
+}
+.dash-brand-text {
+  color: #0891b2;
+  transition: color .25s;
+}
+.dash-brand-link:hover .dash-brand-text {
+  color: #0e7490;
+}
+
+/* ===== Status Badge ===== */
+.dash-badge-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: dashBlink 2s ease-in-out infinite;
+}
+@keyframes dashBlink {
+  0%, 100% { opacity: 1 }
+  50% { opacity: 0.3 }
+}
+
+/* ===== Pulse Dot ===== */
+.dash-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: dashBlink 2s ease-in-out infinite;
+}
+
+/* ===== Green Dot Breathing ===== */
+.dash-dot-breathe {
+  animation: dashDotBreathe 2.5s ease-in-out infinite;
+}
+@keyframes dashDotBreathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(16,185,129,.3) }
+  50% { transform: scale(1.2); box-shadow: 0 0 12px rgba(16,185,129,.5) }
+}
+
+/* ===== API Key Glow Sweep ===== */
+.dash-key-glow {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+  animation: dashGlowSweep 3s ease-in-out infinite;
+}
+@keyframes dashGlowSweep {
+  0% { left: -60% }
+  100% { left: 120% }
+}
+
+/* ===== Table Row Animation ===== */
+.dash-row-anim {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: dashRowIn 0.4s cubic-bezier(.4,0,.2,1) forwards;
+  animation-delay: var(--row-delay, 0s);
+}
+@keyframes dashRowIn {
+  to { opacity: 1; transform: translateY(0) }
+}
+
+/* ===== List Item Slide In ===== */
+.dash-slide-in {
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: dashSlideIn 0.4s cubic-bezier(.4,0,.2,1) forwards;
+  animation-delay: var(--slide-delay, 0s);
+}
+@keyframes dashSlideIn {
+  to { opacity: 1; transform: translateX(0) }
+}
+
+/* ===== Icon Backgrounds ===== */
+.dash-icon-cyan { background: rgba(6,182,212,.1); color: #06b6d4; }
+.dash-icon-blue { background: rgba(14,165,233,.1); color: #0ea5e9; }
+.dash-icon-amber { background: rgba(245,158,11,.1); color: #f59e0b; }
+.dash-icon-green { background: rgba(16,185,129,.1); color: #10b981; }
+
+/* ===== Badge Pill ===== */
+.dash-badge-pill {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(6,182,212,.08);
+  color: #06b6d4;
+  border: 1px solid rgba(6,182,212,.12);
+}
+
+/* ===== Model Badges ===== */
+.dash-mbadge {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.dash-mbadge-opus { background: rgba(14,165,233,.1); color: #0ea5e9; border: 1px solid rgba(14,165,233,.12); }
+.dash-mbadge-sonnet { background: rgba(6,182,212,.1); color: #06b6d4; border: 1px solid rgba(6,182,212,.12); }
+.dash-mbadge-haiku { background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.12); }
+
+/* ===== Sparkline Canvas ===== */
+.dash-spark-canvas {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  opacity: 0.5;
+}
+
+/* ===== Primary Button ===== */
+.dash-primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 4px 15px rgba(6,182,212,.2);
+  font-family: inherit;
+}
+.dash-primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(6,182,212,.3);
+}
+
+/* ===== Outline Button ===== */
+.dash-outline-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid rgba(6,182,212,0.14);
+  border-radius: 12px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+  width: 100%;
+}
+.dash-outline-btn:hover {
+  border-color: #06b6d4;
+  color: #06b6d4;
+  background: rgba(6,182,212,.04);
+}
+.dash-outline-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+/* ===== Info Rows ===== */
+.dash-ir {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  font-size: 13px;
+}
+.dash-ir:last-child {
+  border-bottom: none;
+}
+.dash-ir-label {
+  color: #64748b;
+}
+.dash-ir-val {
+  font-weight: 500;
+  color: #0f172a;
+}
+.dash-ir-link {
+  color: #06b6d4;
+  cursor: pointer;
+}
+.dash-ir-accent {
+  color: #06b6d4;
+  font-weight: 600;
+}
+
+/* ===== Custom Select ===== */
+.dash-select {
+  appearance: none;
+  padding: 8px 32px 8px 12px;
+  background: white;
+  border: 1px solid rgba(6,182,212,0.08);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+.dash-select:focus {
+  outline: none;
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6,182,212,.08);
+}
+
+/* ===== Dashboard Table ===== */
+.dash-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.dash-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  background: rgba(6,182,212,.02);
+  white-space: nowrap;
+}
+.dash-table td {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #0f172a;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.15s;
+}
+.dash-table tbody tr:hover {
+  background: rgba(6,182,212,.03);
+}
+
+/* ===== Pagination ===== */
+.dash-pagi {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+.dash-pg-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(6,182,212,0.08);
+  background: transparent;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.dash-pg-btn:hover:not(:disabled) {
+  border-color: #06b6d4;
+  color: #06b6d4;
+}
+.dash-pg-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ===== Quick Nav Items ===== */
+.dash-qn-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #0f172a;
+  transition: all 0.3s;
+  border: 1px solid transparent;
+}
+.dash-qn-item:hover {
+  background: rgba(6,182,212,.04);
+  border-color: rgba(6,182,212,0.08);
+  transform: translateX(4px);
+}
+.dash-qn-item:hover .dash-qn-icon {
+  transform: scale(1.1);
+}
+.dash-qn-item:hover .dash-qn-arrow {
+  color: #06b6d4;
+  transform: translateX(3px);
+}
+
+/* ===== Support Buttons ===== */
+.dash-spt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid rgba(6,182,212,0.14);
+  border-radius: 12px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+  text-decoration: none;
+}
+.dash-spt-btn:hover {
+  border-color: #06b6d4;
+  color: #06b6d4;
+  background: rgba(6,182,212,.04);
+  transform: translateY(-2px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ===== Tip Items ===== */
+.dash-tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.5;
+}
+.dash-tip-icon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 8px;
+  background: rgba(6,182,212,.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #06b6d4;
+}
+
+/* ===== Key Rich List Item ===== */
+.dash-kr-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(.4,0,.2,1);
+}
+.dash-kr-item:hover {
+  background: rgba(6,182,212,.025);
+  border-color: rgba(6,182,212,0.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.dash-kr-item:hover .dash-kr-actions {
+  opacity: 1;
+}
+
+/* ===== Ghost Button ===== */
+.dash-ghost-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: transparent;
+  border: none;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.dash-ghost-btn:hover {
+  background: rgba(6,182,212,.06);
+  color: #06b6d4;
+}
+
+/* ===== Icon Button ===== */
+.dash-ib {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.dash-ib:hover {
+  background: rgba(6,182,212,.08);
+  color: #06b6d4;
+}
+
+/* ===== Header Glass ===== */
+.dash-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(244,248,252,0.82);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(6,182,212,.14);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.dash-header.scrolled {
+  background: rgba(244,248,252,0.94);
+  box-shadow: 0 1px 12px rgba(0,0,0,0.06);
+}
+
+/* ===== Nav Tabs ===== */
+.dash-nav-tabs {
+  display: flex;
+  gap: 2px;
+  background: rgba(6,182,212,0.06);
+  border-radius: 12px;
+  padding: 3px;
+  position: relative;
+}
+.dash-nav-indicator {
+  position: absolute;
+  background: white;
+  border-radius: 9px;
+  box-shadow: 0 2px 8px rgba(6,182,212,0.12);
+  transition: all 0.45s cubic-bezier(.34,1.56,.64,1) !important;
+  z-index: 0;
+  top: 3px;
+  bottom: 3px;
+}
+.dash-nav-tab {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  border-radius: 9px;
+  transition: color 0.25s;
+  white-space: nowrap;
+}
+.dash-nav-tab:hover {
+  color: #334155;
+}
+.dash-nav-tab.active {
+  color: #06b6d4;
+}
+
+/* ===== Dashboard Responsive ===== */
+@media (max-width: 1024px) {
+  .dash-stats-3 { grid-template-columns: 1fr 1fr !important; }
+  .dash-stats-3 > *:last-child { grid-column: span 2; }
+}
+@media (max-width: 768px) {
+  .dash-stats-3, .dash-stats-2 { grid-template-columns: 1fr !important; }
+  .dash-stats-3 > *:last-child { grid-column: span 1; }
+  .dash-nav-tab span { display: none; }
+  .dash-nav-tab { padding: 8px 12px; }
+  .dash-hero { padding: 84px 16px 30px; }
+  .dash-kr-item { flex-wrap: wrap; gap: 10px; }
+  .dash-kr-actions { opacity: 1 !important; }
 }

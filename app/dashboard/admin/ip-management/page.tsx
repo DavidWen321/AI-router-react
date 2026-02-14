@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useLanguage } from "@/lib/language-context"
-import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 import { Globe, Search, Plus, Edit, Trash2, Eye, RefreshCw, Play, CheckCircle, XCircle, Wifi, WifiOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,6 @@ import { ViewProxyDialog } from "./components/ViewProxyDialog"
 export default function IpManagementPage() {
   const { t } = useLanguage()
   const { toast } = useToast()
-  const router = useRouter()
 
   // 搜索筛选状态
   const [nameSearch, setNameSearch] = useState("")
@@ -30,7 +29,8 @@ export default function IpManagementPage() {
   // 代理配置数据状态
   const [proxyConfigs, setProxyConfigs] = useState<ProxyConfigVO[]>([])
   const [stats, setStats] = useState<ProxyStatsVO | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isTableLoading, setIsTableLoading] = useState(true)
+  const [isStatsLoading, setIsStatsLoading] = useState(true)
 
   // 对话框状态
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -43,15 +43,11 @@ export default function IpManagementPage() {
   const [testingProxyId, setTestingProxyId] = useState<number | null>(null)
 
   // 获取代理配置列表
-  const fetchProxyConfigs = async () => {
-    setIsLoading(true)
+  const fetchProxyList = async () => {
+    setIsTableLoading(true)
     try {
-      const [proxies, statsData] = await Promise.all([
-        proxyConfigApi.listAll(),
-        proxyConfigApi.getStats()
-      ])
+      const proxies = await proxyConfigApi.listAll()
       setProxyConfigs(proxies)
-      setStats(statsData)
     } catch (error) {
       console.error("获取代理配置失败:", error)
       toast({
@@ -60,18 +56,39 @@ export default function IpManagementPage() {
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false)
+      setIsTableLoading(false)
     }
+  }
+
+  const fetchProxyStats = async () => {
+    setIsStatsLoading(true)
+    try {
+      const statsData = await proxyConfigApi.getStats()
+      setStats(statsData)
+    } catch (error) {
+      console.error("获取代理统计失败:", error)
+      toast({
+        title: t("加载失败", "Loading Failed"),
+        description: error instanceof ApiError ? error.message : t("无法加载代理统计", "Failed to load proxy statistics"),
+        variant: "destructive",
+      })
+    } finally {
+      setIsStatsLoading(false)
+    }
+  }
+
+  const fetchProxyPageData = async () => {
+    await Promise.all([fetchProxyList(), fetchProxyStats()])
   }
 
   // 组件加载时获取数据
   useEffect(() => {
-    fetchProxyConfigs()
+    fetchProxyPageData()
   }, [])
 
   // CRUD操作处理器
   const handleCreateSuccess = () => {
-    fetchProxyConfigs()
+    fetchProxyPageData()
   }
 
   const handleEditClick = (proxy: ProxyConfigVO) => {
@@ -80,7 +97,7 @@ export default function IpManagementPage() {
   }
 
   const handleEditSuccess = () => {
-    fetchProxyConfigs()
+    fetchProxyPageData()
   }
 
   const handleDeleteClick = (proxy: ProxyConfigVO) => {
@@ -89,7 +106,7 @@ export default function IpManagementPage() {
   }
 
   const handleDeleteSuccess = () => {
-    fetchProxyConfigs()
+    fetchProxyPageData()
   }
 
   const handleViewClick = (proxy: ProxyConfigVO) => {
@@ -135,7 +152,7 @@ export default function IpManagementPage() {
         title: t("刷新成功", "Refresh Successful"),
         description: t("代理缓存已刷新", "Proxy cache has been refreshed"),
       })
-      fetchProxyConfigs()
+      fetchProxyPageData()
     } catch (error) {
       toast({
         title: t("刷新失败", "Refresh Failed"),
@@ -172,8 +189,47 @@ export default function IpManagementPage() {
 
   const hasActiveFilters = nameSearch || hostSearch || statusFilter !== "all"
 
+  const pageVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 14 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 260,
+        damping: 26,
+      },
+    },
+  }
+
+  const statsSkeletonCards = (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg animate-pulse bg-gray-200 dark:bg-gray-700" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-24 rounded animate-pulse bg-gray-200 dark:bg-gray-700" />
+              <div className="h-6 w-14 rounded animate-pulse bg-gray-200 dark:bg-gray-700" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-cyan-50/30 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="w-full">
       <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* 页面标题 */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
@@ -210,58 +266,70 @@ export default function IpManagementPage() {
           </div>
         </div>
 
-        {/* 统计卡片 */}
-        {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+        <motion.div
+          variants={pageVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={sectionVariants}>
+            {/* 统计卡片 */}
+            {isStatsLoading ? (
+              statsSkeletonCards
+            ) : stats ? (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                      <Globe className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t("总代理数", "Total Proxies")}</p>
+                      <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalCount}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t("总代理数", "Total Proxies")}</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalCount}</p>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <Wifi className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t("启用中", "Enabled")}</p>
+                      <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats.enabledCount}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t("总请求数", "Total Requests")}</p>
+                      <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalRequests.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t("成功率", "Success Rate")}</p>
+                      <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{stats.successRate.toFixed(1)}%</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <Wifi className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t("启用中", "Enabled")}</p>
-                  <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats.enabledCount}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t("总请求数", "Total Requests")}</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalRequests.toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t("成功率", "Success Rate")}</p>
-                  <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{stats.successRate.toFixed(1)}%</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+            ) : (
+              statsSkeletonCards
+            )}
+          </motion.div>
 
-        {/* 搜索筛选 */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
+          <motion.div variants={sectionVariants}>
+            {/* 搜索筛选 */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -310,11 +378,11 @@ export default function IpManagementPage() {
               </Button>
             )}
           </div>
-        </div>
+            </div>
 
-        {/* 代理列表 */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          {isLoading ? (
+            {/* 代理列表 */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+              {isTableLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
             </div>
@@ -428,8 +496,10 @@ export default function IpManagementPage() {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* 对话框 */}

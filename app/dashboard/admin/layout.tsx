@@ -4,16 +4,9 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { DashboardHeader } from "@/components/dashboard-header"
-import { useLanguage } from "@/lib/language-context"
-import { useToast } from "@/hooks/use-toast"
-import { authApi } from "@/lib/api"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { t } = useLanguage()
   const router = useRouter()
-  const { toast } = useToast()
-  const [userEmail, setUserEmail] = useState("")
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -23,7 +16,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true"
     const accessToken = localStorage.getItem("accessToken")
     const isAdmin = localStorage.getItem("isAdmin") === "true"
-    const email = localStorage.getItem("userEmail") || ""
 
     // 如果未登录或没有token，清理状态并重定向到首页
     if (!isLoggedIn || !accessToken) {
@@ -39,37 +31,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.push("/dashboard")
       return
     }
-
-    setUserEmail(email)
   }, [router])
-
-  const handleLogout = async () => {
-    try {
-      await authApi.logout()
-    } catch (error) {
-      console.error("Backend logout failed:", error)
-    } finally {
-      localStorage.clear()
-      toast({
-        title: t("已退出登录", "Logged Out"),
-        description: t("您已成功退出登录", "You have been successfully logged out"),
-      })
-      router.push("/")
-    }
-  }
 
   if (!mounted) {
     return null
   }
 
   // admin/* 路径的子页面
-  // 侧边栏已经在父级 dashboard/layout.tsx 中渲染，这里只需要渲染内容区域
+  // 侧边栏、顶部栏和统一背景已经在父级 dashboard/layout.tsx 渲染
+  // 这里只做权限守卫 + 内容容器，避免重复 Header/背景
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <DashboardHeader userEmail={userEmail} onLogout={handleLogout} />
-
-      {/* 管理员页面内容区域，顶部留出 header 空间，响应式 padding */}
-      <main className="pt-[72px] px-2 sm:px-4 lg:px-6 pb-4 sm:pb-6 lg:pb-8">{children}</main>
-    </div>
+    <main className="relative z-10 px-2 sm:px-4 lg:px-6 pb-4 sm:pb-6 lg:pb-8">{children}</main>
   )
 }
