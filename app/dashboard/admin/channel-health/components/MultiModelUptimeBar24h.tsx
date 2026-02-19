@@ -27,13 +27,13 @@ const MODEL_CONFIG = {
     badge: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400",
   },
   sonnet: {
-    name: "Sonnet 4.5",
+    name: "Sonnet 4.6",
     color: "violet",
     interval: "30s",
     badge: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400",
   },
   opus: {
-    name: "Opus 4.5",
+    name: "Opus 4.6",
     color: "amber",
     interval: "5min",
     badge: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
@@ -57,7 +57,7 @@ export function MultiModelUptimeBar24h({
   const { t } = useLanguage()
 
   // ⭐⭐⭐ 【基于 Claude Code 使用场景的可用性判断】
-  // Claude Code 需要: Sonnet 4.5（主模型）+ Haiku 4.5（读取模型）
+  // Claude Code 需要: Sonnet 4.6（主模型）+ Haiku 4.5（读取模型）
   // - 绿色: Sonnet + Haiku 都可用（Opus 可选）
   // - 黄色: 仅 Sonnet 可用，Haiku 不可用
   // - 红色: Sonnet 不可用（无论其他模型状态）

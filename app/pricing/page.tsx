@@ -264,8 +264,8 @@ export default function PricingPage() {
                 { label: t("每日额度", "Daily"), value: plan.dailyQuota },
                 { label: t("月度额度", "Monthly"), value: plan.monthlyQuota },
                 { label: "Haiku 4.5", value: `${plan.haiku}/天` },
-                { label: "Sonnet 4.5", value: `${plan.sonnet}/天` },
-                { label: "Opus 4.5", value: `${plan.opus}/天` },
+                { label: "Sonnet 4.6", value: `${plan.sonnet}/天` },
+                { label: "Opus 4.6", value: `${plan.opus}/天` },
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className="text-gray-400">{item.label}</span>
@@ -517,8 +517,8 @@ export default function PricingPage() {
                     <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">{t("支持模型", "Models")}</td>
                     {allPlans.map((plan, i) => (
                       <td key={plan.id} className={`px-3 py-3 text-center ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
-                        <div className="text-gray-900 dark:text-gray-100 text-xs">Sonnet 4.5</div>
-                        <div className="text-violet-600 dark:text-violet-400 text-xs font-medium">+ Opus 4.5</div>
+                        <div className="text-gray-900 dark:text-gray-100 text-xs">Sonnet 4.6</div>
+                        <div className="text-violet-600 dark:text-violet-400 text-xs font-medium">+ Opus 4.6</div>
                       </td>
                     ))}
                   </tr>
@@ -555,7 +555,7 @@ export default function PricingPage() {
                   </tr>
                   {/* Sonnet */}
                   <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">Sonnet 4.5</td>
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">Sonnet 4.6</td>
                     {allPlans.map((plan, i) => (
                       <td key={plan.id} className={`px-3 py-3 text-center text-gray-600 dark:text-gray-400 text-xs ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
                         {plan.sonnet}
@@ -564,7 +564,7 @@ export default function PricingPage() {
                   </tr>
                   {/* Opus */}
                   <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">Opus 4.5</td>
+                    <td className="px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">Opus 4.6</td>
                     {allPlans.map((plan, i) => (
                       <td key={plan.id} className={`px-3 py-3 text-center text-gray-600 dark:text-gray-400 text-xs ${i === 2 ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
                         {plan.opus}

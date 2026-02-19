@@ -49,8 +49,10 @@ const PIE_COLORS = ['#06b6d4', '#8b5cf6'] // cyan-500, violet-500
 
 // 模型颜色映射
 const MODEL_COLORS: Record<string, string> = {
+  'claude-sonnet-4-6': '#8b5cf6',  // violet
   'claude-sonnet-4-5': '#8b5cf6',  // violet
   'claude-haiku-4-5': '#06b6d4',   // cyan
+  'claude-opus-4-6': '#f59e0b',    // amber
   'claude-opus-4-5': '#f59e0b',    // amber
 }
 
