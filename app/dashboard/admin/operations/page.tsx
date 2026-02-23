@@ -371,6 +371,16 @@ export default function OperationsPage() {
                   <div className="text-gray-500 dark:text-gray-400">{t("套餐", "Package")}</div>
                   <div className="text-gray-900 dark:text-gray-100 text-right truncate">{item.membershipName || "-"}</div>
 
+                  <div className="text-gray-500 dark:text-gray-400">{t("计费类型", "Billing Type")}</div>
+                  <div className="text-gray-900 dark:text-gray-100 text-right">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${item.billingType === "PAYG"
+                      ? "text-orange-600 border-orange-200 bg-orange-50 dark:text-orange-300 dark:border-orange-800 dark:bg-orange-900/20"
+                      : "text-green-600 border-green-200 bg-green-50 dark:text-green-300 dark:border-green-800 dark:bg-green-900/20"
+                      }`}>
+                      {item.billingType === "PAYG" ? t("按量计费", "PAYG") : t("月卡", "Membership")}
+                    </span>
+                  </div>
+
                   <div className="text-gray-500 dark:text-gray-400">{t("开通账号", "Seller Account")}</div>
                   <div className="text-gray-900 dark:text-gray-100 text-right truncate">{item.sellerAccount || "-"}</div>
 
@@ -380,8 +390,13 @@ export default function OperationsPage() {
                     {formatDateTime(item.expireTime)}
                   </div>
 
-                  <div className="text-gray-500 dark:text-gray-400">{t("单价 × 月数", "Unit × Months")}</div>
-                  <div className="text-gray-900 dark:text-gray-100 text-right">{formatCurrency(item.unitPrice || 0)} × {item.months || 0}</div>
+                  <div className="text-gray-500 dark:text-gray-400">{item.billingType === "PAYG" ? t("充值金额", "Recharge Amount") : t("单价 × 月数", "Unit × Months")}</div>
+                  <div className="text-gray-900 dark:text-gray-100 text-right">
+                    {item.billingType === "PAYG"
+                      ? formatCurrency(item.unitPrice || 0)
+                      : `${formatCurrency(item.unitPrice || 0)} × ${item.months || 0}`
+                    }
+                  </div>
 
                   <div className="text-gray-500 dark:text-gray-400">{t("收入", "Revenue")}</div>
                   <div className="text-right font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(item.revenue || 0)}</div>
@@ -397,11 +412,12 @@ export default function OperationsPage() {
               <tr>
                 <th className="px-3 py-2 text-left">{t("用户", "User")}</th>
                 <th className="px-3 py-2 text-left">{t("套餐", "Package")}</th>
+                <th className="px-3 py-2 text-left">{t("计费类型", "Billing Type")}</th>
                 <th className="px-3 py-2 text-left">{t("开始时间", "Start Time")}</th>
                 <th className="px-3 py-2 text-left">{t("结束时间", "Expire Time")}</th>
                 <th className="px-3 py-2 text-left">{t("开通方", "Seller Type")}</th>
                 <th className="px-3 py-2 text-left">{t("开通账号", "Seller Account")}</th>
-                <th className="px-3 py-2 text-right">{t("单价", "Unit Price")}</th>
+                <th className="px-3 py-2 text-right">{t("单价/充值", "Unit/Recharge")}</th>
                 <th className="px-3 py-2 text-right">{t("月数", "Months")}</th>
                 <th className="px-3 py-2 text-right">{t("收入", "Revenue")}</th>
               </tr>
@@ -409,13 +425,13 @@ export default function OperationsPage() {
             <tbody>
               {detailLoading ? (
                 <tr>
-                  <td colSpan={9} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={10} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
                     {t("加载中...", "Loading...")}
                   </td>
                 </tr>
               ) : monthlyDetails.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={10} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
                     {t("该月份暂无数据", "No data in this month")}
                   </td>
                 </tr>
@@ -424,12 +440,20 @@ export default function OperationsPage() {
                   <tr key={item.userMembershipId || `${item.userId}-${item.startTime}-${index}`} className="border-t border-gray-100 dark:border-gray-700/60">
                     <td className="px-3 py-2">{item.userEmail || "-"}</td>
                     <td className="px-3 py-2">{item.membershipName || "-"}</td>
+                    <td className="px-3 py-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full border ${item.billingType === "PAYG"
+                        ? "text-orange-600 border-orange-200 bg-orange-50 dark:text-orange-300 dark:border-orange-800 dark:bg-orange-900/20"
+                        : "text-green-600 border-green-200 bg-green-50 dark:text-green-300 dark:border-green-800 dark:bg-green-900/20"
+                        }`}>
+                        {item.billingType === "PAYG" ? t("按量计费", "PAYG") : t("月卡", "Membership")}
+                      </span>
+                    </td>
                     <td className="px-3 py-2">{formatDateTime(item.startTime)}</td>
                     <td className="px-3 py-2">{formatDateTime(item.expireTime)}</td>
                     <td className="px-3 py-2">{item.saleType === "agent" ? t("代理商", "Agent") : t("管理员", "Admin")}</td>
                     <td className="px-3 py-2">{item.sellerAccount || "-"}</td>
                     <td className="px-3 py-2 text-right">{formatCurrency(item.unitPrice || 0)}</td>
-                    <td className="px-3 py-2 text-right">{item.months || 0}</td>
+                    <td className="px-3 py-2 text-right">{item.billingType === "PAYG" ? "-" : (item.months || 0)}</td>
                     <td className="px-3 py-2 text-right font-medium">{formatCurrency(item.revenue || 0)}</td>
                   </tr>
                 ))

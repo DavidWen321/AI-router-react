@@ -733,6 +733,7 @@ export interface OperationMonthlyDetailData {
   unitPrice: number
   months: number
   revenue: number
+  billingType: "MEMBERSHIP" | "PAYG"
 }
 
 export interface OperationMonthlyDetailStatsData {

@@ -244,8 +244,12 @@ export default function UsageStatsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-2" style={{ fontSize: 12 }}>
                       <div><span style={{ color: "#94a3b8" }}>{t("模型", "Model")}</span><p style={{ color: "#0f172a", fontWeight: 500, marginTop: 2 }}>{log.modelName || "—"}</p></div>
-                      <div><span style={{ color: "#94a3b8" }}>{t("Tokens", "Tokens")}</span><p style={{ color: "#0f172a", fontWeight: 500, marginTop: 2 }}>{(log.totalTokens ?? 0).toLocaleString()}</p></div>
-                      <div><span style={{ color: "#94a3b8" }}>{t("费用", "Cost")}</span><p style={{ color: "#06b6d4", fontWeight: 600, marginTop: 2 }}>${(log.cost ?? 0).toFixed(6)}</p></div>
+                      <div><span style={{ color: "#94a3b8" }}>{t("输入", "Input")}</span><p style={{ color: "#0f172a", fontWeight: 500, marginTop: 2 }}>{(log.inputTokens ?? 0).toLocaleString()}</p></div>
+                      <div><span style={{ color: "#94a3b8" }}>{t("输出", "Output")}</span><p style={{ color: "#0f172a", fontWeight: 500, marginTop: 2 }}>{(log.outputTokens ?? 0).toLocaleString()}</p></div>
+                      <div><span style={{ color: "#94a3b8" }}>{t("缓存创建", "Cache Create")}</span><p style={{ color: "#0f172a", fontWeight: 500, marginTop: 2 }}>{(log.cacheCreationTokens ?? 0).toLocaleString()}</p></div>
+                      <div><span style={{ color: "#94a3b8" }}>{t("缓存读取", "Cache Read")}</span><p style={{ color: "#0f172a", fontWeight: 500, marginTop: 2 }}>{(log.cacheReadTokens ?? 0).toLocaleString()}</p></div>
+                      <div><span style={{ color: "#94a3b8" }}>{t("总Tokens", "Total Tokens")}</span><p style={{ color: "#06b6d4", fontWeight: 500, marginTop: 2 }}>{(log.totalTokens ?? 0).toLocaleString()}</p></div>
+                      <div className="col-span-2"><span style={{ color: "#94a3b8" }}>{t("费用", "Cost")}</span><p style={{ color: "#06b6d4", fontWeight: 600, marginTop: 2 }}>${(log.cost ?? 0).toFixed(6)}</p></div>
                     </div>
                   </div>
                 ))}
@@ -258,7 +262,11 @@ export default function UsageStatsPage() {
                     <tr>
                       <th>{t("时间", "Time")}</th>
                       <th>{t("模型", "Model")}</th>
-                      <th>{t("Tokens", "Tokens")}</th>
+                      <th>{t("输入", "Input")}</th>
+                      <th>{t("输出", "Output")}</th>
+                      <th>{t("缓存创建", "Cache Create")}</th>
+                      <th>{t("缓存读取", "Cache Read")}</th>
+                      <th>{t("总Tokens", "Total Tokens")}</th>
                       <th>{t("费用", "Cost")}</th>
                     </tr>
                   </thead>
@@ -273,7 +281,11 @@ export default function UsageStatsPage() {
                             {log.modelName || "—"}
                           </span>
                         </td>
-                        <td style={{ fontWeight: 500 }}>{(log.totalTokens ?? 0).toLocaleString()}</td>
+                        <td style={{ fontWeight: 500 }}>{(log.inputTokens ?? 0).toLocaleString()}</td>
+                        <td style={{ fontWeight: 500 }}>{(log.outputTokens ?? 0).toLocaleString()}</td>
+                        <td style={{ fontWeight: 500 }}>{(log.cacheCreationTokens ?? 0).toLocaleString()}</td>
+                        <td style={{ fontWeight: 500 }}>{(log.cacheReadTokens ?? 0).toLocaleString()}</td>
+                        <td style={{ fontWeight: 500, color: "#06b6d4" }}>{(log.totalTokens ?? 0).toLocaleString()}</td>
                         <td style={{ fontWeight: 600, color: "#06b6d4" }}>${(log.cost ?? 0).toFixed(6)}</td>
                       </tr>
                     ))}
