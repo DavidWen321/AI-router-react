@@ -95,6 +95,19 @@ export default function APIManagementPage() {
     const truncated = truncateTo4(value)
     return `$${truncated.toLocaleString(undefined, { maximumFractionDigits: 4 })}`
   }
+  const parseDateTimeToMs = (value?: string | null): number | null => {
+    if (!value) return null
+    const normalized = value.includes("T") ? value : value.replace(" ", "T")
+    const timestamp = new Date(normalized).getTime()
+    return Number.isNaN(timestamp) ? null : timestamp
+  }
+  const formatDateTime = (value?: string | null) => {
+    const timestamp = parseDateTimeToMs(value)
+    if (timestamp === null) {
+      return value ? value.replace("T", " ") : t("未使用", "Not used")
+    }
+    return new Date(timestamp).toLocaleString()
+  }
 
   const convertApiKeyData = (backendKey: ApiKeyData): APIKey => {
     const keyPreview = backendKey.apiKey
@@ -180,8 +193,8 @@ export default function APIManagementPage() {
         fullKey: stat.apiKey || "",
         tokens: (stat.totalTokens ?? 0).toLocaleString(),
         cost: formatCurrency(stat.totalCost ?? 0),
-        firstUsed: stat.firstUsed || t("未使用", "Not used"),
-        lastUsed: stat.lastUsed || t("未使用", "Not used"),
+        firstUsed: formatDateTime(stat.firstUsed),
+        lastUsed: formatDateTime(stat.lastUsed),
       }
     })
   }, [usageStatsData, t])
@@ -189,8 +202,8 @@ export default function APIManagementPage() {
   const totals = useMemo(() => {
     const totalTokens = usageStatsData.reduce((sum, stat) => sum + (stat.totalTokens ?? 0), 0)
     const totalCost = usageStatsData.reduce((sum, stat) => sum + (stat.totalCost ?? 0), 0)
-    const allFirstUsed = usageStatsData.filter(s => s.firstUsed).map(s => new Date(s.firstUsed!).getTime())
-    const allLastUsed = usageStatsData.filter(s => s.lastUsed).map(s => new Date(s.lastUsed!).getTime())
+    const allFirstUsed = usageStatsData.map((s) => parseDateTimeToMs(s.firstUsed)).filter((v): v is number => v !== null)
+    const allLastUsed = usageStatsData.map((s) => parseDateTimeToMs(s.lastUsed)).filter((v): v is number => v !== null)
     return {
       tokens: totalTokens.toLocaleString(),
       cost: formatCurrency(totalCost),
@@ -227,7 +240,7 @@ export default function APIManagementPage() {
   const confirmDeleteKey = async () => {
     if (!selectedKey) return
     try {
-      await apiKeyApi.deleteApiKey(selectedKey.fullKey)
+      await apiKeyApi.deleteApiKeyById(selectedKey.id)
       setApiKeys((prev) => prev.filter((k) => k.id !== selectedKey.id))
       toast({ title: t("删除成功", "Deleted Successfully"), description: t("密钥已被删除", "API key has been deleted") })
       await fetchApiKeys()
@@ -438,10 +451,10 @@ export default function APIManagementPage() {
                         {t("创建", "Created")}: {key.created} &middot; {t("最后使用", "Last used")}: {key.lastUsed}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 dash-kr-actions" style={{ opacity: 0, transition: "opacity 0.2s" }}>
+                    <div className="flex items-center gap-1 dash-kr-actions">
                       <button onClick={() => handleViewKey(key)} className="dash-ghost-btn"><Eye style={{ width: 13, height: 13 }} />{t("详细", "Details")}</button>
                       <button onClick={() => handleCopyKey(key)} className="dash-ghost-btn"><Copy style={{ width: 13, height: 13 }} />{t("复制", "Copy")}</button>
-                      <button onClick={() => handleDeleteKey(key)} className="dash-ghost-btn" style={{ color: "#ef4444" }}><Trash2 style={{ width: 13, height: 13 }} /></button>
+                      <button onClick={() => handleDeleteKey(key)} className="dash-ghost-btn" style={{ color: "#ef4444" }}><Trash2 style={{ width: 13, height: 13 }} />{t("删除", "Delete")}</button>
                     </div>
                   </div>
                 ))}

@@ -1015,6 +1015,17 @@ export const apiKeyApi = {
   },
 
   /**
+   * Delete API key by id
+   * 对应后端接口: DELETE /api/apikey/id/{apiKeyId}
+   * @param apiKeyId - API密钥ID
+   */
+  deleteApiKeyById: async (apiKeyId: string | number): Promise<void> => {
+    await request(`/api/apikey/id/${encodeURIComponent(String(apiKeyId))}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
    * Update API key (for editing name, expiration)
    * Note: Backend may not have this endpoint yet - check documentation
    * 对应后端接口: PUT /api/apikey/{id} (需要确认后端是否有此接口)
