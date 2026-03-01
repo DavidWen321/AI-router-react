@@ -85,6 +85,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_key
 ```
 
+也可以直接复制 `.env.local.example` 再按需修改。
+
 ### 启动开发服务器
 
 ```bash

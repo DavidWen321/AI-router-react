@@ -1502,6 +1502,83 @@ export interface DomainHealthDashboardData {
   realtimeData: Array<Record<string, unknown>>
 }
 
+/**
+ * 并发监控时间序列点
+ */
+export interface ConcurrencySeriesPoint {
+  time: string
+  concurrency: number
+}
+
+/**
+ * 流量监控时间序列点
+ */
+export interface TrafficSeriesPoint {
+  time: string
+  ingressBps: number
+  egressBps: number
+  totalBps: number
+}
+
+/**
+ * 热点时段数据
+ */
+export interface HotPeriodData {
+  hour: string
+  avgConcurrency: number
+  peakConcurrency: number
+  avgTrafficBps: number
+  peakTrafficBps: number
+}
+
+/**
+ * 并发与流量监控数据
+ */
+// ==================== 并发与流量监控类型 ====================
+
+/**
+ * 参考线数据（用于图表中的水平参考线）
+ */
+export interface ReferenceLine {
+  name: string      // 参考线名称（如 "平均值", "P95", "峰值"）
+  value: number     // 参考线的 Y 轴值
+  color: string     // 参考线颜色（如 "#10b981"）
+  style: string     // 参考线样式（如 "dashed", "solid"）
+}
+
+export interface ConcurrencyTrafficMetricsData {
+  queryTime: string
+  range: '1h' | '6h' | '24h' | '7d' | '30d'
+  pointCount: number
+  channelCurrentConcurrency: Record<string, number>
+  concurrency: {
+    current: number
+    avg: number
+    p95: number
+    peak: number
+    peakAt: string | null
+    series: ConcurrencySeriesPoint[]
+    referenceLines?: ReferenceLine[]  // ⭐⭐⭐ 新增：参考线数据
+  }
+  traffic: {
+    currentBps: number
+    currentIngressBps: number
+    currentEgressBps: number
+    avgBps: number
+    peakBps: number
+    peakAt: string | null
+    ingressTotalBytes: number
+    egressTotalBytes: number
+    series: TrafficSeriesPoint[]
+    referenceLines?: ReferenceLine[]  // ⭐⭐⭐ 新增：参考线数据
+  }
+  hotPeriods: {
+    topConcurrencyPeriods: HotPeriodData[]
+    topTrafficPeriods: HotPeriodData[]
+    hourlyDistribution: HotPeriodData[]
+  }
+}
+
 // ==================== 多模型健康监控类型 ====================
 
 /**
@@ -1608,6 +1685,17 @@ export const domainHealthApi = {
    */
   getDashboard: async (): Promise<DomainHealthDashboardData> => {
     return request('/api/domain-health/dashboard')
+  },
+
+  /**
+   * 获取并发与流量监控数据
+   * 对应后端接口: GET /api/domain-health/metrics/concurrency-traffic
+   */
+  getConcurrencyTrafficMetrics: async (
+    range: '1h' | '6h' | '24h' | '7d' | '30d' = '24h',
+    maxPoints: number = 360
+  ): Promise<ConcurrencyTrafficMetricsData> => {
+    return request(`/api/domain-health/metrics/concurrency-traffic?range=${range}&maxPoints=${maxPoints}`)
   },
 
   /**

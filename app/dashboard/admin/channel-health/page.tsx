@@ -30,6 +30,7 @@ import {
 import { RealtimeChart } from "./components/RealtimeChart"
 import { MultiModelUptimeBar24h } from "./components/MultiModelUptimeBar24h"
 import { UsageStatistics } from "./components/UsageStatistics"
+import { ConcurrencyTrafficMonitor } from "./components/ConcurrencyTrafficMonitor"
 import { ProbeConfigPanel } from "./components/ProbeConfigPanel"
 
 /**
@@ -500,6 +501,9 @@ export default function ChannelHealthPage() {
 
       {/* 使用统计 */}
       <UsageStatistics />
+
+      {/* 并发与流量监控 */}
+      <ConcurrencyTrafficMonitor />
 
       {/* 探测模型配置 */}
       <div className="mt-6 sm:mt-8">
