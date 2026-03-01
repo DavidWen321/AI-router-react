@@ -54,6 +54,10 @@ export function ViewPricingDialog({ open, onOpenChange, pricing }: ViewPricingDi
       value: formatPrice(pricing.cacheReadPrice) + " / M tokens",
     },
     {
+      label: t("价格倍率", "Price Multiplier"),
+      value: `x${pricing.priceMultiplier ?? 1}`,
+    },
+    {
       label: t("创建时间", "Created At"),
       value: formatDateTime(pricing.createdAt),
     },

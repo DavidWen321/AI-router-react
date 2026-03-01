@@ -8,7 +8,7 @@ import { useLanguage } from "@/lib/language-context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { authApi, userApi, ApiError } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
-import { Turnstile } from "@/components/turnstile"
+import { Turnstile, type TurnstileRef } from "@/components/turnstile"
 
 interface AuthModalProps {
   open: boolean
@@ -26,6 +26,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string>("")
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const turnstileRef = useRef<TurnstileRef>(null)
 
   useEffect(() => {
     if (countdown > 0) {
@@ -45,6 +46,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     }
   }, [open])
 
+  const resetCaptcha = () => {
+    setCaptchaToken("")
+    turnstileRef.current?.reset()
+  }
+
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
@@ -54,13 +60,15 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       await authApi.sendCode(email, captchaToken)
       setStep("code")
       setCountdown(60)
+      // Token consumed by backend, reset for potential resend
+      resetCaptcha()
       toast({
         title: t("验证码已发送", "Verification code sent"),
         description: t("请查收您的邮箱", "Please check your email"),
       })
     } catch (error) {
-      // 验证失败时重置captcha token，需要用户重新验证
-      setCaptchaToken("")
+      // Reset CAPTCHA so user can re-verify
+      resetCaptcha()
       if (error instanceof ApiError) {
         toast({
           title: t("发送失败", "Failed to send"),
@@ -107,10 +115,10 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       // 1. Login with backend and get token response
       const loginResponse = await authApi.login(email, enteredCode)
 
-      // 2. Store tokens and user info in localStorage（双Token机制）
+      // 2. Store tokens and user info in localStorage
       localStorage.setItem("accessToken", loginResponse.accessToken)
       localStorage.setItem("refreshToken", loginResponse.refreshToken)
-      localStorage.setItem("userId", loginResponse.userId) // loginResponse.userId已经是string类型,无需toString()
+      localStorage.setItem("userId", loginResponse.userId)
       localStorage.setItem("userEmail", loginResponse.email)
       localStorage.setItem("userRole", loginResponse.role)
       localStorage.setItem("isLoggedIn", "true")
@@ -127,7 +135,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
         router.push("/dashboard")
       }
 
-      // 6. Show success toast after redirect
+      // 5. Show success toast after redirect
       setTimeout(() => {
         toast({
           title: t("登录成功", "Login successful"),
@@ -156,15 +164,27 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const handleResend = async () => {
     if (countdown > 0) return
 
+    // Resend requires a fresh CAPTCHA token - go back to email step
+    if (!captchaToken) {
+      setStep("email")
+      toast({
+        title: t("请重新验证", "Please re-verify"),
+        description: t("需要完成人机验证后才能重新发送", "Complete CAPTCHA verification to resend"),
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
       await authApi.sendCode(email, captchaToken)
       setCountdown(60)
+      resetCaptcha()
       toast({
         title: t("验证码已重新发送", "Verification code resent"),
         description: t("请查收您的邮箱", "Please check your email"),
       })
     } catch (error) {
+      resetCaptcha()
       if (error instanceof ApiError) {
         toast({
           title: t("发送失败", "Failed to send"),
@@ -209,8 +229,9 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               />
             </div>
 
-            {/* Cloudflare Turnstile 人机验证 */}
+            {/* Cloudflare Turnstile CAPTCHA */}
             <Turnstile
+              ref={turnstileRef}
               onVerify={(token) => setCaptchaToken(token)}
               onError={(error) => {
                 toast({
@@ -227,7 +248,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !captchaToken}
               className="w-full py-2.5 sm:py-3 bg-cyan-600 text-white text-sm sm:text-base font-medium rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? t("发送中...", "Sending...") : t("发送验证码", "Send Verification Code")}
@@ -260,7 +281,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 {code.map((digit, index) => (
                   <input
                     key={index}
-                    ref={(el) => (inputRefs.current[index] = el)}
+                    ref={(el) => { inputRefs.current[index] = el }}
                     type="tel"
                     inputMode="numeric"
                     maxLength={1}

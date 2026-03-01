@@ -1789,6 +1789,7 @@ export interface ModelPricingData {
   outputPrice: number           // 输出价格（$/百万tokens）
   cacheWritePrice: number       // 缓存写入价格（$/百万tokens）
   cacheReadPrice: number        // 缓存读取价格（$/百万tokens）
+  priceMultiplier: number       // 价格倍率，最终计费 = 原始费用 * 倍率，默认1.0
   isActive: boolean             // 是否启用
   isAllowed: boolean            // 是否允许使用
   createdAt: string             // 创建时间
@@ -1805,6 +1806,7 @@ export interface CreatePricingFormData {
   outputPrice: number
   cacheWritePrice: number
   cacheReadPrice: number
+  priceMultiplier: number
   isActive: boolean
 }
 

@@ -57,7 +57,7 @@ export function RealtimeChart({ data, channels }: RealtimeChartProps) {
     })
 
     if (!data || data.length === 0) {
-      return { chartData: [], channelList: channelAliases, latestValues: {} }
+      return { chartData: [], channelList: channelAliases, latestValues: {} as Record<string, number>, sortedChannelsForCards: channelAliases }
     }
 
     // 转换数据格式

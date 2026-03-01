@@ -94,7 +94,7 @@ export function UptimeBar24h({ channelName, channelData, enabled = true }: Uptim
   }, [channelData.history])
 
   // 状态颜色映射
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     available: "bg-green-500 dark:bg-green-400",
     degraded: "bg-yellow-500 dark:bg-yellow-400",
     unavailable: "bg-red-500 dark:bg-red-400",
@@ -102,7 +102,7 @@ export function UptimeBar24h({ channelName, channelData, enabled = true }: Uptim
   }
 
   // 状态悬停颜色
-  const statusHoverColors = {
+  const statusHoverColors: Record<string, string> = {
     available: "hover:bg-green-600 dark:hover:bg-green-500",
     degraded: "hover:bg-yellow-600 dark:hover:bg-yellow-500",
     unavailable: "hover:bg-red-600 dark:hover:bg-red-500",

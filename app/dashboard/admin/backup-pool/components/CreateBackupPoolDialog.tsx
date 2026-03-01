@@ -72,6 +72,7 @@ export function CreateBackupPoolDialog({ open, onOpenChange, onSuccess }: Create
         accountUrl: "",
         accountPoolKey: "",
         accountDailyUsage: "",
+        accountDailyRemainingUsage: "",
         accountCost: "",
         priority: "5",
         status: "1",

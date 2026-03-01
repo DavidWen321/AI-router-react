@@ -44,6 +44,7 @@ export function EditPricingDialog({
     outputPrice: 0,
     cacheWritePrice: 0,
     cacheReadPrice: 0,
+    priceMultiplier: 1,
     isActive: true,
   })
 
@@ -58,6 +59,7 @@ export function EditPricingDialog({
         outputPrice: pricing.outputPrice,
         cacheWritePrice: pricing.cacheWritePrice,
         cacheReadPrice: pricing.cacheReadPrice,
+        priceMultiplier: pricing.priceMultiplier ?? 1,
         isActive: pricing.isActive,
       })
     }
@@ -191,6 +193,30 @@ export function EditPricingDialog({
                   required
                 />
               </div>
+            </div>
+
+            {/* 价格倍率 */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-priceMultiplier">
+                {t("价格倍率", "Price Multiplier")}
+              </Label>
+              <Input
+                id="edit-priceMultiplier"
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={formData.priceMultiplier}
+                onChange={(e) =>
+                  setFormData({ ...formData, priceMultiplier: parseFloat(e.target.value) || 1 })
+                }
+                required
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {t(
+                  "最终计费 = 原始费用 × 倍率，默认为 1（原价）",
+                  "Final cost = base cost × multiplier, default is 1 (original price)"
+                )}
+              </p>
             </div>
 
             {/* 是否启用 */}

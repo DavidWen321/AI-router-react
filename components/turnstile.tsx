@@ -1,10 +1,13 @@
 "use client"
 
-import { useEffect, useRef, useCallback } from "react"
+import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from "react"
 
 // Cloudflare Turnstile Site Key
-// 在 .env.local 中配置: NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4XXXXXXXXXXXXXXXXX
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""
+
+export interface TurnstileRef {
+  reset: () => void
+}
 
 interface TurnstileProps {
   onVerify: (token: string) => void
@@ -37,38 +40,39 @@ interface TurnstileRenderOptions {
 }
 
 /**
- * Cloudflare Turnstile 验证码组件
+ * Cloudflare Turnstile CAPTCHA component with ref-based reset support.
  *
- * 使用方法：
- * 1. 在Cloudflare Dashboard创建Turnstile应用，获取Site Key
- * 2. 在 .env.local 中配置: NEXT_PUBLIC_TURNSTILE_SITE_KEY=你的SiteKey
- * 3. 在需要验证的地方使用此组件
- *
- * 示例：
- * <Turnstile
- *   onVerify={(token) => setCaptchaToken(token)}
- *   onError={(error) => console.error(error)}
- * />
+ * Usage:
+ *   const turnstileRef = useRef<TurnstileRef>(null)
+ *   <Turnstile ref={turnstileRef} onVerify={...} />
+ *   turnstileRef.current?.reset()
  */
-export function Turnstile({
-  onVerify,
-  onError,
-  onExpire,
-  theme = "auto",
-  size = "normal",
-  className = "",
-}: TurnstileProps) {
+export const Turnstile = forwardRef<TurnstileRef, TurnstileProps>(function Turnstile(
+  { onVerify, onError, onExpire, theme = "auto", size = "normal", className = "" },
+  ref
+) {
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetIdRef = useRef<string | null>(null)
   const scriptLoadedRef = useRef(false)
 
+  // Expose reset method via ref
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      if (widgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.reset(widgetIdRef.current)
+        } catch (e) {
+          // ignore reset errors
+        }
+      }
+    },
+  }))
+
   const renderWidget = useCallback(() => {
     if (!window.turnstile || !containerRef.current || widgetIdRef.current) return
 
-    // 如果没有配置Site Key，跳过渲染
     if (!TURNSTILE_SITE_KEY) {
-      console.warn("Turnstile Site Key未配置，跳过验证码渲染")
-      // 自动验证通过（开发模式）
+      console.warn("Turnstile Site Key not configured, skipping CAPTCHA")
       onVerify("")
       return
     }
@@ -85,30 +89,26 @@ export function Turnstile({
       })
     } catch (error) {
       console.error("Turnstile render error:", error)
-      onError?.("验证码加载失败")
+      onError?.("CAPTCHA loading failed")
     }
   }, [onVerify, onError, onExpire, theme, size])
 
   useEffect(() => {
-    // 如果没有配置Site Key，直接返回
     if (!TURNSTILE_SITE_KEY) {
       onVerify("")
       return
     }
 
-    // 检查脚本是否已加载
     if (window.turnstile) {
       renderWidget()
       return
     }
 
-    // 如果脚本正在加载中
     if (scriptLoadedRef.current) {
       window.onTurnstileLoad = renderWidget
       return
     }
 
-    // 加载Turnstile脚本
     scriptLoadedRef.current = true
     const script = document.createElement("script")
     script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad"
@@ -120,7 +120,6 @@ export function Turnstile({
     document.head.appendChild(script)
 
     return () => {
-      // 清理
       if (widgetIdRef.current && window.turnstile) {
         try {
           window.turnstile.remove(widgetIdRef.current)
@@ -132,7 +131,6 @@ export function Turnstile({
     }
   }, [renderWidget, onVerify])
 
-  // 如果没有配置Site Key，不渲染任何内容
   if (!TURNSTILE_SITE_KEY) {
     return null
   }
@@ -143,13 +141,4 @@ export function Turnstile({
       className={`flex justify-center ${className}`}
     />
   )
-}
-
-/**
- * 重置Turnstile验证码（用于验证失败后重新验证）
- */
-export function resetTurnstile(widgetId: string) {
-  if (window.turnstile && widgetId) {
-    window.turnstile.reset(widgetId)
-  }
-}
+})

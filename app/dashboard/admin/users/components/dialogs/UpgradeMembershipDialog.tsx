@@ -29,7 +29,7 @@ interface MembershipData {
 }
 
 interface CurrentMembership {
-  id: number
+  id: string
   membershipId: number
   levelName: string
   dailyUsage: number

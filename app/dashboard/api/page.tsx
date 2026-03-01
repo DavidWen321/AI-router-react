@@ -45,7 +45,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 
 interface APIKey {
-  id: number
+  id: string
   key: string
   fullKey: string
   created: string

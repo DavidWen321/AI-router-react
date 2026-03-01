@@ -111,6 +111,14 @@ export function ModelPricingTable({
                     {formatPrice(pricing.cacheReadPrice)}
                   </span>
                 </div>
+                <div>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {t("倍率", "Multiplier")}:
+                  </span>
+                  <span className={`ml-1 font-medium ${pricing.priceMultiplier !== 1 ? "text-orange-600 dark:text-orange-400" : "text-gray-900 dark:text-white"}`}>
+                    x{pricing.priceMultiplier ?? 1}
+                  </span>
+                </div>
               </div>
 
               {/* 操作按钮 */}
@@ -162,6 +170,9 @@ export function ModelPricingTable({
                 {t("缓存读取", "Cache Read")}
               </th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {t("倍率", "Multiplier")}
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t("状态", "Status")}
               </th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -203,6 +214,11 @@ export function ModelPricingTable({
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-gray-900 dark:text-white">
                     {formatPrice(pricing.cacheReadPrice)}
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <div className={`text-sm font-medium ${pricing.priceMultiplier !== 1 ? "text-orange-600 dark:text-orange-400" : "text-gray-900 dark:text-white"}`}>
+                    x{pricing.priceMultiplier ?? 1}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">

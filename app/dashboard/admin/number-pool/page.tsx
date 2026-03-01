@@ -42,7 +42,7 @@ export default function NumberPoolPage() {
   const [selectedPool, setSelectedPool] = useState<AccountPoolVO | null>(null)
 
   // 图表相关状态
-  const [selectedPoolId, setSelectedPoolId] = useState<number | null>(null)
+  const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null)
   const [chartTimePeriod, setChartTimePeriod] = useState<"today" | "7days" | "15days" | "30days">("7days")
   const [chartData, setChartData] = useState<any[]>([])
   const [isLoadingChart, setIsLoadingChart] = useState(false)
@@ -66,7 +66,7 @@ export default function NumberPoolPage() {
   }
 
   // 获取图表数据
-  const fetchChartData = async (poolId: number, period: string) => {
+  const fetchChartData = async (poolId: string, period: string) => {
     setIsLoadingChart(true)
     try {
       const apiMap = {
@@ -334,7 +334,7 @@ export default function NumberPoolPage() {
       },
     }
 
-    return baseData[poolId as keyof typeof baseData]?.[period] || []
+    return (baseData as Record<string, Record<string, any>>)[poolId]?.[period] || []
   }
 
   const filteredData = useMemo(() => {
@@ -558,7 +558,7 @@ export default function NumberPoolPage() {
                   stroke="currentColor"
                   width={40}
                 />
-                <Tooltip
+                <RechartsTooltip
                   contentStyle={{
                     backgroundColor: "rgba(255, 255, 255, 0.98)",
                     border: "2px solid #06b6d4",
@@ -613,7 +613,7 @@ export default function NumberPoolPage() {
                     style: { textAnchor: "middle", fontSize: "13px", fontWeight: "600" },
                   }}
                 />
-                <Tooltip
+                <RechartsTooltip
                   contentStyle={{
                     backgroundColor: "rgba(255, 255, 255, 0.98)",
                     border: "2px solid #06b6d4",
@@ -676,7 +676,7 @@ export default function NumberPoolPage() {
                     style: { textAnchor: "middle", fontSize: "14px", fontWeight: "600" },
                   }}
                 />
-                <Tooltip
+                <RechartsTooltip
                   contentStyle={{
                     backgroundColor: "rgba(255, 255, 255, 0.98)",
                     border: "2px solid #06b6d4",
